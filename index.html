@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>《百年孤独》人物出场统计</title>
+    <title>《百年孤独》星期事件统计</title>
     <link rel="stylesheet" href="./styles.css" />
     <script src="./data.js" defer></script>
     <script src="./app.js" defer></script>
@@ -11,18 +11,22 @@
   <body>
     <header class="app-header">
       <div class="header-copy">
-        <p class="eyebrow">name_statistics_colored.xlsx</p>
-        <h1>《百年孤独》人物出场统计</h1>
-        <p class="lede">按代际、章节和性别整理的人物提及热度。</p>
+        <p class="eyebrow">One Hundred Years of Solitude.epub</p>
+        <h1>《百年孤独》星期事件统计</h1>
+        <p class="lede">从星期日到星期六，整理全书 117 次星期词提及对应的上下文事件与章节位置。</p>
       </div>
       <div class="header-facts" aria-label="数据概览">
         <div>
-          <span id="fact-people">--</span>
-          <small>人物/群体</small>
+          <span id="fact-events">--</span>
+          <small>星期提及</small>
         </div>
         <div>
-          <span id="fact-chapters">--</span>
-          <small>章节</small>
+          <span id="fact-days">--</span>
+          <small>星期类别</small>
+        </div>
+        <div>
+          <span id="fact-top-day">--</span>
+          <small>最多出现</small>
         </div>
       </div>
     </header>
@@ -32,83 +36,63 @@
 
       <section class="controls-band" aria-label="筛选和排序">
         <div class="search-box">
-          <label for="search-input">人物</label>
-          <input id="search-input" type="search" placeholder="搜索人物" autocomplete="off" />
+          <label for="search-input">搜索</label>
+          <input id="search-input" type="search" placeholder="人物、事件、主题" autocomplete="off" />
         </div>
         <div class="control-group">
-          <label for="gender-filter">性别</label>
-          <select id="gender-filter">
-            <option value="all">全部</option>
-            <option value="男">男</option>
-            <option value="女">女</option>
-          </select>
+          <label for="chapter-filter">章节</label>
+          <select id="chapter-filter"></select>
+        </div>
+        <div class="control-group">
+          <label for="theme-filter">主题</label>
+          <select id="theme-filter"></select>
         </div>
         <div class="control-group">
           <label for="sort-select">排序</label>
           <select id="sort-select">
-            <option value="total">总计从高到低</option>
-            <option value="peak">单章峰值从高到低</option>
-            <option value="generation">按代际顺序</option>
-            <option value="last">最后出现章节从后到前</option>
+            <option value="chapter">按章节顺序</option>
+            <option value="day">按星期顺序</option>
+            <option value="theme">按主题分组</option>
           </select>
         </div>
-        <div class="generation-tabs" id="generation-tabs" role="tablist" aria-label="代际筛选"></div>
+        <div class="day-tabs" id="day-tabs" role="group" aria-label="星期筛选"></div>
       </section>
 
       <section class="overview-layout">
-        <article class="panel chapter-panel">
-          <div class="panel-heading">
-            <div>
-              <h2>章节热度</h2>
-              <p id="chapter-summary">--</p>
-            </div>
-          </div>
-          <div class="chart-wrap" id="chapter-chart" aria-label="章节提及趋势图"></div>
-        </article>
-
         <article class="panel">
           <div class="panel-heading">
             <div>
-              <h2>人物排名</h2>
-              <p id="ranking-summary">--</p>
+              <h2>星期分布</h2>
+              <p>按当前筛选结果统计</p>
             </div>
           </div>
-          <div class="ranking-list" id="ranking-list"></div>
+          <div class="day-bars" id="day-bars"></div>
         </article>
-      </section>
 
-      <section class="detail-layout">
-        <article class="panel person-panel" id="person-panel" aria-label="人物详情"></article>
-        <article class="panel generation-panel">
+        <article class="panel heatmap-panel">
           <div class="panel-heading">
             <div>
-              <h2>代际分布</h2>
-              <p>按总提及次数汇总</p>
+              <h2>章节热力</h2>
+              <p>行是星期，列是章节</p>
             </div>
           </div>
-          <div class="generation-bars" id="generation-bars"></div>
+          <div class="table-wrap">
+            <table id="chapter-heatmap"></table>
+          </div>
         </article>
       </section>
 
-      <section class="panel heatmap-panel">
-        <div class="panel-heading heatmap-heading">
+      <section class="panel results-panel">
+        <div class="panel-heading">
           <div>
-            <h2>章节热力表</h2>
-            <p id="heatmap-summary">--</p>
-          </div>
-          <div class="legend" aria-label="热度图例">
-            <span>低</span>
-            <i></i>
-            <i></i>
-            <i></i>
-            <i></i>
-            <span>高</span>
+            <h2>事件摘要</h2>
+            <p id="result-summary">--</p>
           </div>
         </div>
-        <div class="table-wrap">
-          <table id="heatmap-table"></table>
-        </div>
+        <div class="event-list" id="event-list"></div>
       </section>
+
+      <p class="source-note" id="source-note"></p>
     </main>
   </body>
 </html>
