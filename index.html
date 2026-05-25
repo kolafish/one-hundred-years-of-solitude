@@ -103,7 +103,7 @@
         display: grid;
         width: 100%;
         min-width: 0;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 14px;
       }
 
@@ -201,7 +201,7 @@
         }
       }
 
-      @media (min-width: 821px) and (max-width: 1040px) {
+      @media (min-width: 821px) and (max-width: 1180px) {
         .link-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -213,7 +213,7 @@
       <section class="hero" aria-labelledby="site-title">
         <p class="eyebrow">One Hundred Years of Solitude</p>
         <h1 id="site-title"><span>《百年孤独》</span><span>统计页面</span></h1>
-        <p class="lede">从人物出场、星期事件到植物意象，把马孔多的家族、时间与环境拆成可浏览的章节线索。</p>
+        <p class="lede">从人物出场、星期事件、植物意象到动物线索，把马孔多的家族、时间与环境拆成可浏览的章节索引。</p>
       </section>
 
       <section class="link-grid" aria-label="统计页面入口">
@@ -236,6 +236,13 @@
           <strong>植物统计</strong>
           <p>基于英文版整理 69 组植物、作物和香料药草词条，查看提及次数、类别和章节分布。</p>
           <span class="card-action">打开植物统计</span>
+        </a>
+
+        <a class="card" href="./animals/">
+          <span class="card-kicker">动物与章节</span>
+          <strong>动物统计</strong>
+          <p>基于英文版整理 75 组动物词条，查看鱼、鸟、家畜、昆虫等动物意象的章节分布。</p>
+          <span class="card-action">打开动物统计</span>
         </a>
       </section>
     </main>
