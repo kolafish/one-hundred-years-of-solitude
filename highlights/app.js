@@ -57,6 +57,14 @@ function escapeHtml(value) {
     .replace(/"/g, "&quot;");
 }
 
+function formatQuote(value) {
+  const text = String(value || "")
+    .trim()
+    .replace(/“/g, "『")
+    .replace(/”/g, "』");
+  return `「${escapeHtml(text)}」`;
+}
+
 function rangeStart(item) {
   return Number(String(item.range).split("-")[0]) || 0;
 }
@@ -219,7 +227,7 @@ function renderSourcePanel(item) {
   const terms = item.sourceTerms || [];
   return `
     <span class="panel-label">划线内容</span>
-    <blockquote class="quote-hint">“${escapeHtml(item.quoteHint || item.cue)}”</blockquote>
+    <blockquote class="quote-hint">${formatQuote(item.quoteHint || item.cue)}</blockquote>
     ${
       terms.length
         ? `<div class="source-terms">${terms.map((term) => `<span>${escapeHtml(term)}</span>`).join("")}</div>`
