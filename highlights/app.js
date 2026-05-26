@@ -1,9 +1,11 @@
 const data = window.WEREAD_HIGHLIGHTS_DATA;
-const highlights = data.highlights;
+const bookHighlights = data.highlights;
+const chapters = data.chapters || [];
+const chapterHighlights = chapters.flatMap((chapter) => chapter.highlights);
 
 const state = {
   query: "",
-  chapter: "all",
+  scope: "book",
   sort: "highlight",
 };
 
@@ -13,7 +15,7 @@ const els = {
   factTop: document.querySelector("#fact-top"),
   kpis: document.querySelector("#kpi-grid"),
   search: document.querySelector("#search-input"),
-  chapter: document.querySelector("#chapter-filter"),
+  scope: document.querySelector("#scope-filter"),
   sort: document.querySelector("#sort-select"),
   chapterSummary: document.querySelector("#chapter-summary"),
   chapterBars: document.querySelector("#chapter-bars"),
@@ -23,6 +25,10 @@ const els = {
 
 function formatNumber(value) {
   return Number(value).toLocaleString("zh-CN");
+}
+
+function chapterLabel(chapter) {
+  return `第${chapter}章`;
 }
 
 function rangeLink(item) {
@@ -38,6 +44,10 @@ function escapeAttribute(value) {
   return String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 }
 
+function rangeStart(item) {
+  return Number(String(item.range).split("-")[0]) || 0;
+}
+
 function topCommentLikes(item) {
   return Math.max(...item.comments.map((comment) => comment.likes), 0);
 }
@@ -46,9 +56,32 @@ function totalCommentLikes(item) {
   return item.comments.reduce((sum, comment) => sum + comment.likes, 0);
 }
 
-function filteredHighlights() {
+function selectedScope() {
+  if (state.scope === "book") {
+    return {
+      kind: "book",
+      label: "全书热门 Top 20",
+      list: bookHighlights,
+    };
+  }
+
+  const chapter = chapters.find((item) => String(item.chapterUid) === state.scope);
+  if (!chapter) {
+    state.scope = "book";
+    return selectedScope();
+  }
+
+  return {
+    kind: "chapter",
+    label: `${chapterLabel(chapter.chapter)}热门 Top ${chapter.highlights.length}`,
+    list: chapter.highlights,
+    chapter,
+  };
+}
+
+function filteredHighlights(scope) {
   const query = state.query.trim().toLowerCase();
-  const list = highlights.filter((item) => {
+  const list = scope.list.filter((item) => {
     const text = [
       item.chapter,
       item.cue,
@@ -60,42 +93,42 @@ function filteredHighlights() {
       .join(" ")
       .toLowerCase();
     const matchesQuery = !query || text.includes(query);
-    const matchesChapter = state.chapter === "all" || item.chapter === state.chapter;
-    return matchesQuery && matchesChapter;
+    return matchesQuery;
   });
 
   return list.sort((a, b) => {
     if (state.sort === "comment") return topCommentLikes(b) - topCommentLikes(a) || a.rank - b.rank;
-    if (state.sort === "chapter") return a.chapterOrder - b.chapterOrder || a.rank - b.rank;
+    if (state.sort === "position") return a.chapterOrder - b.chapterOrder || rangeStart(a) - rangeStart(b);
     return b.highlightCount - a.highlightCount;
   });
 }
 
-function renderChapterFilter() {
-  const chapters = [...new Set(highlights.map((item) => item.chapter))];
-  els.chapter.innerHTML = [
-    '<option value="all">全部章节</option>',
-    ...chapters.map((chapter) => `<option value="${chapter}">第 ${chapter} 章</option>`),
+function renderScopeFilter() {
+  els.scope.innerHTML = [
+    '<option value="book">全书热门 Top 20</option>',
+    ...chapters.map(
+      (chapter) =>
+        `<option value="${chapter.chapterUid}">${chapterLabel(chapter.chapter)}热门 Top ${chapter.highlights.length}</option>`,
+    ),
   ].join("");
 }
 
 function renderFacts() {
-  const totalComments = highlights.reduce((sum, item) => sum + item.comments.length, 0);
-  const top = Math.max(...highlights.map((item) => item.highlightCount));
-  els.factHighlights.textContent = highlights.length;
-  els.factComments.textContent = totalComments;
-  els.factTop.textContent = formatNumber(top);
+  const totalComments = chapterHighlights.reduce((sum, item) => sum + item.comments.length, 0);
+  els.factHighlights.textContent = bookHighlights.length;
+  els.factComments.textContent = chapterHighlights.length;
+  els.factTop.textContent = formatNumber(totalComments);
 }
 
-function renderKpis(list) {
+function renderKpis(list, scope) {
   const topHighlight = [...list].sort((a, b) => b.highlightCount - a.highlightCount)[0];
   const topComment = [...list].sort((a, b) => topCommentLikes(b) - topCommentLikes(a))[0];
   const totalHighlightCount = list.reduce((sum, item) => sum + item.highlightCount, 0);
   const uniqueChapters = new Set(list.map((item) => item.chapter)).size;
 
   els.kpis.innerHTML = [
-    ["筛选划线", `${list.length} 条`, `${uniqueChapters} 个章节`, "accent-blue"],
-    ["划线人数合计", formatNumber(totalHighlightCount), "Top 20 热门划线累计", "accent-teal"],
+    ["当前范围", `${list.length} 条`, `${scope.label} · ${uniqueChapters} 个章节`, "accent-blue"],
+    ["划线人数合计", formatNumber(totalHighlightCount), "当前筛选累计", "accent-teal"],
     [
       "最高评论赞数",
       topComment ? formatNumber(topCommentLikes(topComment)) : "--",
@@ -105,7 +138,7 @@ function renderKpis(list) {
     [
       "最高划线热度",
       topHighlight ? formatNumber(topHighlight.highlightCount) : "--",
-      topHighlight ? `#${topHighlight.rank} · 第 ${topHighlight.chapter} 章` : "--",
+      topHighlight ? `#${topHighlight.rank} · ${chapterLabel(topHighlight.chapter)}` : "--",
       "accent-gold",
     ],
   ]
@@ -121,26 +154,23 @@ function renderKpis(list) {
     .join("");
 }
 
-function renderChapterBars(list) {
-  const rows = [...new Set(highlights.map((item) => item.chapter))]
-    .map((chapter) => {
-      const chapterItems = list.filter((item) => item.chapter === chapter);
-      return {
-        chapter,
-        count: chapterItems.length,
-        heat: chapterItems.reduce((sum, item) => sum + item.highlightCount, 0),
-      };
-    })
-    .filter((row) => row.count > 0);
+function renderChapterBars(scope) {
+  const rows = chapters.map((chapter) => ({
+    chapter: chapter.chapter,
+    chapterUid: chapter.chapterUid,
+    count: chapter.highlights.length,
+    heat: chapter.highlights.reduce((sum, item) => sum + item.highlightCount, 0),
+    selected: scope.kind === "chapter" && scope.chapter.chapterUid === chapter.chapterUid,
+  }));
   const maxHeat = Math.max(...rows.map((row) => row.heat), 1);
 
-  els.chapterSummary.textContent = rows.length ? `${rows.length} 个章节有匹配划线` : "无匹配章节";
+  els.chapterSummary.textContent = `${chapters.length} 个正文章节，每章最多 20 条热门划线`;
   els.chapterBars.innerHTML = rows
     .map((row) => {
       const percent = Math.max((row.heat / maxHeat) * 100, 4);
       return `
-        <div class="bar-row">
-          <span class="bar-name">第 ${row.chapter} 章</span>
+        <div class="bar-row ${row.selected ? "selected" : ""}">
+          <span class="bar-name">${chapterLabel(row.chapter)}</span>
           <div class="bar-track"><div class="bar-fill" style="width:${percent}%"></div></div>
           <span class="bar-value">${formatNumber(row.heat)}</span>
         </div>
@@ -151,6 +181,10 @@ function renderChapterBars(list) {
 
 function renderCommentBars(list) {
   const top = [...list].sort((a, b) => totalCommentLikes(b) - totalCommentLikes(a)).slice(0, 6);
+  if (!top.length) {
+    els.commentBars.innerHTML = '<div class="empty-mini">当前范围没有可展示的评论热度。</div>';
+    return;
+  }
   const maxLikes = Math.max(...top.map(totalCommentLikes), 1);
   els.commentBars.innerHTML = top
     .map((item) => {
@@ -167,7 +201,35 @@ function renderCommentBars(list) {
     .join("");
 }
 
-function renderList(list) {
+function renderComments(item) {
+  if (!item.comments.length) {
+    return '<div class="empty-comment">这条划线暂时没有可展示的高赞评论。</div>';
+  }
+
+  return item.comments
+    .map(
+      (comment, index) => `
+        <div class="comment-card">
+          <div class="comment-head">
+            <strong>Top ${index + 1}</strong>
+            <span>${formatNumber(comment.likes)} 赞</span>
+          </div>
+          <div class="comment-section">
+            <span>评论摘录</span>
+            <p>${comment.excerpt}</p>
+          </div>
+          <div class="comment-section">
+            <span>评论总结</span>
+            <p>${comment.summary}</p>
+          </div>
+          <small>${comment.author}</small>
+        </div>
+      `,
+    )
+    .join("");
+}
+
+function renderList(list, scope) {
   if (!list.length) {
     els.list.innerHTML = '<article class="empty-state">没有匹配的热门划线。</article>';
     return;
@@ -180,9 +242,11 @@ function renderList(list) {
           <div class="highlight-rank">#${item.rank}</div>
           <div class="highlight-body">
             <div class="highlight-meta">
-              <span>第 ${item.chapter} 章</span>
+              <span>${scope.kind === "book" ? "全书热门" : "章内热门"}</span>
+              <span>${chapterLabel(item.chapter)}</span>
               <span>${formatNumber(item.highlightCount)} 人划线</span>
               <span>${item.range}</span>
+              ${item.globalRank ? `<span>全书 #${item.globalRank}</span>` : ""}
             </div>
             <h2>${item.cue}</h2>
             <div class="highlight-text-grid">
@@ -199,27 +263,7 @@ function renderList(list) {
               ${item.themes.map((theme) => `<span>${theme}</span>`).join("")}
             </div>
             <div class="comment-list">
-              ${item.comments
-                .map(
-                  (comment, index) => `
-                    <div class="comment-card">
-                      <div class="comment-head">
-                        <strong>Top ${index + 1}</strong>
-                        <span>${formatNumber(comment.likes)} 赞</span>
-                      </div>
-                      <div class="comment-section">
-                        <span>评论摘录</span>
-                        <p>${comment.excerpt}</p>
-                      </div>
-                      <div class="comment-section">
-                        <span>评论总结</span>
-                        <p>${comment.summary}</p>
-                      </div>
-                      <small>${comment.author}</small>
-                    </div>
-                  `,
-                )
-                .join("")}
+              ${renderComments(item)}
             </div>
           </div>
           <div class="card-actions">
@@ -276,14 +320,15 @@ function bindCopyButtons() {
 }
 
 function render() {
-  const list = filteredHighlights();
-  renderKpis(list);
-  renderChapterBars(list);
+  const scope = selectedScope();
+  const list = filteredHighlights(scope);
+  renderKpis(list, scope);
+  renderChapterBars(scope);
   renderCommentBars(list);
-  renderList(list);
+  renderList(list, scope);
 }
 
-renderChapterFilter();
+renderScopeFilter();
 renderFacts();
 render();
 
@@ -292,8 +337,8 @@ els.search.addEventListener("input", (event) => {
   render();
 });
 
-els.chapter.addEventListener("change", (event) => {
-  state.chapter = event.target.value;
+els.scope.addEventListener("change", (event) => {
+  state.scope = event.target.value;
   render();
 });
 

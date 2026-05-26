@@ -17,21 +17,21 @@
         <p class="eyebrow">WeRead Popular Highlights</p>
         <h1>《百年孤独》热门划线与评论</h1>
         <p class="lede">
-          基于微信读书热门划线接口整理，展示全书前 20 条热门划线、主题摘要，以及每条划线首屏评论中点赞最高的 5 条。
+          基于微信读书热门划线接口整理，支持查看全书前 20 条热门划线，也可以切到每个章节查看本章前 20 条热门划线和高赞评论。
         </p>
       </div>
       <div class="header-facts" aria-label="数据概览">
         <div>
           <span id="fact-highlights">--</span>
-          <small>热门划线</small>
+          <small>全书热门</small>
         </div>
         <div>
           <span id="fact-comments">--</span>
-          <small>高赞评论</small>
+          <small>章节热门</small>
         </div>
         <div>
           <span id="fact-top">--</span>
-          <small>最高划线人数</small>
+          <small>高赞评论</small>
         </div>
       </div>
     </header>
@@ -49,18 +49,18 @@
       <section class="controls-band" aria-label="筛选和排序">
         <div class="search-box">
           <label for="search-input">搜索</label>
-          <input id="search-input" type="search" placeholder="章节、主题、评论摘要" autocomplete="off" />
+          <input id="search-input" type="search" placeholder="范围、主题、评论摘要" autocomplete="off" />
         </div>
         <div class="control-group">
-          <label for="chapter-filter">章节</label>
-          <select id="chapter-filter"></select>
+          <label for="scope-filter">范围</label>
+          <select id="scope-filter"></select>
         </div>
         <div class="control-group">
           <label for="sort-select">排序</label>
           <select id="sort-select">
             <option value="highlight">按划线人数</option>
             <option value="comment">按最高评论赞数</option>
-            <option value="chapter">按章节顺序</option>
+            <option value="position">按章节/位置</option>
           </select>
         </div>
       </section>
@@ -80,7 +80,7 @@
           <div class="panel-heading">
             <div>
               <h2>评论热度</h2>
-              <p>每条划线下点赞最高的 5 条评论合计</p>
+              <p>当前范围内每条划线下点赞最高的 5 条评论合计</p>
             </div>
           </div>
           <div class="comment-bars" id="comment-bars"></div>

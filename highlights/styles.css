@@ -295,6 +295,12 @@ select:focus {
   grid-template-columns: minmax(150px, 210px) minmax(0, 1fr) 70px;
 }
 
+.bar-row.selected .bar-name,
+.bar-row.selected .bar-value {
+  color: var(--blue);
+  font-weight: 800;
+}
+
 .bar-name,
 .bar-value {
   color: var(--muted);
@@ -426,6 +432,24 @@ select:focus {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+}
+
+.empty-mini,
+.empty-comment {
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.empty-mini {
+  padding: 18px;
+}
+
+.empty-comment {
+  grid-column: 1 / -1;
+  padding: 14px;
 }
 
 .comment-card {
