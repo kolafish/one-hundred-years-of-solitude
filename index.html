@@ -17,9 +17,11 @@
         --teal: #7ee0c7;
         --gold: #f5c96b;
         --shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
-        font-family:
+        --serif: "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC", "STSong", SimSun, serif;
+        --sans:
           Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
           "PingFang SC", "Microsoft YaHei", sans-serif;
+        font-family: var(--serif);
       }
 
       * {
@@ -715,16 +717,21 @@
         position: relative;
         isolation: isolate;
         display: grid;
+        --theme-rgb: 126, 224, 199;
+        --theme-color: rgb(var(--theme-rgb));
+        --watermark-opacity: 0.06;
         min-width: 0;
         min-height: 204px;
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(var(--theme-rgb), 0.28);
         border-radius: 8px;
         background:
-          linear-gradient(180deg, rgba(24, 36, 46, 0.84), rgba(6, 13, 20, 0.74)),
+          linear-gradient(180deg, rgba(var(--theme-rgb), 0.1), rgba(6, 13, 20, 0.04) 42%),
+          linear-gradient(180deg, rgba(24, 36, 46, 0.84), rgba(6, 13, 20, 0.76)),
           var(--card);
         box-shadow:
           0 34px 82px rgba(0, 0, 0, 0.5),
           0 14px 30px rgba(0, 0, 0, 0.34),
+          0 0 34px rgba(var(--theme-rgb), 0.1),
           inset 0 1px 0 rgba(255, 255, 255, 0.16);
         padding: 22px;
         color: inherit;
@@ -736,6 +743,11 @@
           border-color 180ms ease,
           background 180ms ease,
           box-shadow 180ms ease;
+      }
+
+      a.card > :not(.card-watermark) {
+        position: relative;
+        z-index: 1;
       }
 
       a.card.featured-card {
@@ -769,7 +781,8 @@
         border-radius: inherit;
         background:
           linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 34%),
-          radial-gradient(circle at 24% 0%, rgba(126, 224, 199, 0.16), transparent 38%);
+          radial-gradient(circle at 24% 0%, rgba(var(--theme-rgb), 0.18), transparent 38%),
+          radial-gradient(circle at 84% 16%, rgba(var(--theme-rgb), 0.13), transparent 28%);
         content: "";
         opacity: 0.9;
         pointer-events: none;
@@ -791,21 +804,75 @@
 
       a.card:hover,
       a.card:focus-visible {
-        border-color: rgba(126, 224, 199, 0.76);
+        --watermark-opacity: 0.13;
+        border-color: rgba(var(--theme-rgb), 0.78);
         outline: none;
         background:
+          linear-gradient(180deg, rgba(var(--theme-rgb), 0.16), rgba(9, 19, 28, 0.14) 48%),
           linear-gradient(180deg, rgba(29, 48, 58, 0.9), rgba(9, 19, 28, 0.82)),
           var(--card-hover);
         box-shadow:
           0 46px 108px rgba(0, 0, 0, 0.58),
           0 18px 42px rgba(0, 0, 0, 0.42),
-          0 0 0 3px rgba(126, 224, 199, 0.18),
+          0 0 0 3px rgba(var(--theme-rgb), 0.18),
+          0 0 56px rgba(var(--theme-rgb), 0.22),
           inset 0 1px 0 rgba(255, 255, 255, 0.22);
         transform: translateY(-8px);
       }
 
+      .card-watermark {
+        position: absolute;
+        right: 10px;
+        bottom: 8px;
+        z-index: 0;
+        width: min(72%, 260px);
+        height: 78%;
+        color: var(--theme-color);
+        opacity: var(--watermark-opacity);
+        pointer-events: none;
+        transform: translate3d(8px, 8px, 0) scale(1);
+        transform-origin: right bottom;
+        transition:
+          opacity 180ms ease,
+          transform 180ms ease;
+      }
+
+      .card-watermark svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2;
+        vector-effect: non-scaling-stroke;
+      }
+
+      a.card:hover .card-watermark,
+      a.card:focus-visible .card-watermark {
+        transform: translate3d(3px, 3px, 0) scale(1.04);
+      }
+
+      a.card.card-people {
+        --theme-rgb: 204, 160, 76;
+      }
+
+      a.card.card-time {
+        --theme-rgb: 116, 198, 232;
+      }
+
+      a.card.card-plants {
+        --theme-rgb: 112, 168, 126;
+      }
+
+      a.card.card-animals {
+        --theme-rgb: 205, 112, 60;
+      }
+
       .card-kicker {
-        color: var(--gold);
+        color: var(--theme-color);
+        font-family: var(--serif);
         font-size: 12px;
         font-weight: 820;
       }
@@ -814,13 +881,16 @@
         display: block;
         margin-top: 12px;
         color: var(--ink);
+        font-family: var(--serif);
         font-size: clamp(22px, 3vw, 30px);
+        font-weight: 820;
         line-height: 1.18;
       }
 
       .card p {
         margin: 14px 0 0;
         color: var(--muted);
+        font-family: var(--serif);
         line-height: 1.7;
         overflow-wrap: anywhere;
         word-break: break-word;
@@ -829,7 +899,8 @@
       .card-action {
         align-self: end;
         margin-top: 22px;
-        color: var(--teal);
+        color: var(--theme-color);
+        font-family: var(--serif);
         font-weight: 820;
       }
 
@@ -1119,28 +1190,86 @@
           <span class="card-action">打开划线统计</span>
         </a>
 
-        <a class="card" href="./people/">
+        <a class="card card-people" href="./people/">
+          <span class="card-watermark" aria-hidden="true">
+            <svg viewBox="0 0 260 220" role="img">
+              <path d="M130 184c2-33 3-57 1-82" />
+              <path d="M130 111c-31-12-52-33-64-64" />
+              <path d="M132 107c34-16 55-40 65-74" />
+              <path d="M130 132c-24-4-45-17-63-40" />
+              <path d="M132 134c24-7 43-21 59-44" />
+              <path d="M130 171c-18 9-38 19-62 30" />
+              <path d="M132 171c22 8 45 19 70 32" />
+              <path d="M130 184c-9 5-18 11-28 22" />
+              <path d="M133 184c9 7 19 14 31 22" />
+              <circle cx="64" cy="45" r="11" />
+              <circle cx="198" cy="34" r="11" />
+              <circle cx="66" cy="92" r="9" />
+              <circle cx="191" cy="90" r="9" />
+              <circle cx="130" cy="102" r="8" />
+              <path d="M50 205c29-14 55-19 80-15 28-6 55-2 82 13" />
+            </svg>
+          </span>
           <span class="card-kicker">人物与章节</span>
           <strong>人物章节热力图</strong>
           <p>按代际、章节和性别查看人物提及次数，保留原来的交互式章节热力表。</p>
           <span class="card-action">打开人物统计</span>
         </a>
 
-        <a class="card" href="./weekday-events/">
+        <a class="card card-time" href="./weekday-events/">
+          <span class="card-watermark" aria-hidden="true">
+            <svg viewBox="0 0 260 220" role="img">
+              <path d="M132 43c44 0 79 35 79 79s-35 79-79 79-79-35-79-79 35-79 79-79Z" />
+              <path d="M132 57c36 0 65 29 65 65s-29 65-65 65-65-29-65-65 29-65 65-65Z" />
+              <path d="M132 122V78" />
+              <path d="M132 122l34 24" />
+              <path d="M106 31h52" />
+              <path d="M118 31v-13h28v13" />
+              <path d="M91 76l-13-16" />
+              <path d="M173 76l13-16" />
+              <path d="M132 68v10M132 166v10M78 122h10M176 122h10" />
+              <path d="M88 183c30 19 59 20 88 1" />
+            </svg>
+          </span>
           <span class="card-kicker">星期与事件</span>
           <strong>星期事件统计</strong>
           <p>整理 Sunday 到 Saturday 的 117 次星期词提及，按章节、星期和主题查看事件摘要。</p>
           <span class="card-action">打开星期统计</span>
         </a>
 
-        <a class="card" href="./plants/">
+        <a class="card card-plants" href="./plants/">
+          <span class="card-watermark" aria-hidden="true">
+            <svg viewBox="0 0 260 220" role="img">
+              <path d="M126 202c11-39 14-78 9-118" />
+              <path d="M136 90c23-31 48-45 74-41-3 25-20 43-50 54" />
+              <path d="M129 118c-31-24-57-31-79-21 9 24 29 37 61 39" />
+              <path d="M132 156c28-19 53-23 75-11-11 20-32 29-64 26" />
+              <path d="M123 78c-11-25-8-47 9-66 18 19 22 41 10 67" />
+              <path d="M66 190c38-11 72-10 102 1" />
+              <path d="M105 52c-10 6-20 7-31 4 4-12 13-19 27-21" />
+              <path d="M170 66c14-9 28-12 43-8-5 14-16 22-34 24" />
+              <path d="M87 100c10 12 20 21 32 27" />
+              <path d="M165 61c-12 13-22 27-29 43" />
+            </svg>
+          </span>
           <span class="card-kicker">植物与章节</span>
           <strong>植物统计</strong>
           <p>基于英文版整理 69 组植物、作物和香料药草词条，附对应西语名并查看章节分布。</p>
           <span class="card-action">打开植物统计</span>
         </a>
 
-        <a class="card" href="./animals/">
+        <a class="card card-animals" href="./animals/">
+          <span class="card-watermark" aria-hidden="true">
+            <svg viewBox="0 0 260 220" role="img">
+              <path d="M61 118c29-31 67-34 114-8 20-13 37-17 50-12-4 18-16 31-36 38 9 11 16 23 20 36-19 2-34-5-46-20-43 16-78 8-105-24" />
+              <circle cx="91" cy="116" r="4" />
+              <path d="M107 151c10 7 21 11 34 11" />
+              <path d="M43 61c9-8 19-9 30-4 7 7 8 15 3 24-9 8-19 9-30 4-7-7-8-15-3-24Z" />
+              <path d="M64 48l9-13M72 60l17-5M69 83l17 8M42 54l-16-8M35 71H18M43 88l-15 12" />
+              <path d="M139 47c8-7 18-8 29-3 8 7 9 16 3 25-8 7-18 8-29 3-8-7-9-16-3-25Z" />
+              <path d="M160 35l8-14M168 48l18-6M166 70l17 9M137 41l-14-11M130 59l-18-1M139 76l-14 13" />
+            </svg>
+          </span>
           <span class="card-kicker">动物与章节</span>
           <strong>动物统计</strong>
           <p>基于英文版整理 75 组动物词条，附对应西语名并查看鱼、鸟、家畜、昆虫等章节分布。</p>
