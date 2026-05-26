@@ -33,6 +33,10 @@ select {
   font: inherit;
 }
 
+button {
+  cursor: pointer;
+}
+
 .app-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -162,6 +166,91 @@ main {
   line-height: 1.7;
 }
 
+.mode-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr)) minmax(220px, 0.55fr);
+  gap: 12px;
+  align-items: stretch;
+  margin-bottom: 16px;
+}
+
+.mode-card,
+.chapter-picker {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.mode-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 14px;
+  padding: 16px;
+  color: var(--ink);
+  text-align: left;
+}
+
+.mode-card span {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 780;
+}
+
+.mode-card strong {
+  display: block;
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.mode-card small {
+  grid-column: 1 / 2;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.mode-card em {
+  align-self: end;
+  justify-self: end;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+  padding: 5px 9px;
+}
+
+.mode-card[aria-pressed="true"] {
+  border-color: rgba(22, 135, 127, 0.48);
+  background: linear-gradient(180deg, #f0fbf9, #ffffff);
+  box-shadow:
+    0 0 0 3px rgba(22, 135, 127, 0.11),
+    var(--shadow);
+}
+
+.mode-card[aria-pressed="true"] strong {
+  color: var(--teal);
+}
+
+.mode-card[aria-pressed="true"] em {
+  background: #dff3ef;
+  color: #0f7169;
+}
+
+.chapter-picker {
+  display: grid;
+  align-content: center;
+  padding: 14px;
+}
+
+.chapter-picker[hidden] {
+  display: none;
+}
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -209,7 +298,7 @@ main {
 
 .controls-band {
   display: grid;
-  grid-template-columns: minmax(220px, 1.5fr) minmax(140px, 0.5fr) minmax(180px, 0.7fr);
+  grid-template-columns: minmax(260px, 1fr) minmax(190px, 0.34fr);
   gap: 12px;
   align-items: end;
   margin-bottom: 18px;
@@ -336,7 +425,7 @@ select:focus {
 
 .highlight-card {
   display: grid;
-  grid-template-columns: 74px minmax(0, 1fr) auto;
+  grid-template-columns: 82px minmax(0, 1fr) 150px;
   gap: 18px;
   align-items: start;
   padding: 18px;
@@ -344,14 +433,31 @@ select:focus {
 
 .highlight-rank {
   display: grid;
+  align-content: center;
+  gap: 4px;
   place-items: center;
-  width: 52px;
-  height: 52px;
+  width: 62px;
+  min-height: 62px;
   border-radius: 8px;
   background: #e9f3f5;
   color: var(--teal);
-  font-size: 18px;
   font-weight: 850;
+}
+
+.highlight-rank strong {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.highlight-rank span {
+  color: #53707a;
+  font-size: 12px;
+  font-weight: 820;
+}
+
+.chapter-card .highlight-rank {
+  background: #fff3df;
+  color: var(--gold);
 }
 
 .highlight-body {
@@ -378,11 +484,22 @@ select:focus {
   padding: 3px 9px;
 }
 
+.highlight-meta .scope-chip {
+  background: #e5f4f1;
+  color: #0f7169;
+  font-weight: 820;
+}
+
+.chapter-card .highlight-meta .scope-chip {
+  background: #fff0d8;
+  color: #946618;
+}
+
 .highlight-text-grid {
   display: grid;
-  grid-template-columns: minmax(220px, 0.55fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
-  max-width: 1080px;
+  max-width: 980px;
   margin-bottom: 12px;
 }
 
@@ -392,11 +509,17 @@ select:focus {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fbfcfe;
-  padding: 12px;
+  padding: 14px 16px;
 }
 
 .source-panel {
-  background: #f8fbff;
+  background: linear-gradient(180deg, #f8fbff, #ffffff);
+  padding: 18px 20px;
+}
+
+.summary-panel {
+  border-left: 4px solid #d8e8f4;
+  background: #ffffff;
 }
 
 .source-panel .panel-label,
@@ -409,7 +532,7 @@ select:focus {
   font-weight: 780;
 }
 
-.source-panel p,
+.source-panel blockquote,
 .summary-panel p {
   margin-bottom: 0;
   color: var(--ink);
@@ -417,8 +540,10 @@ select:focus {
 }
 
 .quote-hint {
-  font-size: 16px;
-  font-weight: 780;
+  margin: 0;
+  font-size: clamp(18px, 1.45vw, 22px);
+  font-weight: 820;
+  line-height: 1.85;
 }
 
 .source-terms {
@@ -454,7 +579,7 @@ select:focus {
 
 .comment-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 10px;
 }
 
@@ -478,7 +603,6 @@ select:focus {
 
 .comment-card {
   min-width: 0;
-  min-height: 212px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fbfcfe;
@@ -509,15 +633,46 @@ select:focus {
   line-height: 1.65;
 }
 
+.comment-card.is-collapsed .comment-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 7;
+}
+
+.comment-card.is-collapsed .comment-summary {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.comment-footer {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .comment-card small {
   color: var(--muted);
   font-size: 12px;
 }
 
+.comment-toggle {
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 820;
+  padding: 0;
+  text-decoration: underline;
+}
+
 .card-actions {
   display: grid;
   gap: 8px;
-  min-width: 128px;
+  min-width: 0;
 }
 
 .open-link,
@@ -557,7 +712,7 @@ select:focus {
 
 @media (max-width: 980px) {
   .app-header,
-  .overview-layout,
+  .mode-panel,
   .controls-band,
   .notice,
   .highlight-card {
@@ -573,6 +728,10 @@ select:focus {
 
   .highlight-card {
     gap: 12px;
+  }
+
+  .chapter-picker {
+    order: 3;
   }
 
   .open-link,

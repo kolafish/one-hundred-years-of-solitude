@@ -6,9 +6,9 @@
     <title>《百年孤独》热门划线与评论</title>
     <link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png" />
     <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
-    <link rel="stylesheet" href="./styles.css?v=20260526-full-quotes" />
+    <link rel="stylesheet" href="./styles.css?v=20260526-highlight-redesign" />
     <script src="./data.js?v=20260526-full-quotes" defer></script>
-    <script src="./app.js?v=20260526-full-quotes" defer></script>
+    <script src="./app.js?v=20260526-highlight-redesign" defer></script>
   </head>
   <body>
     <header class="app-header">
@@ -40,8 +40,27 @@
       <section class="notice" aria-label="内容说明">
         <strong>内容口径</strong>
         <p>
-          页面不完整转载书籍划线原文或微信读书用户长评；这里提供摘要、热度和微信读书定位链接，便于回到原应用查看完整上下文。
+          页面展示热门划线内容、摘要、热度和微信读书定位链接；过长评论默认折叠，可在卡片内展开查看。
         </p>
+      </section>
+
+      <section class="mode-panel" aria-label="视图切换">
+        <button class="mode-card" id="mode-book" type="button" data-mode="book">
+          <span>视图一</span>
+          <strong>全书 Top 20</strong>
+          <small>跨全书排序，适合快速看全书最热门的划线。</small>
+          <em id="mode-book-count">-- 条</em>
+        </button>
+        <button class="mode-card" id="mode-chapter" type="button" data-mode="chapter">
+          <span>视图二</span>
+          <strong>分章节 Top 20</strong>
+          <small>先选章节，再看该章节内部最热门的划线。</small>
+          <em id="mode-chapter-count">-- 章</em>
+        </button>
+        <div class="chapter-picker" id="chapter-picker">
+          <label for="scope-filter">章节</label>
+          <select id="scope-filter"></select>
+        </div>
       </section>
 
       <section class="kpi-grid" id="kpi-grid" aria-label="核心指标"></section>
@@ -52,10 +71,6 @@
           <input id="search-input" type="search" placeholder="范围、主题、评论摘要" autocomplete="off" />
         </div>
         <div class="control-group">
-          <label for="scope-filter">范围</label>
-          <select id="scope-filter"></select>
-        </div>
-        <div class="control-group">
           <label for="sort-select">排序</label>
           <select id="sort-select">
             <option value="highlight">按划线人数</option>
@@ -63,28 +78,6 @@
             <option value="position">按章节/位置</option>
           </select>
         </div>
-      </section>
-
-      <section class="overview-layout">
-        <article class="panel">
-          <div class="panel-heading">
-            <div>
-              <h2>章节分布</h2>
-              <p id="chapter-summary">--</p>
-            </div>
-          </div>
-          <div class="chapter-bars" id="chapter-bars"></div>
-        </article>
-
-        <article class="panel">
-          <div class="panel-heading">
-            <div>
-              <h2>评论热度</h2>
-              <p>当前范围内每条划线下点赞最高的 5 条评论合计</p>
-            </div>
-          </div>
-          <div class="comment-bars" id="comment-bars"></div>
-        </article>
       </section>
 
       <section class="highlight-list" id="highlight-list" aria-label="热门划线列表"></section>

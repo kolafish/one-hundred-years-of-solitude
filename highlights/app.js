@@ -9,17 +9,22 @@ const state = {
   sort: "highlight",
 };
 
+const LONG_COMMENT_EXCERPT_LENGTH = 180;
+const LONG_COMMENT_SUMMARY_LENGTH = 96;
+
 const els = {
   factHighlights: document.querySelector("#fact-highlights"),
   factComments: document.querySelector("#fact-comments"),
   factTop: document.querySelector("#fact-top"),
+  modeBook: document.querySelector("#mode-book"),
+  modeChapter: document.querySelector("#mode-chapter"),
+  modeBookCount: document.querySelector("#mode-book-count"),
+  modeChapterCount: document.querySelector("#mode-chapter-count"),
+  chapterPicker: document.querySelector("#chapter-picker"),
   kpis: document.querySelector("#kpi-grid"),
   search: document.querySelector("#search-input"),
   scope: document.querySelector("#scope-filter"),
   sort: document.querySelector("#sort-select"),
-  chapterSummary: document.querySelector("#chapter-summary"),
-  chapterBars: document.querySelector("#chapter-bars"),
-  commentBars: document.querySelector("#comment-bars"),
   list: document.querySelector("#highlight-list"),
 };
 
@@ -113,13 +118,12 @@ function filteredHighlights(scope) {
 }
 
 function renderScopeFilter() {
-  els.scope.innerHTML = [
-    '<option value="book">全书热门 Top 20</option>',
-    ...chapters.map(
+  els.scope.innerHTML = chapters
+    .map(
       (chapter) =>
-        `<option value="${chapter.chapterUid}">${chapterLabel(chapter.chapter)}热门 Top ${chapter.highlights.length}</option>`,
-    ),
-  ].join("");
+        `<option value="${chapter.chapterUid}">${chapterLabel(chapter.chapter)} · Top ${chapter.highlights.length}</option>`,
+    )
+    .join("");
 }
 
 function renderFacts() {
@@ -129,25 +133,39 @@ function renderFacts() {
   els.factTop.textContent = formatNumber(totalComments);
 }
 
+function renderModeControls(scope) {
+  const isBook = scope.kind === "book";
+  els.modeBook.setAttribute("aria-pressed", String(isBook));
+  els.modeChapter.setAttribute("aria-pressed", String(!isBook));
+  els.modeBookCount.textContent = `${bookHighlights.length} 条`;
+  els.modeChapterCount.textContent = `${chapters.length} 章`;
+  els.chapterPicker.hidden = isBook;
+  els.chapterPicker.classList.toggle("is-visible", !isBook);
+
+  if (!isBook && scope.chapter) {
+    els.scope.value = String(scope.chapter.chapterUid);
+  }
+}
+
 function renderKpis(list, scope) {
   const topHighlight = [...list].sort((a, b) => b.highlightCount - a.highlightCount)[0];
   const topComment = [...list].sort((a, b) => topCommentLikes(b) - topCommentLikes(a))[0];
   const totalHighlightCount = list.reduce((sum, item) => sum + item.highlightCount, 0);
-  const uniqueChapters = new Set(list.map((item) => item.chapter)).size;
+  const totalComments = list.reduce((sum, item) => sum + item.comments.length, 0);
+  const viewName = scope.kind === "book" ? "全书榜" : "章节榜";
+  const viewNote =
+    scope.kind === "book"
+      ? `${new Set(bookHighlights.map((item) => item.chapter)).size} 个章节进入全书 Top 20`
+      : `${chapterLabel(scope.chapter.chapter)} · 章内 Top ${scope.chapter.highlights.length}`;
 
   els.kpis.innerHTML = [
-    ["当前范围", `${list.length} 条`, `${scope.label} · ${uniqueChapters} 个章节`, "accent-blue"],
+    ["当前视图", viewName, viewNote, "accent-blue"],
     ["划线人数合计", formatNumber(totalHighlightCount), "当前筛选累计", "accent-teal"],
+    ["条目与评论", `${list.length} / ${formatNumber(totalComments)}`, "划线 / 高赞评论", "accent-coral"],
     [
-      "最高评论赞数",
-      topComment ? formatNumber(topCommentLikes(topComment)) : "--",
-      topComment ? `#${topComment.rank} · ${topComment.cue}` : "--",
-      "accent-coral",
-    ],
-    [
-      "最高划线热度",
+      "最高热度",
       topHighlight ? formatNumber(topHighlight.highlightCount) : "--",
-      topHighlight ? `#${topHighlight.rank} · ${chapterLabel(topHighlight.chapter)}` : "--",
+      topHighlight ? `#${topHighlight.rank} · ${topHighlight.cue}` : topComment ? topComment.cue : "--",
       "accent-gold",
     ],
   ]
@@ -163,86 +181,45 @@ function renderKpis(list, scope) {
     .join("");
 }
 
-function renderChapterBars(scope) {
-  const rows = chapters.map((chapter) => ({
-    chapter: chapter.chapter,
-    chapterUid: chapter.chapterUid,
-    count: chapter.highlights.length,
-    heat: chapter.highlights.reduce((sum, item) => sum + item.highlightCount, 0),
-    selected: scope.kind === "chapter" && scope.chapter.chapterUid === chapter.chapterUid,
-  }));
-  const maxHeat = Math.max(...rows.map((row) => row.heat), 1);
-
-  els.chapterSummary.textContent = `${chapters.length} 个正文章节，每章最多 20 条热门划线`;
-  els.chapterBars.innerHTML = rows
-    .map((row) => {
-      const percent = Math.max((row.heat / maxHeat) * 100, 4);
-      return `
-        <div class="bar-row ${row.selected ? "selected" : ""}">
-          <span class="bar-name">${chapterLabel(row.chapter)}</span>
-          <div class="bar-track"><div class="bar-fill" style="width:${percent}%"></div></div>
-          <span class="bar-value">${formatNumber(row.heat)}</span>
-        </div>
-      `;
-    })
-    .join("");
-}
-
-function renderCommentBars(list) {
-  const top = [...list].sort((a, b) => totalCommentLikes(b) - totalCommentLikes(a)).slice(0, 6);
-  if (!top.length) {
-    els.commentBars.innerHTML = '<div class="empty-mini">当前范围没有可展示的评论热度。</div>';
-    return;
-  }
-  const maxLikes = Math.max(...top.map(totalCommentLikes), 1);
-  els.commentBars.innerHTML = top
-    .map((item) => {
-      const likes = totalCommentLikes(item);
-      const percent = Math.max((likes / maxLikes) * 100, 4);
-      return `
-        <div class="bar-row compact">
-          <span class="bar-name">#${item.rank} ${item.cue}</span>
-          <div class="bar-track"><div class="bar-fill comment-fill" style="width:${percent}%"></div></div>
-          <span class="bar-value">${formatNumber(likes)}</span>
-        </div>
-      `;
-    })
-    .join("");
-}
-
 function renderComments(item) {
   if (!item.comments.length) {
     return '<div class="empty-comment">这条划线暂时没有可展示的高赞评论。</div>';
   }
 
   return item.comments
-    .map(
-      (comment, index) => `
-        <div class="comment-card">
+    .map((comment, index) => {
+      const isLong =
+        comment.excerpt.length > LONG_COMMENT_EXCERPT_LENGTH ||
+        comment.summary.length > LONG_COMMENT_SUMMARY_LENGTH;
+      return `
+        <div class="comment-card ${isLong ? "is-collapsed" : ""}">
           <div class="comment-head">
             <strong>Top ${index + 1}</strong>
             <span>${formatNumber(comment.likes)} 赞</span>
           </div>
           <div class="comment-section">
             <span>评论摘录</span>
-            <p>${comment.excerpt}</p>
+            <p class="comment-text">${escapeHtml(comment.excerpt)}</p>
           </div>
           <div class="comment-section">
             <span>评论总结</span>
-            <p>${comment.summary}</p>
+            <p class="comment-summary">${escapeHtml(comment.summary)}</p>
           </div>
-          <small>${comment.author}</small>
+          <div class="comment-footer">
+            <small>${escapeHtml(comment.author)}</small>
+            ${isLong ? '<button class="comment-toggle" type="button">查看全部评论</button>' : ""}
+          </div>
         </div>
-      `,
-    )
+      `;
+    })
     .join("");
 }
 
 function renderSourcePanel(item) {
   const terms = item.sourceTerms || [];
   return `
-    <span class="panel-label">划线短摘录</span>
-    <p class="quote-hint">“${escapeHtml(item.quoteHint || item.cue)}”</p>
+    <span class="panel-label">划线内容</span>
+    <blockquote class="quote-hint">“${escapeHtml(item.quoteHint || item.cue)}”</blockquote>
     ${
       terms.length
         ? `<div class="source-terms">${terms.map((term) => `<span>${escapeHtml(term)}</span>`).join("")}</div>`
@@ -260,28 +237,31 @@ function renderList(list, scope) {
   els.list.innerHTML = list
     .map(
       (item) => `
-        <article class="highlight-card">
-          <div class="highlight-rank">#${item.rank}</div>
+        <article class="highlight-card ${scope.kind === "book" ? "book-card" : "chapter-card"}">
+          <div class="highlight-rank">
+            <strong>#${item.rank}</strong>
+            <span>${scope.kind === "book" ? "全书" : "章内"}</span>
+          </div>
           <div class="highlight-body">
             <div class="highlight-meta">
-              <span>${scope.kind === "book" ? "全书热门" : "章内热门"}</span>
+              <span class="scope-chip">${scope.kind === "book" ? "全书 Top 20" : `${chapterLabel(item.chapter)} Top 20`}</span>
               <span>${chapterLabel(item.chapter)}</span>
               <span>${formatNumber(item.highlightCount)} 人划线</span>
               <span>${item.range}</span>
               ${item.globalRank ? `<span>全书 #${item.globalRank}</span>` : ""}
             </div>
-            <h2>${item.cue}</h2>
+            <h2>${escapeHtml(item.cue)}</h2>
             <div class="highlight-text-grid">
               <div class="source-panel">
                 ${renderSourcePanel(item)}
               </div>
               <div class="summary-panel">
                 <span class="panel-label">内容总结</span>
-                <p>${item.summary}</p>
+                <p>${escapeHtml(item.summary)}</p>
               </div>
             </div>
             <div class="theme-list">
-              ${item.themes.map((theme) => `<span>${theme}</span>`).join("")}
+              ${item.themes.map((theme) => `<span>${escapeHtml(theme)}</span>`).join("")}
             </div>
             <div class="comment-list">
               ${renderComments(item)}
@@ -297,6 +277,7 @@ function renderList(list, scope) {
     .join("");
 
   bindCopyButtons();
+  bindCommentToggles();
 }
 
 function copyText(text) {
@@ -340,12 +321,21 @@ function bindCopyButtons() {
   });
 }
 
+function bindCommentToggles() {
+  document.querySelectorAll(".comment-toggle").forEach((button) => {
+    button.addEventListener("click", () => {
+      const card = button.closest(".comment-card");
+      const isCollapsed = card.classList.toggle("is-collapsed");
+      button.textContent = isCollapsed ? "查看全部评论" : "收起评论";
+    });
+  });
+}
+
 function render() {
   const scope = selectedScope();
   const list = filteredHighlights(scope);
+  renderModeControls(scope);
   renderKpis(list, scope);
-  renderChapterBars(scope);
-  renderCommentBars(list);
   renderList(list, scope);
 }
 
@@ -365,5 +355,17 @@ els.scope.addEventListener("change", (event) => {
 
 els.sort.addEventListener("change", (event) => {
   state.sort = event.target.value;
+  render();
+});
+
+els.modeBook.addEventListener("click", () => {
+  state.scope = "book";
+  render();
+});
+
+els.modeChapter.addEventListener("click", () => {
+  if (state.scope === "book") {
+    state.scope = String(chapters[0]?.chapterUid || "book");
+  }
   render();
 });
