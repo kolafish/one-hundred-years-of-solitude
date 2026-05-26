@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>《百年孤独》热门划线与评论</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png" />
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./data.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="header-copy">
+        <a class="home-link" href="../">返回入口</a>
+        <p class="eyebrow">WeRead Popular Highlights</p>
+        <h1>《百年孤独》热门划线与评论</h1>
+        <p class="lede">
+          基于微信读书热门划线接口整理，展示全书 Top 20 划线热度、主题摘要和每条划线首屏评论中的高赞 Top 3。
+        </p>
+      </div>
+      <div class="header-facts" aria-label="数据概览">
+        <div>
+          <span id="fact-highlights">--</span>
+          <small>热门划线</small>
+        </div>
+        <div>
+          <span id="fact-comments">--</span>
+          <small>高赞评论</small>
+        </div>
+        <div>
+          <span id="fact-top">--</span>
+          <small>最高划线人数</small>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="notice" aria-label="内容说明">
+        <strong>内容口径</strong>
+        <p>
+          页面不完整转载书籍划线原文或微信读书用户长评；这里提供摘要、热度和微信读书定位链接，便于回到原应用查看完整上下文。
+        </p>
+      </section>
+
+      <section class="kpi-grid" id="kpi-grid" aria-label="核心指标"></section>
+
+      <section class="controls-band" aria-label="筛选和排序">
+        <div class="search-box">
+          <label for="search-input">搜索</label>
+          <input id="search-input" type="search" placeholder="章节、主题、评论摘要" autocomplete="off" />
+        </div>
+        <div class="control-group">
+          <label for="chapter-filter">章节</label>
+          <select id="chapter-filter"></select>
+        </div>
+        <div class="control-group">
+          <label for="sort-select">排序</label>
+          <select id="sort-select">
+            <option value="highlight">按划线人数</option>
+            <option value="comment">按最高评论赞数</option>
+            <option value="chapter">按章节顺序</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="overview-layout">
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>章节分布</h2>
+              <p id="chapter-summary">--</p>
+            </div>
+          </div>
+          <div class="chapter-bars" id="chapter-bars"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>评论热度</h2>
+              <p>每条划线下 Top 3 评论的点赞量合计</p>
+            </div>
+          </div>
+          <div class="comment-bars" id="comment-bars"></div>
+        </article>
+      </section>
+
+      <section class="highlight-list" id="highlight-list" aria-label="热门划线列表"></section>
+    </main>
+  </body>
+</html>
