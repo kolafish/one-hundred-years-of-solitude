@@ -137,8 +137,8 @@
       .quote-field {
         position: relative;
         isolation: isolate;
-        width: min(1500px, 100vw);
-        max-width: none;
+        width: min(1280px, calc(100vw - 32px));
+        max-width: calc(100vw - 32px);
         min-height: clamp(280px, 23vw, 350px);
         margin-left: 50%;
         margin-top: clamp(-12px, -1.2vw, -4px);
@@ -149,7 +149,7 @@
 
       .quote-orbit {
         position: absolute;
-        inset: 0 calc(50% - 50vw);
+        inset: 0;
         z-index: 1;
         overflow: hidden;
         background:
@@ -195,7 +195,7 @@
         display: grid;
         grid-template-rows: minmax(0, 1fr) auto;
         min-width: 0;
-        width: min(var(--card-width, 280px), calc(100vw - 42px));
+        width: min(var(--card-width, 280px), calc(100% - 42px));
         min-height: 0;
         border: 1px solid rgba(245, 201, 107, var(--border-alpha, 0.18));
         border-radius: 10px;
@@ -454,7 +454,7 @@
       }
 
       .quote-card.rank-10 {
-        --x: 83%;
+        --x: 80%;
         --y: 58%;
         --card-width: clamp(165px, 15vw, 220px);
         --quote-size: clamp(10px, 0.84vw, 13px);
@@ -532,7 +532,7 @@
       }
 
       .quote-card.rank-17 {
-        --x: 84%;
+        --x: 81%;
         --y: 41%;
         --card-width: clamp(155px, 13vw, 195px);
         --quote-size: clamp(10px, 0.78vw, 12px);
@@ -543,7 +543,7 @@
       }
 
       .quote-card.rank-18 {
-        --x: 86%;
+        --x: 82%;
         --y: 7%;
         --card-width: clamp(145px, 12vw, 185px);
         --quote-size: clamp(10px, 0.78vw, 12px);
@@ -1103,7 +1103,7 @@
         }
 
         .quote-card.rank-6 {
-          --x: 54%;
+          --x: 50%;
           --y: 36%;
           --card-width: 175px;
         }
@@ -1353,23 +1353,44 @@
         const cards = Array.from(orbit.querySelectorAll(".quote-card"));
         const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
         let frame = 0;
+        let hoverTimer = 0;
         let pointer = { x: 0, y: 0 };
+
+        const setActiveCard = (activeCard) => {
+          window.clearTimeout(hoverTimer);
+          orbit.classList.add("is-hovering");
+          cards.forEach((card) => {
+            card.classList.toggle("is-active", card === activeCard);
+          });
+        };
+
+        const clearActiveCardSoon = () => {
+          window.clearTimeout(hoverTimer);
+          hoverTimer = window.setTimeout(() => {
+            cards.forEach((card) => card.classList.remove("is-active"));
+            orbit.classList.remove("is-hovering");
+          }, 220);
+        };
 
         cards.forEach((card, index) => {
           card.tabIndex = 0;
           const depth = Number.parseFloat(getComputedStyle(card).getPropertyValue("--depth"));
           card.dataset.depth = Number.isFinite(depth) ? String(depth) : String(Math.max(0.06, 0.68 - index * 0.035));
 
+          card.addEventListener("pointerenter", () => {
+            setActiveCard(card);
+          });
+
+          card.addEventListener("pointerleave", () => {
+            clearActiveCardSoon();
+          });
+
           card.addEventListener("focus", () => {
-            orbit.classList.add("is-hovering");
-            card.classList.add("is-active");
+            setActiveCard(card);
           });
 
           card.addEventListener("blur", () => {
-            card.classList.remove("is-active");
-            if (!orbit.querySelector(".quote-card.is-active")) {
-              orbit.classList.remove("is-hovering");
-            }
+            clearActiveCardSoon();
           });
         });
 
@@ -1395,6 +1416,7 @@
         const resetParallax = () => {
           pointer = { x: 0, y: 0 };
           if (!frame) frame = window.requestAnimationFrame(applyParallax);
+          clearActiveCardSoon();
         };
 
         orbit.addEventListener("pointermove", queueParallax);
