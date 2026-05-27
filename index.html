@@ -37,7 +37,7 @@
         background:
           linear-gradient(90deg, rgba(8, 12, 17, 0.9) 0%, rgba(8, 12, 17, 0.74) 44%, rgba(8, 12, 17, 0.46) 100%),
           linear-gradient(180deg, rgba(8, 12, 17, 0.2) 0%, rgba(8, 12, 17, 0.88) 100%),
-          url("./assets/spanish-cover.webp") center / cover no-repeat;
+          url("./assets/spanish-cover.webp") center 42% / cover no-repeat;
       }
 
       body {
@@ -130,7 +130,7 @@
         width: 100%;
         min-width: 0;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 14px;
+        gap: 18px 14px;
         perspective: 1200px;
       }
 
@@ -142,6 +142,7 @@
         min-height: clamp(280px, 23vw, 350px);
         margin-left: 50%;
         margin-top: clamp(-12px, -1.2vw, -4px);
+        margin-bottom: clamp(76px, 7vw, 100px);
         padding: 0;
         transform: translateX(-50%);
       }
@@ -750,28 +751,83 @@
         z-index: 1;
       }
 
-      a.card.featured-card {
+      .highlight-strip {
         grid-column: 1 / -1;
-        min-height: 238px;
-        grid-template-columns: minmax(0, 1fr) minmax(220px, 0.45fr);
-        align-items: end;
+        display: flex;
+        gap: clamp(18px, 4vw, 48px);
+        align-items: center;
+        justify-content: space-between;
+        min-width: 0;
+        padding: 2px clamp(4px, 1.2vw, 12px) clamp(10px, 1.8vw, 18px);
       }
 
-      a.card.featured-card .card-kicker,
-      a.card.featured-card strong,
-      a.card.featured-card p {
-        grid-column: 1 / 2;
+      .highlight-strip-copy {
+        min-width: 0;
       }
 
-      a.card.featured-card .card-action {
-        grid-column: 2 / 3;
-        grid-row: 1 / 4;
-        justify-self: end;
-        align-self: center;
-        border: 1px solid rgba(126, 224, 199, 0.36);
+      .highlight-strip .card-kicker {
+        display: block;
+        margin-bottom: 9px;
+      }
+
+      .highlight-strip-title {
+        display: block;
+        color: var(--ink);
+        font-family: var(--serif);
+        font-size: clamp(30px, 4vw, 46px);
+        font-weight: 820;
+        line-height: 1.08;
+        text-decoration: none;
+        text-shadow: 0 18px 36px rgba(0, 0, 0, 0.45);
+      }
+
+      .highlight-strip p {
+        max-width: 690px;
+        margin: 12px 0 0;
+        color: rgba(248, 251, 255, 0.62);
+        font-family: var(--serif);
+        font-size: clamp(14px, 1.6vw, 17px);
+        line-height: 1.75;
+      }
+
+      .highlight-button {
+        flex: 0 0 auto;
+        border: 1px solid rgba(126, 224, 199, 0.42);
         border-radius: 999px;
-        background: rgba(126, 224, 199, 0.1);
-        padding: 12px 18px;
+        background:
+          linear-gradient(180deg, rgba(126, 224, 199, 0.13), rgba(126, 224, 199, 0.04)),
+          rgba(8, 14, 20, 0.18);
+        box-shadow:
+          0 18px 42px rgba(0, 0, 0, 0.24),
+          0 0 24px rgba(126, 224, 199, 0.08),
+          inset 0 1px 0 rgba(255, 255, 255, 0.13);
+        padding: 11px 18px;
+        color: var(--teal);
+        font-family: var(--serif);
+        font-weight: 820;
+        text-decoration: none;
+        white-space: nowrap;
+        backdrop-filter: blur(12px);
+        transition:
+          transform 180ms ease,
+          border-color 180ms ease,
+          background 180ms ease,
+          box-shadow 180ms ease;
+      }
+
+      .highlight-button:hover,
+      .highlight-button:focus-visible {
+        border-color: rgba(126, 224, 199, 0.78);
+        outline: none;
+        background:
+          linear-gradient(180deg, rgba(126, 224, 199, 0.2), rgba(126, 224, 199, 0.08)),
+          rgba(8, 14, 20, 0.28);
+        box-shadow:
+          0 24px 58px rgba(0, 0, 0, 0.34),
+          0 0 0 3px rgba(126, 224, 199, 0.12),
+          0 0 38px rgba(126, 224, 199, 0.18),
+          inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        transform: translateY(-3px);
       }
 
       a.card::before {
@@ -909,7 +965,7 @@
         body {
           background:
             linear-gradient(180deg, rgba(8, 12, 17, 0.9) 0%, rgba(8, 12, 17, 0.68) 46%, rgba(8, 12, 17, 0.94) 100%),
-            url("./assets/spanish-cover.webp") center top / cover no-repeat;
+            url("./assets/spanish-cover.webp") center 18% / cover no-repeat;
         }
 
         main {
@@ -943,24 +999,34 @@
           max-width: 100%;
           min-height: 280px;
           margin-left: 50%;
+          margin-bottom: 56px;
           padding: 0;
           transform: translateX(-50%);
         }
 
-        a.card,
-        a.card.featured-card {
+        a.card {
           width: 100%;
           max-width: 100%;
           grid-template-columns: 1fr;
         }
 
-        a.card.featured-card .card-kicker,
-        a.card.featured-card strong,
-        a.card.featured-card p,
-        a.card.featured-card .card-action {
-          grid-column: auto;
-          grid-row: auto;
-          justify-self: start;
+        .highlight-strip {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 16px;
+          padding: 0 0 6px;
+        }
+
+        .highlight-strip-title {
+          font-size: clamp(28px, 8.5vw, 36px);
+        }
+
+        .highlight-strip p {
+          margin-top: 10px;
+        }
+
+        .highlight-button {
+          align-self: flex-start;
         }
 
         h1 {
@@ -1183,12 +1249,14 @@
       </section>
 
       <section class="link-grid" aria-label="统计页面入口">
-        <a class="card featured-card" href="./highlights/">
-          <span class="card-kicker">微信读书</span>
-          <strong>热门划线与评论</strong>
-          <p>整理《百年孤独》微信读书 Top 20 热门划线热度，并摘要每条划线下的高赞评论。</p>
-          <span class="card-action">打开划线统计</span>
-        </a>
+        <div class="highlight-strip">
+          <div class="highlight-strip-copy">
+            <span class="card-kicker">微信读书</span>
+            <a class="highlight-strip-title" href="./highlights/">热门划线与评论</a>
+            <p>整理《百年孤独》微信读书 Top 20 热门划线热度，并摘要每条划线下的高赞评论。</p>
+          </div>
+          <a class="highlight-button" href="./highlights/">打开划线统计</a>
+        </div>
 
         <a class="card card-people" href="./people/">
           <span class="card-watermark" aria-hidden="true">
