@@ -282,8 +282,8 @@ function renderMultilingualPanel(item, scopeKind) {
   return `
     <details class="multilingual-panel">
       <summary>
-        <span>四语原文对照</span>
-        <small>句子级对照</small>
+        <span>划线多语对照</span>
+        <small>展开多语原文</small>
       </summary>
       <div class="multilingual-grid">${rows}</div>
     </details>
