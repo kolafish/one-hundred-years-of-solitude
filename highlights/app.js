@@ -11,6 +11,15 @@ const state = {
 
 const LONG_COMMENT_EXCERPT_LENGTH = 180;
 const LONG_COMMENT_SUMMARY_LENGTH = 96;
+const MULTILINGUAL_QUOTES_URL = "../data/bilingual/highlight_multilingual_quotes.json";
+const MULTILINGUAL_QUOTE_VERSION = "20260603-multilingual-quotes";
+const multilingualQuoteMap = new Map();
+const languageRows = [
+  ["zh", "中文", (texts) => texts.zh_context || texts.zh],
+  ["en", "English", (texts) => texts.en],
+  ["es", "Español", (texts) => texts.es],
+  ["ja", "日本語", (texts) => texts.ja],
+];
 
 const els = {
   factHighlights: document.querySelector("#fact-highlights"),
@@ -77,6 +86,32 @@ function totalCommentLikes(item) {
   return item.comments.reduce((sum, comment) => sum + comment.likes, 0);
 }
 
+function highlightKey(scopeKind, item) {
+  return [scopeKind, item.rank, item.chapterOrder, item.chapterUid, item.range].join("|");
+}
+
+function multilingualQuoteFor(scopeKind, item) {
+  return multilingualQuoteMap.get(highlightKey(scopeKind, item));
+}
+
+function registerMultilingualQuotes(payload) {
+  multilingualQuoteMap.clear();
+  (payload.items || []).forEach((item) => {
+    multilingualQuoteMap.set(highlightKey(item.scope, item), item);
+  });
+}
+
+async function loadMultilingualQuotes() {
+  try {
+    const response = await fetch(`${MULTILINGUAL_QUOTES_URL}?v=${MULTILINGUAL_QUOTE_VERSION}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    registerMultilingualQuotes(await response.json());
+    render();
+  } catch (error) {
+    console.warn("Unable to load multilingual highlight quotes", error);
+  }
+}
+
 function selectedScope() {
   if (state.scope === "book") {
     return {
@@ -103,6 +138,7 @@ function selectedScope() {
 function filteredHighlights(scope) {
   const query = state.query.trim().toLowerCase();
   const list = scope.list.filter((item) => {
+    const multilingual = multilingualQuoteFor(scope.kind, item);
     const text = [
       item.chapter,
       item.cue,
@@ -110,6 +146,7 @@ function filteredHighlights(scope) {
       ...(item.sourceTerms || []),
       item.summary,
       item.themes.join(" "),
+      ...Object.values(multilingual?.texts || {}),
       ...item.comments.flatMap((comment) => [comment.author, comment.excerpt, comment.summary]),
     ]
       .join(" ")
@@ -223,7 +260,37 @@ function renderComments(item) {
     .join("");
 }
 
-function renderSourcePanel(item) {
+function renderMultilingualPanel(item, scopeKind) {
+  const multilingual = multilingualQuoteFor(scopeKind, item);
+  const texts = multilingual?.texts || {};
+  const rows = languageRows
+    .map(([key, label, pickText]) => {
+      const text = String(pickText(texts) || "").trim();
+      if (!text) return "";
+      return `
+        <div class="multilingual-item multilingual-${key}">
+          <strong>${label}</strong>
+          <p>${escapeHtml(text)}</p>
+        </div>
+      `;
+    })
+    .filter(Boolean)
+    .join("");
+
+  if (!rows) return "";
+
+  return `
+    <details class="multilingual-panel">
+      <summary>
+        <span>四语原文对照</span>
+        <small>已按段落对齐</small>
+      </summary>
+      <div class="multilingual-grid">${rows}</div>
+    </details>
+  `;
+}
+
+function renderSourcePanel(item, scopeKind) {
   const terms = item.sourceTerms || [];
   return `
     <span class="panel-label">划线内容</span>
@@ -233,6 +300,7 @@ function renderSourcePanel(item) {
         ? `<div class="source-terms">${terms.map((term) => `<span>${escapeHtml(term)}</span>`).join("")}</div>`
         : ""
     }
+    ${renderMultilingualPanel(item, scopeKind)}
   `;
 }
 
@@ -261,7 +329,7 @@ function renderList(list, scope) {
             <h2>${escapeHtml(item.cue)}</h2>
             <div class="highlight-text-grid">
               <div class="source-panel">
-                ${renderSourcePanel(item)}
+                ${renderSourcePanel(item, scope.kind)}
               </div>
               <div class="summary-panel">
                 <span class="panel-label">内容总结</span>
@@ -350,6 +418,7 @@ function render() {
 renderScopeFilter();
 renderFacts();
 render();
+loadMultilingualQuotes();
 
 els.search.addEventListener("input", (event) => {
   state.query = event.target.value;

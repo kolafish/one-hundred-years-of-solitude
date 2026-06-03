@@ -1,1 +1,3 @@
 .DS_Store
+__pycache__/
+data/bilingual/highlight_multilingual_quotes_review.html
