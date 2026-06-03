@@ -7,6 +7,7 @@ import json
 import math
 import os
 import re
+import statistics
 import zipfile
 from dataclasses import dataclass
 from html.parser import HTMLParser
@@ -25,6 +26,14 @@ OUT_REVIEW = ROOT / "data" / "bilingual" / "highlight_multilingual_quotes_review
 class Paragraph:
     text: str
     index: int
+
+
+@dataclass
+class Sentence:
+    text: str
+    index: int
+    weight_start: float
+    weight_end: float
 
 
 class BodyParagraphParser(HTMLParser):
@@ -142,6 +151,127 @@ def prefix_weights(items: list[str], lang: str) -> list[float]:
     for item in items:
         values.append(values[-1] + text_weight(item, lang))
     return values
+
+
+def split_sentences(text: str, lang: str) -> list[Sentence]:
+    raw = normalize_text(text)
+    if not raw:
+        return []
+
+    parts: list[str] = []
+    start = 0
+    i = 0
+    terminal = "。！？!?"
+    if lang in {"en", "es"}:
+        terminal += "."
+    closers = "”’»」』\"')）]"
+
+    while i < len(raw):
+        char = raw[i]
+        should_split = char in terminal
+        if char == ".":
+            prev_char = raw[i - 1] if i else ""
+            next_char = raw[i + 1] if i + 1 < len(raw) else ""
+            should_split = not (prev_char.isdigit() and next_char.isdigit()) and not looks_like_abbreviation(raw, i)
+        if should_split:
+            end = i + 1
+            while end < len(raw) and raw[end] in closers:
+                end += 1
+            if end >= len(raw) or raw[end].isspace() or lang in {"zh", "ja"}:
+                chunk = normalize_text(raw[start:end])
+                if chunk:
+                    parts.append(chunk)
+                start = end
+                while start < len(raw) and raw[start].isspace():
+                    start += 1
+                i = start
+                continue
+        i += 1
+
+    tail = normalize_text(raw[start:])
+    if tail:
+        parts.append(tail)
+    if not parts:
+        parts = [raw]
+
+    weights = prefix_weights(parts, lang)
+    return [
+        Sentence(text=part, index=index, weight_start=weights[index - 1], weight_end=weights[index])
+        for index, part in enumerate(parts, start=1)
+    ]
+
+
+def looks_like_abbreviation(text: str, dot_index: int) -> bool:
+    prefix = text[:dot_index].rstrip()
+    match = re.search(r"([A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)$", prefix)
+    if not match:
+        return False
+    word = match.group(1).lower()
+    common = {
+        "mr", "mrs", "ms", "dr", "st", "sr", "jr", "prof", "rev", "fr",
+        "etc", "e.g", "i.e", "ud", "uds", "srta", "sra", "sr",
+    }
+    return len(word) == 1 or word in common
+
+
+def sentence_span_for_quote(quote: str, sentences: list[Sentence]) -> tuple[int, int, float]:
+    normalized_quote = normalize_for_match(quote)
+    if not sentences:
+        return 0, 0, 0.0
+    if not normalized_quote:
+        return 0, 1, 0.0
+
+    best_start = 0
+    best_end = 1
+    best_score = -1.0
+    max_group = min(4, len(sentences))
+    for start in range(len(sentences)):
+        for end in range(start + 1, min(len(sentences), start + max_group) + 1):
+            normalized = normalize_for_match("".join(sentence.text for sentence in sentences[start:end]))
+            score = containment_score(normalized_quote, normalized)
+            penalty = (end - start - 1) * 0.02
+            adjusted = score - penalty
+            if adjusted > best_score:
+                best_start = start
+                best_end = end
+                best_score = adjusted
+    return best_start, best_end, max(0.0, best_score)
+
+
+def sentence_ratio_window(sentences: list[Sentence], start: int, end: int) -> tuple[float, float]:
+    if not sentences:
+        return 0.0, 1.0
+    total = max(sentences[-1].weight_end, 1.0)
+    return sentences[start].weight_start / total, sentences[end - 1].weight_end / total
+
+
+def select_sentences_by_ratio(text: str, lang: str, start_ratio: float, end_ratio: float, max_count: int) -> tuple[str, list[int]]:
+    sentences = split_sentences(text, lang)
+    if not sentences:
+        return normalize_text(text), []
+    if len(sentences) == 1:
+        return sentences[0].text, [sentences[0].index]
+
+    total = max(sentences[-1].weight_end, 1.0)
+    selected: list[tuple[float, Sentence]] = []
+    target_mid = (start_ratio + end_ratio) / 2
+    for sentence in sentences:
+        sentence_start = sentence.weight_start / total
+        sentence_end = sentence.weight_end / total
+        overlap = max(0.0, min(sentence_end, end_ratio) - max(sentence_start, start_ratio))
+        if overlap > 0:
+            selected.append((overlap, sentence))
+
+    if not selected:
+        closest = min(
+            sentences,
+            key=lambda sentence: abs(((sentence.weight_start + sentence.weight_end) / 2 / total) - target_mid),
+        )
+        return closest.text, [closest.index]
+
+    selected.sort(key=lambda pair: (-pair[0], pair[1].index))
+    selected_sentences = sorted((sentence for _, sentence in selected[:max_count]), key=lambda sentence: sentence.index)
+    return "\n".join(sentence.text for sentence in selected_sentences), [sentence.index for sentence in selected_sentences]
 
 
 def align_texts(ref_rows: list[str], ref_lang: str, target_paragraphs: list[Paragraph], target_lang: str) -> list[list[Paragraph]]:
@@ -279,6 +409,18 @@ def build(es_epub: Path, ja_epub: Path) -> dict:
         pairs = chapter["pairs"][row_start:row_end]
         es_group = unique_paragraphs(p for idx in range(row_start, row_end) for p in chapter_maps[chapter_no]["es"][idx])
         ja_group = unique_paragraphs(p for idx in range(row_start, row_end) for p in chapter_maps[chapter_no]["ja"][idx])
+        zh_aligned_text = "\n".join(text for pair in pairs for text in pair.get("zh", []))
+        en_context = "\n".join(text for pair in pairs for text in pair.get("en", []))
+        es_context = "\n".join(p.text for p in es_group)
+        ja_context = "\n".join(p.text for p in ja_group)
+
+        zh_sentences = split_sentences(zh_aligned_text, "zh")
+        zh_sentence_start, zh_sentence_end, sentence_score = sentence_span_for_quote(item.get("quoteHint", ""), zh_sentences)
+        ratio_start, ratio_end = sentence_ratio_window(zh_sentences, zh_sentence_start, zh_sentence_end)
+        max_sentence_count = max(1, zh_sentence_end - zh_sentence_start)
+        en_quote, en_sentence_index = select_sentences_by_ratio(en_context, "en", ratio_start, ratio_end, max_sentence_count)
+        es_quote, es_sentence_index = select_sentences_by_ratio(es_context, "es", ratio_start, ratio_end, max_sentence_count)
+        ja_quote, ja_sentence_index = select_sentences_by_ratio(ja_context, "ja", ratio_start, ratio_end, max_sentence_count)
         items.append(
             {
                 "scope": item["_scope"],
@@ -297,13 +439,19 @@ def build(es_epub: Path, ja_epub: Path) -> dict:
                     "enIndex": flatten_indices(pair.get("en_index") for pair in pairs),
                     "esIndex": [p.index for p in es_group],
                     "jaIndex": [p.index for p in ja_group],
+                    "sentenceScore": round(sentence_score, 4),
+                    "sentenceIndex": {
+                        "zh": [sentence.index for sentence in zh_sentences[zh_sentence_start:zh_sentence_end]],
+                        "en": en_sentence_index,
+                        "es": es_sentence_index,
+                        "ja": ja_sentence_index,
+                    },
                 },
                 "texts": {
                     "zh": item.get("quoteHint", ""),
-                    "zh_context": "\n".join(text for pair in pairs for text in pair.get("zh", [])),
-                    "en": "\n".join(text for pair in pairs for text in pair.get("en", [])),
-                    "es": "\n".join(p.text for p in es_group),
-                    "ja": "\n".join(p.text for p in ja_group),
+                    "en": en_quote,
+                    "es": es_quote,
+                    "ja": ja_quote,
                 },
             }
         )
@@ -320,8 +468,86 @@ def build(es_epub: Path, ja_epub: Path) -> dict:
             "bookHighlights": len(data.get("highlights", [])),
             "chapterHighlights": sum(len(chapter.get("highlights", [])) for chapter in data.get("chapters", [])),
         },
+        "quality": {
+            "length": length_quality(items),
+        },
         "items": items,
     }
+
+
+def length_quality(items: list[dict]) -> dict:
+    langs = ["zh", "en", "es", "ja"]
+    lengths_by_lang = {lang: [len(item["texts"].get(lang, "")) for item in items] for lang in langs}
+    warnings = []
+    for item in items:
+        lengths = {lang: len(item["texts"].get(lang, "")) for lang in langs}
+        flags = length_warning_flags(lengths)
+        if not flags:
+            continue
+        warnings.append(
+            {
+                "scope": item.get("scope"),
+                "rank": item.get("rank"),
+                "chapterOrder": item.get("chapterOrder"),
+                "chapterUid": item.get("chapterUid"),
+                "range": item.get("range"),
+                "cue": item.get("cue"),
+                "lengths": lengths,
+                "sentenceIndex": item.get("match", {}).get("sentenceIndex", {}),
+                "flags": flags,
+            }
+        )
+
+    warning_counts: dict[str, int] = {}
+    for warning in warnings:
+        for flag in warning["flags"]:
+            warning_counts[flag] = warning_counts.get(flag, 0) + 1
+
+    return {
+        "summary": {lang: length_summary(lengths_by_lang[lang]) for lang in langs},
+        "warningCounts": warning_counts,
+        "warnings": warnings,
+    }
+
+
+def length_summary(values: list[int]) -> dict:
+    ordered = sorted(values)
+    return {
+        "min": ordered[0] if ordered else 0,
+        "median": int(statistics.median(ordered)) if ordered else 0,
+        "p90": percentile(ordered, 0.90),
+        "p95": percentile(ordered, 0.95),
+        "p99": percentile(ordered, 0.99),
+        "max": ordered[-1] if ordered else 0,
+    }
+
+
+def percentile(ordered: list[int], ratio: float) -> int:
+    if not ordered:
+        return 0
+    index = min(len(ordered) - 1, math.floor(len(ordered) * ratio))
+    return ordered[index]
+
+
+def length_warning_flags(lengths: dict[str, int]) -> list[str]:
+    flags = []
+    en = lengths.get("en", 0)
+    es = lengths.get("es", 0)
+    ja = lengths.get("ja", 0)
+    translated = [en, es, ja]
+    translated_median = statistics.median(translated)
+
+    if max(en, es) > 260 and max(en, es) / max(1, min(en, es)) > 2.5:
+        flags.append("western_length_mismatch")
+    if max(translated) > 320 and max(translated) / max(1, translated_median) > 2.8:
+        flags.append("single_language_outlier")
+    if en > 900 and es > 900:
+        flags.append("long_western_source_sentence")
+    if (en > 900) ^ (es > 900):
+        flags.append("single_western_long_sentence")
+    if ja > 350 and ja / max(1, translated_median) > 2.8:
+        flags.append("japanese_length_outlier")
+    return flags
 
 
 def flatten_indices(groups: Iterable[Iterable[int] | None]) -> list[int]:
@@ -405,6 +631,7 @@ def main() -> None:
         "items": len(scores),
         "minScore": min(scores),
         "lowScoreCount": sum(1 for score in scores if score < 0.7),
+        "lengthWarnings": result["quality"]["length"]["warningCounts"],
         "output": str(out_json),
         "review": None if args.skip_review else str(out_review),
     }, ensure_ascii=False, indent=2))

@@ -15,7 +15,7 @@ const MULTILINGUAL_QUOTES_URL = "../data/bilingual/highlight_multilingual_quotes
 const MULTILINGUAL_QUOTE_VERSION = "20260603-multilingual-quotes";
 const multilingualQuoteMap = new Map();
 const languageRows = [
-  ["zh", "中文", (texts) => texts.zh_context || texts.zh],
+  ["zh", "中文", (texts) => texts.zh],
   ["en", "English", (texts) => texts.en],
   ["es", "Español", (texts) => texts.es],
   ["ja", "日本語", (texts) => texts.ja],
@@ -283,7 +283,7 @@ function renderMultilingualPanel(item, scopeKind) {
     <details class="multilingual-panel">
       <summary>
         <span>四语原文对照</span>
-        <small>已按段落对齐</small>
+        <small>句子级对照</small>
       </summary>
       <div class="multilingual-grid">${rows}</div>
     </details>
