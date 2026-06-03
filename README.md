@@ -14,6 +14,7 @@
 
 - `downloads/one-hundred-years-of-solitude-bilingual-columns.epub`：左右分栏中英对照 EPUB。
 - `downloads/one-hundred-years-of-solitude-bilingual-alternating.epub`：英文、中文段落交替版 EPUB。
+- `downloads/one-hundred-years-of-solitude-bilingual-mixed-split.epub`：长段落切短后的英中短段混合版 EPUB，并用横线标记原始段落起点。
 - `data/bilingual/aligned_paragraphs.json`：20 章段落对齐 JSON。
 - `data/bilingual/alignment_summary.md`：段落对齐摘要。
 - `data/bilingual/alignment_preview.html`：中英对齐检查页。

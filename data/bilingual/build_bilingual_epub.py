@@ -481,8 +481,149 @@ def xhtml_page(title: str, body: str) -> str:
 """
 
 
+def split_text_for_mixed_layout(text: str, lang: str) -> list[str]:
+    sentences = split_sentences(text, lang)
+    if not sentences:
+        return []
+
+    max_len = 430 if lang == "en" else 210
+    min_len = 120 if lang == "en" else 70
+    sep = " " if lang == "en" else ""
+    chunks: list[str] = []
+    current = ""
+    for sentence in sentences:
+        candidate = f"{current}{sep}{sentence}".strip() if current else sentence
+        if current and len(candidate) > max_len and len(current) >= min_len:
+            chunks.append(current)
+            current = sentence
+        else:
+            current = candidate
+    if current:
+        chunks.append(current)
+    return chunks
+
+
+def split_sentences(text: str, lang: str) -> list[str]:
+    text = re.sub(r"\s+", " ", text).strip()
+    if not text:
+        return []
+
+    if lang == "zh":
+        parts = re.findall(r".+?[。！？；]+[”’」』）)]*|.+$", text)
+    else:
+        parts = re.split(r"(?<=[.!?;])\s+(?=[“\"'‘A-ZÚÉÍÓÁÑ])", text)
+    parts = [part.strip() for part in parts if part.strip()]
+    refined: list[str] = []
+    for part in parts or [text]:
+        refined.extend(split_oversized_sentence(part, lang))
+    return refined
+
+
+def split_oversized_sentence(text: str, lang: str) -> list[str]:
+    hard_max = 430 if lang == "en" else 190
+    if len(text) <= hard_max:
+        return [text]
+
+    if lang == "zh":
+        pieces = re.findall(r".+?[，、：—]+|.+$", text)
+        sep = ""
+    else:
+        pieces = re.findall(r".+?[,—:]+|.+$", text)
+        sep = " "
+    pieces = [piece.strip() for piece in pieces if piece.strip()]
+
+    if len(pieces) <= 1:
+        return split_by_length(text, lang, hard_max)
+
+    chunks: list[str] = []
+    current = ""
+    for piece in pieces:
+        candidate = f"{current}{sep}{piece}".strip() if current else piece
+        if current and len(candidate) > hard_max:
+            chunks.append(current)
+            current = piece
+        else:
+            current = candidate
+    if current:
+        chunks.append(current)
+
+    result: list[str] = []
+    for chunk in chunks:
+        if len(chunk) > hard_max:
+            result.extend(split_by_length(chunk, lang, hard_max))
+        else:
+            result.append(chunk)
+    return result
+
+
+def split_by_length(text: str, lang: str, hard_max: int) -> list[str]:
+    if lang == "zh":
+        return [text[i:i + hard_max].strip() for i in range(0, len(text), hard_max) if text[i:i + hard_max].strip()]
+
+    words = text.split()
+    chunks: list[str] = []
+    current: list[str] = []
+    current_len = 0
+    for word in words:
+        extra = len(word) + (1 if current else 0)
+        if current and current_len + extra > hard_max:
+            chunks.append(" ".join(current))
+            current = [word]
+            current_len = len(word)
+        else:
+            current.append(word)
+            current_len += extra
+    if current:
+        chunks.append(" ".join(current))
+    return chunks
+
+
+def mixed_chunks(paragraphs: list[str], lang: str) -> list[str]:
+    chunks: list[str] = []
+    for paragraph in paragraphs:
+        chunks.extend(split_text_for_mixed_layout(paragraph, lang))
+    return chunks
+
+
+def mixed_chunks_balanced(en_paragraphs: list[str], zh_paragraphs: list[str]) -> tuple[list[str], list[str]]:
+    en_sentence_groups = [split_sentences(paragraph, "en") for paragraph in en_paragraphs]
+    zh_sentence_groups = [split_sentences(paragraph, "zh") for paragraph in zh_paragraphs]
+    en_len = sum(len(sentence) for group in en_sentence_groups for sentence in group)
+    zh_len = sum(len(sentence) for group in zh_sentence_groups for sentence in group)
+    target = max(
+        1,
+        len(en_paragraphs),
+        len(zh_paragraphs),
+        math.ceil(en_len / 430),
+        math.ceil(zh_len / 155),
+    )
+    return chunk_sentence_groups(en_sentence_groups, "en", target), chunk_sentence_groups(zh_sentence_groups, "zh", target)
+
+
+def chunk_sentence_groups(sentence_groups: list[list[str]], lang: str, target: int) -> list[str]:
+    sentences = [sentence for group in sentence_groups for sentence in group]
+    if not sentences:
+        return []
+    total_len = sum(len(sentence) for sentence in sentences)
+    soft_max = max(80 if lang == "en" else 45, math.ceil(total_len / target * 1.12))
+    soft_min = max(45 if lang == "en" else 24, math.floor(total_len / target * 0.62))
+    sep = " " if lang == "en" else ""
+    chunks: list[str] = []
+    current = ""
+    for sentence in sentences:
+        candidate = f"{current}{sep}{sentence}".strip() if current else sentence
+        if current and len(candidate) > soft_max:
+            chunks.append(current)
+            current = sentence
+        else:
+            current = candidate
+    if current:
+        chunks.append(current)
+    return chunks
+
+
 def write_epub(alignment: list[dict[str, object]], out: Path, layout: str = "columns") -> None:
-    if layout not in {"columns", "alternating"}:
+    if layout not in {"columns", "alternating", "mixed"}:
         raise ValueError(f"Unsupported layout: {layout}")
 
     build_dir = OUT_DIR / "epub_build"
@@ -550,7 +691,7 @@ p {
   }
 }
 """
-    else:
+    elif layout == "alternating":
         css = """body {
   margin: 0;
   padding: 0;
@@ -579,11 +720,53 @@ p {
   margin: 0 0 .72em;
 }
 """
+    else:
+        css = """body {
+  margin: 0;
+  padding: 0;
+  color: #1f2328;
+  font-family: serif;
+  line-height: 1.58;
+}
+.chapter-title {
+  font-family: sans-serif;
+  font-size: 1.35em;
+  margin: 1em 0 1.2em;
+  page-break-after: avoid;
+}
+.mixed-pair {
+  position: relative;
+  margin: 0 0 .95em;
+  padding: 1.15em 0 .75em;
+  border-top: 1px solid #aaa;
+  page-break-inside: avoid;
+}
+.original-marker {
+  margin: 0 0 .68em;
+  color: #777;
+  font-family: sans-serif;
+  font-size: .78em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+.para-en,
+.para-zh {
+  margin: 0 0 .5em;
+}
+.para-en {
+  font-family: Georgia, "Times New Roman", serif;
+}
+.para-zh {
+  font-family: "Songti SC", "Noto Serif CJK SC", serif;
+}
+"""
     (build_dir / "OEBPS" / "styles" / "bilingual.css").write_text(css, encoding="utf-8")
 
     book_title = "One Hundred Years of Solitude / 百年孤独 - 中英对照"
     if layout == "alternating":
         book_title = "One Hundred Years of Solitude / 百年孤独 - 段落交替中英对照"
+    elif layout == "mixed":
+        book_title = "One Hundred Years of Solitude / 百年孤独 - 短段混合中英对照"
 
     nav_items = []
     manifest_items = [
@@ -602,7 +785,7 @@ p {
                 en_html = "".join(f"<p>{html.escape(t)}</p>" for t in pair["en"])
                 zh_html = "".join(f"<p>{html.escape(t)}</p>" for t in pair["zh"])
                 body_parts.append(f"<div class=\"row\"><div class=\"lang-left\">{en_html}</div><div class=\"lang-right\">{zh_html}</div></div>")
-            else:
+            elif layout == "alternating":
                 body_parts.append("<div class=\"pair\">")
                 max_parts = max(len(pair["en"]), len(pair["zh"]))
                 for idx in range(max_parts):
@@ -610,6 +793,16 @@ p {
                         body_parts.append(f"<p class=\"para-en\">{html.escape(pair['en'][idx])}</p>")
                     if idx < len(pair["zh"]):
                         body_parts.append(f"<p class=\"para-zh\">{html.escape(pair['zh'][idx])}</p>")
+                body_parts.append("</div>")
+            else:
+                en_chunks, zh_chunks = mixed_chunks_balanced(pair["en"], pair["zh"])
+                body_parts.append("<div class=\"mixed-pair\"><div class=\"original-marker\">Original paragraph / 原始段落</div>")
+                max_parts = max(len(en_chunks), len(zh_chunks))
+                for idx in range(max_parts):
+                    if idx < len(en_chunks):
+                        body_parts.append(f"<p class=\"para-en\">{html.escape(en_chunks[idx])}</p>")
+                    if idx < len(zh_chunks):
+                        body_parts.append(f"<p class=\"para-zh\">{html.escape(zh_chunks[idx])}</p>")
                 body_parts.append("</div>")
         file_path.write_text(xhtml_page(f"{chapter['title_en']} / {chapter['title_zh']}", "\n".join(body_parts)), encoding="utf-8")
         item_id = f"chapter{number:02d}"
@@ -735,7 +928,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--no-epub", action="store_true", help="only write alignment artifacts")
     parser.add_argument("--full-review", action="store_true", help="write full HTML review, not just chapter previews")
-    parser.add_argument("--layout", choices=["columns", "alternating"], default="columns", help="EPUB reading layout")
+    parser.add_argument("--layout", choices=["columns", "alternating", "mixed"], default="columns", help="EPUB reading layout")
     args = parser.parse_args()
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -749,6 +942,8 @@ def main() -> None:
     if not args.no_epub:
         if args.layout == "alternating":
             epub = OUT_DIR / "One Hundred Years of Solitude - bilingual alternating zh-en.epub"
+        elif args.layout == "mixed":
+            epub = OUT_DIR / "One Hundred Years of Solitude - bilingual mixed split zh-en.epub"
         else:
             epub = OUT_DIR / "One Hundred Years of Solitude - bilingual zh-en.epub"
         write_epub(alignment, epub, layout=args.layout)
