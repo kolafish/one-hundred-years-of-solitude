@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>《百年孤独》统计页面</title>
+    <title>One Hundred Years of Solitude</title>
     <link rel="icon" type="image/png" sizes="64x64" href="./assets/favicon.png" />
     <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
     <style>
@@ -123,6 +123,10 @@
         line-height: 1.75;
         overflow-wrap: anywhere;
         word-break: break-word;
+      }
+
+      .hero-copy .lede {
+        margin-top: 18px;
       }
 
       .link-grid {
@@ -830,6 +834,38 @@
         transform: translateY(-3px);
       }
 
+      .resource-strip {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: clamp(18px, 4vw, 44px);
+        align-items: center;
+        min-width: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.16);
+        padding: clamp(18px, 2vw, 26px) clamp(4px, 1.2vw, 12px) clamp(12px, 2vw, 20px);
+      }
+
+      .resource-strip p {
+        max-width: 780px;
+        margin: 12px 0 0;
+        color: rgba(248, 251, 255, 0.66);
+        font-family: var(--serif);
+        font-size: clamp(14px, 1.55vw, 17px);
+        line-height: 1.72;
+      }
+
+      .resource-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-end;
+        min-width: min(430px, 100%);
+      }
+
+      .resource-actions .highlight-button {
+        white-space: normal;
+      }
+
       a.card::before {
         position: absolute;
         inset: 0;
@@ -1017,6 +1053,19 @@
           padding: 0 0 6px;
         }
 
+        .resource-strip {
+          grid-template-columns: 1fr;
+          align-items: flex-start;
+          gap: 16px;
+          padding-right: 0;
+          padding-left: 0;
+        }
+
+        .resource-actions {
+          justify-content: flex-start;
+          min-width: 0;
+        }
+
         .highlight-strip-title {
           font-size: clamp(28px, 8.5vw, 36px);
         }
@@ -1158,7 +1207,8 @@
             />
           </picture>
           <div class="hero-copy">
-            <h1 id="site-title">《百年孤独》</h1>
+            <h1 id="site-title">One Hundred Years of Solitude</h1>
+            <p class="lede">《百年孤独》统计、热门划线与中英对照 EPUB 数据集。</p>
           </div>
         </div>
       </section>
@@ -1256,6 +1306,20 @@
             <p>整理《百年孤独》微信读书 Top 20 热门划线热度，并摘要每条划线下的高赞评论。</p>
           </div>
           <a class="highlight-button" href="./highlights/">打开划线统计</a>
+        </div>
+
+        <div class="resource-strip" aria-label="中英对照 EPUB 与段落对齐数据">
+          <div class="highlight-strip-copy">
+            <span class="card-kicker">Bilingual EPUB</span>
+            <a class="highlight-strip-title" href="./downloads/one-hundred-years-of-solitude-bilingual-alternating.epub">中英对照 EPUB 与数据</a>
+            <p>包含左右分栏版、英中段落交替版 EPUB，以及 20 章段落对齐 JSON、摘要、检查页和生成脚本。</p>
+          </div>
+          <div class="resource-actions">
+            <a class="highlight-button" href="./downloads/one-hundred-years-of-solitude-bilingual-alternating.epub">下载交替版 EPUB</a>
+            <a class="highlight-button" href="./downloads/one-hundred-years-of-solitude-bilingual-columns.epub">下载分栏版 EPUB</a>
+            <a class="highlight-button" href="./data/bilingual/aligned_paragraphs.json">查看对齐 JSON</a>
+            <a class="highlight-button" href="./data/bilingual/alignment_preview.html">打开检查页</a>
+          </div>
         </div>
 
         <a class="card card-people" href="./people/">
