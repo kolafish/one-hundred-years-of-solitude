@@ -441,12 +441,22 @@ def write_epub(alignment: list[dict[str, object]], out: Path) -> None:
 .para-es,
 .para-zh {
   margin: 0 0 .5em;
+  text-align: justify;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  -epub-hyphens: auto;
+  hyphens: auto;
+  text-justify: inter-word;
 }
 .para-es {
   font-family: Georgia, "Times New Roman", serif;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 .para-zh {
   font-family: "Songti SC", "Noto Serif CJK SC", serif;
+  overflow-wrap: break-word;
 }
 """
     (BUILD_DIR / "OEBPS" / "styles" / "bilingual.css").write_text(css, encoding="utf-8")
@@ -469,9 +479,9 @@ def write_epub(alignment: list[dict[str, object]], out: Path) -> None:
             body_parts.append("<div class=\"mixed-pair\"><div class=\"original-marker\">Párrafo original / 原始段落</div>")
             for idx in range(max(len(es_chunks), len(zh_chunks))):
                 if idx < len(es_chunks):
-                    body_parts.append(f"<p class=\"para-es\">{html.escape(es_chunks[idx])}</p>")
+                    body_parts.append(f"<p class=\"para-es\" xml:lang=\"es\" lang=\"es\">{html.escape(es_chunks[idx])}</p>")
                 if idx < len(zh_chunks):
-                    body_parts.append(f"<p class=\"para-zh\">{html.escape(zh_chunks[idx])}</p>")
+                    body_parts.append(f"<p class=\"para-zh\" xml:lang=\"zh-CN\" lang=\"zh-CN\">{html.escape(zh_chunks[idx])}</p>")
             body_parts.append("</div>")
         file_path.write_text(xhtml_page(title, "\n".join(body_parts)), encoding="utf-8")
 
