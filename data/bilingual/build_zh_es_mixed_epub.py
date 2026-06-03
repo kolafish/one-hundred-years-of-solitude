@@ -134,6 +134,60 @@ def prefix_weights(items: list[str], lang: str) -> list[float]:
     return values
 
 
+def target_units(paragraphs: list[Paragraph]) -> list[Paragraph]:
+    units: list[Paragraph] = []
+    for paragraph in paragraphs:
+        pieces = split_sentences(paragraph.text, "es")
+        if len(pieces) <= 1:
+            units.append(paragraph)
+            continue
+        for offset, piece in enumerate(pieces, start=1):
+            units.append(Paragraph(text=piece, index=paragraph.index * 1000 + offset))
+    return units
+
+
+def distribute_target_group(ref_rows: list[str], target_group: list[Paragraph]) -> list[list[Paragraph]]:
+    if not ref_rows:
+        return []
+    if len(ref_rows) == 1 or not target_group:
+        return [target_group]
+
+    units = target_units(target_group)
+    if not units:
+        return [[] for _ in ref_rows]
+
+    ref_weights = [text_weight(row, "en") for row in ref_rows]
+    unit_weights = [text_weight(unit.text, "es") for unit in units]
+    total_ref = max(sum(ref_weights), 1.0)
+    total_target = max(sum(unit_weights), 1.0)
+    prefix = [0.0]
+    for weight in unit_weights:
+        prefix.append(prefix[-1] + weight)
+
+    groups: list[list[Paragraph]] = []
+    cursor = 0
+    expected = 0.0
+    enforce_nonempty = len(units) >= len(ref_rows)
+    for idx, ref_weight in enumerate(ref_weights):
+        remaining_rows = len(ref_rows) - idx - 1
+        if remaining_rows == 0:
+            groups.append(units[cursor:])
+            break
+
+        expected += total_target * (ref_weight / total_ref)
+        min_cut = cursor + 1 if enforce_nonempty else cursor
+        max_cut = len(units) - remaining_rows if enforce_nonempty else len(units)
+        min_cut = min(max(min_cut, cursor), len(units))
+        max_cut = min(max(max_cut, min_cut), len(units))
+        cut = min(range(min_cut, max_cut + 1), key=lambda pos: abs(prefix[pos] - expected))
+        groups.append(units[cursor:cut])
+        cursor = cut
+
+    while len(groups) < len(ref_rows):
+        groups.append([])
+    return groups
+
+
 def align_texts(ref_rows: list[str], target_paragraphs: list[Paragraph]) -> list[list[Paragraph]]:
     n = len(ref_rows)
     m = len(target_paragraphs)
@@ -183,8 +237,9 @@ def align_texts(ref_rows: list[str], target_paragraphs: list[Paragraph]) -> list
         if step is None:
             raise RuntimeError("Broken Spanish alignment")
         a, b = step
-        for ref_idx in range(i - a, i):
-            groups[ref_idx] = target_paragraphs[j - b:j]
+        distributed = distribute_target_group(ref_rows[i - a:i], target_paragraphs[j - b:j])
+        for offset, group in enumerate(distributed):
+            groups[i - a + offset] = group
         i -= a
         j -= b
     return groups
@@ -209,6 +264,8 @@ def build_alignment(es_epub: Path) -> list[dict[str, object]]:
                     "es_index": [paragraph.index for paragraph in es_unique],
                 }
             )
+        apply_manual_rebalance(chapter_no, pairs, "es")
+        pairs = merge_empty_target_pairs(pairs, "es")
         result.append(
             {
                 "number": chapter_no,
@@ -218,6 +275,91 @@ def build_alignment(es_epub: Path) -> list[dict[str, object]]:
             }
         )
     return result
+
+
+def apply_manual_rebalance(chapter_no: int, pairs: list[dict], target_key: str) -> None:
+    # Calibrated for the fixed source EPUBs: short dialogue lines can be swallowed by a neighboring paragraph.
+    moves = {
+        2: [("prev_to_current", 21), ("prev_to_current", 27)],
+        4: [("prev_to_current", 7)],
+        6: [("next_to_current", 4)],
+        11: [("prev_to_current", 30)],
+        14: [("next_to_current", 3)],
+        17: [("prev_to_current", 4), ("split_current_keep_first", 5)],
+        19: [("prev_to_current", 23)],
+    }
+    for action, one_based_index in moves.get(chapter_no, []):
+        if action == "prev_to_current":
+            move_previous_tail_to_current(pairs, one_based_index - 1, target_key)
+        elif action == "next_to_current":
+            move_next_head_to_current(pairs, one_based_index - 1, target_key)
+        elif action == "split_current_keep_first":
+            split_current_keep_first(pairs, one_based_index - 1, target_key)
+
+
+def move_previous_tail_to_current(pairs: list[dict], index: int, target_key: str) -> None:
+    if index <= 0 or index >= len(pairs) - 1:
+        return
+    index_key = f"{target_key}_index"
+    previous = pairs[index - 1]
+    current = pairs[index]
+    following = pairs[index + 1]
+    if not previous.get(target_key) or not current.get(target_key):
+        return
+    old_texts = current[target_key][:]
+    old_indices = current[index_key][:]
+    current[target_key] = [previous[target_key].pop()]
+    current[index_key] = [previous[index_key].pop()]
+    following[target_key] = old_texts + following.get(target_key, [])
+    following[index_key] = old_indices + following.get(index_key, [])
+
+
+def move_next_head_to_current(pairs: list[dict], index: int, target_key: str) -> None:
+    if index <= 0 or index >= len(pairs) - 1:
+        return
+    index_key = f"{target_key}_index"
+    previous = pairs[index - 1]
+    current = pairs[index]
+    following = pairs[index + 1]
+    if not current.get(target_key) or not following.get(target_key):
+        return
+    previous[target_key] = previous.get(target_key, []) + current[target_key][:]
+    previous[index_key] = previous.get(index_key, []) + current[index_key][:]
+    current[target_key] = [following[target_key].pop(0)]
+    current[index_key] = [following[index_key].pop(0)]
+
+
+def split_current_keep_first(pairs: list[dict], index: int, target_key: str) -> None:
+    if index < 0 or index >= len(pairs) - 1:
+        return
+    index_key = f"{target_key}_index"
+    current = pairs[index]
+    following = pairs[index + 1]
+    if len(current.get(target_key, [])) <= 1:
+        return
+    overflow_texts = current[target_key][1:]
+    overflow_indices = current[index_key][1:]
+    current[target_key] = current[target_key][:1]
+    current[index_key] = current[index_key][:1]
+    following[target_key] = overflow_texts + following.get(target_key, [])
+    following[index_key] = overflow_indices + following.get(index_key, [])
+
+
+def merge_empty_target_pairs(pairs: list[dict], target_key: str) -> list[dict]:
+    merged: list[dict] = []
+    for pair in pairs:
+        if pair.get(target_key):
+            merged.append(pair)
+            continue
+        if merged:
+            merged[-1]["zh"].extend(pair.get("zh", []))
+            merged[-1]["zh_index"].extend(pair.get("zh_index", []))
+            continue
+        if len(pairs) > 1:
+            next_pair = pairs[1]
+            next_pair["zh"] = pair.get("zh", []) + next_pair.get("zh", [])
+            next_pair["zh_index"] = pair.get("zh_index", []) + next_pair.get("zh_index", [])
+    return merged
 
 
 def unique_paragraphs(paragraphs: Iterable[Paragraph]) -> list[Paragraph]:
