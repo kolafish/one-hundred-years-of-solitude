@@ -17,6 +17,8 @@ from pathlib import Path
 from typing import Iterable
 from xml.etree import ElementTree as ET
 
+from semantic_rebalance import semantic_rebalance_pairs
+
 
 ROOT = Path(__file__).resolve().parents[2]
 ALIGNED_JSON = ROOT / "data" / "bilingual" / "aligned_paragraphs.json"
@@ -242,7 +244,7 @@ def align_texts(ref_rows: list[str], target_paragraphs: list[Paragraph]) -> list
     return groups
 
 
-def build_alignment(ja_epub: Path) -> list[dict[str, object]]:
+def build_alignment(ja_epub: Path, semantic_rebalance: bool = True) -> list[dict[str, object]]:
     aligned = json.loads(ALIGNED_JSON.read_text(encoding="utf-8"))
     ja_chapters = extract_japanese_chapters(ja_epub)
     result = []
@@ -260,7 +262,15 @@ def build_alignment(ja_epub: Path) -> list[dict[str, object]]:
                     "ja_index": [paragraph.index for paragraph in unique_paragraphs(ja_group)],
                 }
             )
-        apply_manual_rebalance(chapter_no, pairs, "ja")
+        if semantic_rebalance:
+            semantic_rebalance_pairs(
+                chapter_no=chapter_no,
+                pairs=pairs,
+                target_units=target_units(ja_chapters[chapter_no - 1]),
+                target_key="ja",
+                lang="ja",
+                split_zh_sentences=split_sentences,
+            )
         result.append(
             {
                 "number": chapter_no,
@@ -270,33 +280,6 @@ def build_alignment(ja_epub: Path) -> list[dict[str, object]]:
             }
         )
     return result
-
-
-def apply_manual_rebalance(chapter_no: int, pairs: list[dict], target_key: str) -> None:
-    # Calibrated for the fixed source EPUBs: short dialogue lines can be swallowed by a neighboring paragraph.
-    moves = {
-        16: [("prev_to_current", 19)],
-    }
-    for action, one_based_index in moves.get(chapter_no, []):
-        if action == "prev_to_current":
-            move_previous_tail_to_current(pairs, one_based_index - 1, target_key)
-
-
-def move_previous_tail_to_current(pairs: list[dict], index: int, target_key: str) -> None:
-    if index <= 0 or index >= len(pairs) - 1:
-        return
-    index_key = f"{target_key}_index"
-    previous = pairs[index - 1]
-    current = pairs[index]
-    following = pairs[index + 1]
-    if not previous.get(target_key) or not current.get(target_key):
-        return
-    old_texts = current[target_key][:]
-    old_indices = current[index_key][:]
-    current[target_key] = [previous[target_key].pop()]
-    current[index_key] = [previous[index_key].pop()]
-    following[target_key] = old_texts + following.get(target_key, [])
-    following[index_key] = old_indices + following.get(index_key, [])
 
 
 def unique_paragraphs(paragraphs: Iterable[Paragraph]) -> list[Paragraph]:
@@ -586,6 +569,11 @@ def parse_args() -> argparse.Namespace:
         help="Path to 百年の孤独 EPUB. Can also be set with JAPANESE_EPUB.",
     )
     parser.add_argument("--output", type=Path, default=OUT_EPUB, help="Output EPUB path.")
+    parser.add_argument(
+        "--no-semantic-rebalance",
+        action="store_true",
+        help="Disable lingtrain semantic anchor rebalance.",
+    )
     return parser.parse_args()
 
 
@@ -597,7 +585,7 @@ def main() -> None:
     if not ja_epub.exists():
         raise SystemExit(f"Japanese EPUB does not exist: {ja_epub}")
 
-    alignment = build_alignment(ja_epub)
+    alignment = build_alignment(ja_epub, semantic_rebalance=not args.no_semantic_rebalance)
     write_epub(alignment, args.output.expanduser())
     validate_epub(args.output.expanduser())
     print(json.dumps({"chapters": len(alignment), "output": str(args.output.expanduser())}, ensure_ascii=False, indent=2))
