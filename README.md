@@ -15,9 +15,11 @@
 - `downloads/one-hundred-years-of-solitude-bilingual-columns.epub`：左右分栏中英对照 EPUB。
 - `downloads/one-hundred-years-of-solitude-bilingual-alternating.epub`：英文、中文段落交替版 EPUB。
 - `downloads/one-hundred-years-of-solitude-bilingual-mixed-split.epub`：长段落切短后的英中短段混合版 EPUB，并用横线标记原始段落起点。
+- `downloads/one-hundred-years-of-solitude-zh-ja-mixed-split.epub`：长段落切短后的日中短段混合版 EPUB，并用横线标记原始段落起点。
 - `data/bilingual/aligned_paragraphs.json`：20 章段落对齐 JSON。
 - `data/bilingual/alignment_summary.md`：段落对齐摘要。
 - `data/bilingual/alignment_preview.html`：中英对齐检查页。
 - `data/bilingual/build_bilingual_epub.py`：从两个 EPUB 抽取、对齐并生成对照 EPUB 的脚本。
+- `data/bilingual/build_zh_ja_mixed_epub.py`：基于既有中文段落和日文 EPUB 生成日中短段混合 EPUB 的脚本。
 
 根目录 `index.html` 是入口页。
