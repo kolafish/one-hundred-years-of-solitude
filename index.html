@@ -833,33 +833,45 @@
       .resource-strip {
         grid-column: 1 / -1;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: clamp(18px, 4vw, 44px);
-        align-items: center;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+        align-items: start;
         min-width: 0;
         border-top: 1px solid rgba(255, 255, 255, 0.16);
         padding: clamp(18px, 2vw, 26px) clamp(4px, 1.2vw, 12px) clamp(12px, 2vw, 20px);
       }
 
+      .resource-strip .highlight-strip-copy {
+        width: min(880px, 100%);
+      }
+
+      .resource-strip .card-kicker {
+        display: block;
+        margin-bottom: 8px;
+      }
+
       .resource-strip p {
-        max-width: 780px;
+        max-width: 860px;
         margin: 12px 0 0;
         color: rgba(248, 251, 255, 0.66);
         font-family: var(--serif);
         font-size: clamp(14px, 1.55vw, 17px);
         line-height: 1.72;
+        overflow-wrap: normal;
+        word-break: normal;
       }
 
       .resource-actions {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
-        justify-content: flex-end;
-        min-width: min(430px, 100%);
+        justify-content: flex-start;
+        width: 100%;
+        min-width: 0;
       }
 
       .resource-actions .highlight-button {
-        white-space: normal;
+        white-space: nowrap;
       }
 
       a.card::before {
@@ -1073,6 +1085,10 @@
 
         .highlight-button {
           align-self: flex-start;
+        }
+
+        .resource-actions .highlight-button {
+          white-space: normal;
         }
 
         h1 {
@@ -1391,18 +1407,18 @@
           <span class="card-action">打开动物统计</span>
         </a>
 
-        <div class="resource-strip" aria-label="对照 EPUB 下载">
+        <div class="resource-strip" aria-label="多语言互译 EPUB 下载">
           <div class="highlight-strip-copy">
-            <span class="card-kicker">Parallel EPUB</span>
-            <a class="highlight-strip-title" href="./downloads/one-hundred-years-of-solitude-bilingual-mixed-split.epub">对照 EPUB 下载</a>
+            <span class="card-kicker">Multilingual EPUB</span>
+            <a class="highlight-strip-title" href="./downloads/one-hundred-years-of-solitude-bilingual-mixed-split.epub">多语言互译 EPUB 下载</a>
             <p>包含中英短段混合、左右分栏、英中段落交替，以及日中、西中短段混合版。</p>
           </div>
           <div class="resource-actions">
-            <a class="highlight-button" href="./downloads/one-hundred-years-of-solitude-bilingual-mixed-split.epub">下载短段混合版 EPUB</a>
-            <a class="highlight-button" href="./downloads/one-hundred-years-of-solitude-zh-ja-mixed-split.epub">下载日中短段混合版 EPUB</a>
-            <a class="highlight-button" href="./downloads/one-hundred-years-of-solitude-es-zh-mixed-split.epub">下载西中短段混合版 EPUB</a>
-            <a class="highlight-button" href="./downloads/one-hundred-years-of-solitude-bilingual-alternating.epub">下载交替版 EPUB</a>
-            <a class="highlight-button" href="./downloads/one-hundred-years-of-solitude-bilingual-columns.epub">下载分栏版 EPUB</a>
+            <a class="highlight-button" href="./downloads/one-hundred-years-of-solitude-bilingual-mixed-split.epub">下载英中短段混合 EPUB</a>
+            <a class="highlight-button" href="./downloads/one-hundred-years-of-solitude-zh-ja-mixed-split.epub">下载日中短段混合 EPUB</a>
+            <a class="highlight-button" href="./downloads/one-hundred-years-of-solitude-es-zh-mixed-split.epub">下载西中短段混合 EPUB</a>
+            <a class="highlight-button" href="./downloads/one-hundred-years-of-solitude-bilingual-alternating.epub">下载英中段落交替 EPUB</a>
+            <a class="highlight-button" href="./downloads/one-hundred-years-of-solitude-bilingual-columns.epub">下载英中左右分栏 EPUB</a>
           </div>
         </div>
       </section>
