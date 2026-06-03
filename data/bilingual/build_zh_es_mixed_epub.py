@@ -427,16 +427,9 @@ def write_epub(alignment: list[dict[str, object]], out: Path) -> None:
 }
 .mixed-pair {
   margin: 0 0 .95em;
-  padding: 1.15em 0 .75em;
+  padding: .85em 0 .75em;
   border-top: 1px solid #aaa;
   page-break-inside: avoid;
-}
-.original-marker {
-  margin: 0 0 .68em;
-  color: #777;
-  font-family: sans-serif;
-  font-size: .78em;
-  line-height: 1.2;
 }
 .para-es,
 .para-zh {
@@ -476,7 +469,7 @@ def write_epub(alignment: list[dict[str, object]], out: Path) -> None:
         body_parts = [f"<h1 class=\"chapter-title\">{html.escape(title)}</h1>"]
         for pair in chapter["pairs"]:
             es_chunks, zh_chunks = mixed_chunks_balanced(pair["es"], pair["zh"])
-            body_parts.append("<div class=\"mixed-pair\"><div class=\"original-marker\">Párrafo original / 原始段落</div>")
+            body_parts.append("<div class=\"mixed-pair\">")
             for idx in range(max(len(es_chunks), len(zh_chunks))):
                 if idx < len(es_chunks):
                     body_parts.append(f"<p class=\"para-es\" xml:lang=\"es\" lang=\"es\">{html.escape(es_chunks[idx])}</p>")

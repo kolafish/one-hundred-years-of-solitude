@@ -737,27 +737,29 @@ p {
 .mixed-pair {
   position: relative;
   margin: 0 0 .95em;
-  padding: 1.15em 0 .75em;
+  padding: .85em 0 .75em;
   border-top: 1px solid #aaa;
   page-break-inside: avoid;
-}
-.original-marker {
-  margin: 0 0 .68em;
-  color: #777;
-  font-family: sans-serif;
-  font-size: .78em;
-  line-height: 1.2;
-  text-transform: uppercase;
 }
 .para-en,
 .para-zh {
   margin: 0 0 .5em;
+  text-align: justify;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  -epub-hyphens: auto;
+  hyphens: auto;
+  text-justify: inter-word;
 }
 .para-en {
   font-family: Georgia, "Times New Roman", serif;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 .para-zh {
   font-family: "Songti SC", "Noto Serif CJK SC", serif;
+  overflow-wrap: break-word;
 }
 """
     (build_dir / "OEBPS" / "styles" / "bilingual.css").write_text(css, encoding="utf-8")
@@ -796,13 +798,13 @@ p {
                 body_parts.append("</div>")
             else:
                 en_chunks, zh_chunks = mixed_chunks_balanced(pair["en"], pair["zh"])
-                body_parts.append("<div class=\"mixed-pair\"><div class=\"original-marker\">Original paragraph / 原始段落</div>")
+                body_parts.append("<div class=\"mixed-pair\">")
                 max_parts = max(len(en_chunks), len(zh_chunks))
                 for idx in range(max_parts):
                     if idx < len(en_chunks):
-                        body_parts.append(f"<p class=\"para-en\">{html.escape(en_chunks[idx])}</p>")
+                        body_parts.append(f"<p class=\"para-en\" xml:lang=\"en\" lang=\"en\">{html.escape(en_chunks[idx])}</p>")
                     if idx < len(zh_chunks):
-                        body_parts.append(f"<p class=\"para-zh\">{html.escape(zh_chunks[idx])}</p>")
+                        body_parts.append(f"<p class=\"para-zh\" xml:lang=\"zh-CN\" lang=\"zh-CN\">{html.escape(zh_chunks[idx])}</p>")
                 body_parts.append("</div>")
         file_path.write_text(xhtml_page(f"{chapter['title_en']} / {chapter['title_zh']}", "\n".join(body_parts)), encoding="utf-8")
         item_id = f"chapter{number:02d}"

@@ -359,16 +359,9 @@ def write_epub(alignment: list[dict[str, object]], out: Path) -> None:
 }
 .mixed-pair {
   margin: 0 0 .95em;
-  padding: 1.15em 0 .75em;
+  padding: .85em 0 .75em;
   border-top: 1px solid #aaa;
   page-break-inside: avoid;
-}
-.original-marker {
-  margin: 0 0 .68em;
-  color: #777;
-  font-family: sans-serif;
-  font-size: .78em;
-  line-height: 1.2;
 }
 .para-ja,
 .para-zh {
@@ -398,12 +391,12 @@ def write_epub(alignment: list[dict[str, object]], out: Path) -> None:
         body_parts = [f"<h1 class=\"chapter-title\">{html.escape(title)}</h1>"]
         for pair in chapter["pairs"]:
             ja_chunks, zh_chunks = mixed_chunks_balanced(pair["ja"], pair["zh"])
-            body_parts.append("<div class=\"mixed-pair\"><div class=\"original-marker\">元の段落 / 原始段落</div>")
+            body_parts.append("<div class=\"mixed-pair\">")
             for idx in range(max(len(ja_chunks), len(zh_chunks))):
                 if idx < len(ja_chunks):
-                    body_parts.append(f"<p class=\"para-ja\">{html.escape(ja_chunks[idx])}</p>")
+                    body_parts.append(f"<p class=\"para-ja\" xml:lang=\"ja\" lang=\"ja\">{html.escape(ja_chunks[idx])}</p>")
                 if idx < len(zh_chunks):
-                    body_parts.append(f"<p class=\"para-zh\">{html.escape(zh_chunks[idx])}</p>")
+                    body_parts.append(f"<p class=\"para-zh\" xml:lang=\"zh-CN\" lang=\"zh-CN\">{html.escape(zh_chunks[idx])}</p>")
             body_parts.append("</div>")
         file_path.write_text(xhtml_page(title, "\n".join(body_parts)), encoding="utf-8")
 
