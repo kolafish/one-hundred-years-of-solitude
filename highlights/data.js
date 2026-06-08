@@ -7,7 +7,7 @@ window.WEREAD_HIGHLIGHTS_DATA = {
     "bookId": "935536"
   },
   "fetchedAt": "2026-05-26",
-  "notes": "热门划线接口返回全书 Popular Highlights 前 20 条；按章节接口返回每个正文章节前 20 条。页面展示可发布的短摘录、内容总结、热度和微信读书入口，以及每条划线首屏评论中按 likesCount 选出的前 5 条摘录与总结。",
+  "notes": "热门划线接口返回全书 Popular Highlights 前 20 条；按章节接口返回每个正文章节前 20 条。页面展示可发布的短摘录、热度和微信读书入口，以及每条划线首屏评论中按 likesCount 选出的前 5 条摘录。",
   "highlights": [
     {
       "rank": 1,
