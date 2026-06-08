@@ -503,8 +503,7 @@ select:focus {
   margin-bottom: 12px;
 }
 
-.source-panel,
-.summary-panel {
+.source-panel {
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -517,13 +516,7 @@ select:focus {
   padding: 18px 20px;
 }
 
-.summary-panel {
-  border-left: 4px solid #d8e8f4;
-  background: #ffffff;
-}
-
 .source-panel .panel-label,
-.summary-panel .panel-label,
 .comment-section span {
   display: block;
   margin-bottom: 6px;
@@ -532,8 +525,7 @@ select:focus {
   font-weight: 780;
 }
 
-.source-panel blockquote,
-.summary-panel p {
+.source-panel blockquote {
   margin-bottom: 0;
   color: var(--ink);
   line-height: 1.75;
@@ -719,13 +711,6 @@ select:focus {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 7;
-}
-
-.comment-card.is-collapsed .comment-summary {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
 }
 
 .comment-footer {

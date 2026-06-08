@@ -10,7 +10,6 @@ const state = {
 };
 
 const LONG_COMMENT_EXCERPT_LENGTH = 180;
-const LONG_COMMENT_SUMMARY_LENGTH = 96;
 const MULTILINGUAL_QUOTES_URL = "../data/bilingual/highlight_multilingual_quotes.json";
 const MULTILINGUAL_QUOTE_VERSION = "20260603-multilingual-quotes";
 const multilingualQuoteMap = new Map();
@@ -144,10 +143,9 @@ function filteredHighlights(scope) {
       item.cue,
       item.quoteHint,
       ...(item.sourceTerms || []),
-      item.summary,
       item.themes.join(" "),
       ...Object.values(multilingual?.texts || {}),
-      ...item.comments.flatMap((comment) => [comment.author, comment.excerpt, comment.summary]),
+      ...item.comments.flatMap((comment) => [comment.author, comment.excerpt]),
     ]
       .join(" ")
       .toLowerCase();
@@ -233,9 +231,7 @@ function renderComments(item) {
 
   return item.comments
     .map((comment, index) => {
-      const isLong =
-        comment.excerpt.length > LONG_COMMENT_EXCERPT_LENGTH ||
-        comment.summary.length > LONG_COMMENT_SUMMARY_LENGTH;
+      const isLong = comment.excerpt.length > LONG_COMMENT_EXCERPT_LENGTH;
       return `
         <div class="comment-card ${isLong ? "is-collapsed" : ""}">
           <div class="comment-head">
@@ -245,10 +241,6 @@ function renderComments(item) {
           <div class="comment-section">
             <span>评论摘录</span>
             <p class="comment-text">${escapeHtml(comment.excerpt)}</p>
-          </div>
-          <div class="comment-section">
-            <span>评论总结</span>
-            <p class="comment-summary">${escapeHtml(comment.summary)}</p>
           </div>
           <div class="comment-footer">
             <small>${escapeHtml(comment.author)}</small>
@@ -330,10 +322,6 @@ function renderList(list, scope) {
             <div class="highlight-text-grid">
               <div class="source-panel">
                 ${renderSourcePanel(item, scope.kind)}
-              </div>
-              <div class="summary-panel">
-                <span class="panel-label">内容总结</span>
-                <p>${escapeHtml(item.summary)}</p>
               </div>
             </div>
             <div class="theme-list">
