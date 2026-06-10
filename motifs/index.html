@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>《百年孤独》主题线索</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png" />
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./data.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="header-copy">
+        <a class="home-link" href="../">返回入口</a>
+        <p class="eyebrow">Motif Threads</p>
+        <h1>《百年孤独》主题线索</h1>
+        <p class="lede">
+          按人物、意象和叙事回环整理新版中文文本中的主题线索。每条保留章节与对照段定位、短摘录和判断说明，方便回到 EPUB 或对照数据核对上下文。
+        </p>
+      </div>
+      <div class="header-facts" aria-label="数据概览">
+        <div>
+          <span id="fact-themes">--</span>
+          <small>主题</small>
+        </div>
+        <div>
+          <span id="fact-entries">--</span>
+          <small>线索</small>
+        </div>
+        <div>
+          <span id="fact-chapters">--</span>
+          <small>涉及章节</small>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="notice" aria-label="内容说明">
+        <strong>摘录口径</strong>
+        <p>
+          页面只放能够定位原文的短摘录，完整上下文请按“第几章 / 对照段”回到 EPUB 或
+          <code>data/bilingual/aligned_paragraphs.json</code> 查看。
+        </p>
+      </section>
+
+      <section class="controls-band" aria-label="筛选和搜索">
+        <div class="search-box">
+          <label for="search-input">搜索</label>
+          <input id="search-input" type="search" placeholder="人物、主题、摘录、说明" autocomplete="off" />
+        </div>
+        <div class="control-group">
+          <label for="theme-filter">主题</label>
+          <select id="theme-filter"></select>
+        </div>
+      </section>
+
+      <section class="kpi-grid" id="kpi-grid" aria-label="主题概览"></section>
+      <section class="theme-tabs" id="theme-tabs" aria-label="主题导航"></section>
+      <section class="theme-list" id="theme-list" aria-label="主题线索列表"></section>
+    </main>
+  </body>
+</html>
