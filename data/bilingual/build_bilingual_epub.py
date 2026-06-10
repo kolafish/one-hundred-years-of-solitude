@@ -22,6 +22,7 @@ from xml.etree import ElementTree as ET
 ZH_EPUB = Path("/Users/jin/Downloads/百年孤独 = Cien años de soledad ( etc.) (z-library.sk, 1lib.sk, z-lib.sk).epub")
 EN_EPUB = Path("/Users/jin/Library/Containers/com.tencent.xinWeChat/Data/Library/Application Support/com.tencent.xinWeChat/2.0b4.0.9/9aa55bf227e8cc78e8580c855b12ed7d/Message/MessageTemp/10ef1d098b649627359eac0eb670762f/File/One Hundred Years of Solitude.epub")
 OUT_DIR = Path("/Users/jin/Desktop/one_hundred_years_bilingual")
+ILLUSTRATION_PLACEHOLDER = "[插图]"
 
 
 @dataclass
@@ -121,6 +122,7 @@ class BodyParagraphParser(HTMLParser):
     @staticmethod
     def _normalize(text: str) -> str:
         text = html.unescape(text)
+        text = text.replace(ILLUSTRATION_PLACEHOLDER, "")
         text = text.replace("\xa0", " ")
         text = re.sub(r"\s+", " ", text)
         return text.strip()

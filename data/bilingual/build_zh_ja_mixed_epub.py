@@ -24,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[2]
 ALIGNED_JSON = ROOT / "data" / "bilingual" / "aligned_paragraphs.json"
 OUT_EPUB = ROOT / "downloads" / "one-hundred-years-of-solitude-zh-ja-mixed-split.epub"
 BUILD_DIR = ROOT / "data" / "bilingual" / ".zh_ja_epub_build"
+ILLUSTRATION_PLACEHOLDER = "[插图]"
 
 
 @dataclass
@@ -92,6 +93,10 @@ def normalize_text(text: str) -> str:
     text = html.unescape(text).replace("\xa0", " ")
     text = re.sub(r"\s+", " ", text)
     return text.strip()
+
+
+def clean_zh_text(text: str) -> str:
+    return text.replace(ILLUSTRATION_PLACEHOLDER, "")
 
 
 def keep_paragraph(text: str) -> bool:
@@ -250,13 +255,13 @@ def build_alignment(ja_epub: Path, semantic_rebalance: bool = True) -> list[dict
     result = []
     for chapter in aligned:
         chapter_no = int(chapter["number"])
-        ref_rows_zh = ["".join(pair["zh"]) for pair in chapter["pairs"]]
+        ref_rows_zh = ["".join(clean_zh_text(text) for text in pair["zh"]) for pair in chapter["pairs"]]
         ja_groups = align_texts(ref_rows_zh, ja_chapters[chapter_no - 1])
         pairs = []
         for pair, ja_group in zip(chapter["pairs"], ja_groups):
             pairs.append(
                 {
-                    "zh": pair["zh"],
+                    "zh": [clean_zh_text(text) for text in pair["zh"]],
                     "ja": [paragraph.text for paragraph in unique_paragraphs(ja_group)],
                     "zh_index": pair.get("zh_index", []),
                     "ja_index": [paragraph.index for paragraph in unique_paragraphs(ja_group)],

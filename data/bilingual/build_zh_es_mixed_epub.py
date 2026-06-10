@@ -24,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[2]
 ALIGNED_JSON = ROOT / "data" / "bilingual" / "aligned_paragraphs.json"
 OUT_EPUB = ROOT / "downloads" / "one-hundred-years-of-solitude-es-zh-mixed-split.epub"
 BUILD_DIR = ROOT / "data" / "bilingual" / ".zh_es_epub_build"
+ILLUSTRATION_PLACEHOLDER = "[插图]"
 
 
 @dataclass
@@ -92,6 +93,10 @@ def normalize_text(text: str) -> str:
     text = html.unescape(text).replace("\xa0", " ")
     text = re.sub(r"\s+", " ", text)
     return text.strip()
+
+
+def clean_zh_text(text: str) -> str:
+    return text.replace(ILLUSTRATION_PLACEHOLDER, "")
 
 
 def keep_paragraph(text: str) -> bool:
@@ -260,7 +265,7 @@ def build_alignment(es_epub: Path, semantic_rebalance: bool = True) -> list[dict
             es_unique = unique_paragraphs(es_group)
             pairs.append(
                 {
-                    "zh": pair["zh"],
+                    "zh": [clean_zh_text(text) for text in pair["zh"]],
                     "es": [paragraph.text for paragraph in es_unique],
                     "zh_index": pair.get("zh_index", []),
                     "es_index": [paragraph.index for paragraph in es_unique],
