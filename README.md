@@ -25,4 +25,9 @@
 - `data/bilingual/build_zh_ja_mixed_epub.py`：基于既有中文段落和日文 EPUB 生成日中短段混合 EPUB 的脚本。
 - `data/bilingual/build_zh_es_mixed_epub.py`：基于既有中英段落和西语 EPUB 生成西中短段混合 EPUB 的脚本。
 
+## 中文译本盲选小程序
+
+- `data/translation-quiz/`：微信小程序中文译本盲选题库的数据管线。题目锚点来自微信读书每章热门划线 400 条，候选版本为范晔、高长荣、黄锦炎/沈国正/陈泉、叶淑吟、楊耐冬译本。
+- 小程序 MVP 采用纯静态题库，不依赖微信云开发；用户答题记录先保存在本机 storage。
+
 根目录 `index.html` 是入口页。

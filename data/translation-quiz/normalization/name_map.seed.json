@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "canonicalVersion": "fanye",
+  "notes": "Seed map for normalizing visible names to the Fan Ye style before quiz display. Expand during matching QA.",
+  "entries": [
+    {
+      "canonical": "奥雷里亚诺",
+      "variants": ["奥雷良诺", "奧雷里亞諾", "奧雷良諾", "Aureliano"]
+    },
+    {
+      "canonical": "何塞·阿尔卡蒂奥",
+      "variants": ["何塞·阿卡迪奥", "荷西·阿爾卡迪奧", "荷西·阿卡迪奧", "José Arcadio"]
+    },
+    {
+      "canonical": "布恩迪亚",
+      "variants": ["布恩地亚", "波恩地亞", "布恩迪亞", "Buendía"]
+    },
+    {
+      "canonical": "乌尔苏拉",
+      "variants": ["乌苏拉", "烏蘇拉", "烏爾蘇拉", "Úrsula"]
+    },
+    {
+      "canonical": "梅尔基亚德斯",
+      "variants": ["梅尔基亚德斯", "梅爾基亞德斯", "Melquíades"]
+    },
+    {
+      "canonical": "阿玛兰妲",
+      "variants": ["阿玛兰塔", "阿瑪蘭妲", "阿瑪蘭塔", "Amaranta"]
+    },
+    {
+      "canonical": "蕾梅黛丝",
+      "variants": ["雷梅黛丝", "蕾梅黛絲", "雷梅黛絲", "Remedios"]
+    },
+    {
+      "canonical": "丽贝卡",
+      "variants": ["丽贝加", "蕾貝卡", "丽贝卡", "Rebeca"]
+    },
+    {
+      "canonical": "费尔南达",
+      "variants": ["费南达", "費南妲", "費爾南達", "Fernanda"]
+    },
+    {
+      "canonical": "马孔多",
+      "variants": ["馬孔多", "Macondo"]
+    }
+  ]
+}
+

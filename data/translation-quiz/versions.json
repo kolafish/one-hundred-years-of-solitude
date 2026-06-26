@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "notes": "Local source paths are intentionally recorded for extraction, but full EPUB/PDF contents must not be committed.",
+  "displayPolicy": {
+    "convertTraditionalToSimplified": true,
+    "normalizeNamesTo": "fanye",
+    "blindBeforeChoice": true,
+    "showOnlyChineseTranslations": true,
+    "useCloudEnvironment": false
+  },
+  "versions": [
+    {
+      "id": "fanye",
+      "label": "范晔译本",
+      "translator": "范晔",
+      "script": "Hans",
+      "sourceType": "repo-data",
+      "sourcePath": "data/bilingual/highlight_multilingual_quotes.json",
+      "role": "anchor-baseline",
+      "includeInQuiz": true,
+      "notes": "Current WeRead popular highlights and reconstructed Chinese baseline are treated as Fan Ye version."
+    },
+    {
+      "id": "gao_changrong",
+      "label": "高长荣译本",
+      "translator": "高长荣",
+      "script": "Hans",
+      "sourceType": "epub",
+      "sourceFileName": "百年孤独 = Cien años de soledad ( etc.) (z-library.sk, 1lib.sk, z-lib.sk).epub",
+      "sourcePathEnv": "OHYS_GAO_CHANGRONG_EPUB",
+      "role": "candidate",
+      "includeInQuiz": true
+    },
+    {
+      "id": "huang_shen_chen",
+      "label": "黄锦炎、沈国正、陈泉译本",
+      "translator": "黄锦炎、沈国正、陈泉",
+      "script": "Hans",
+      "sourceType": "pdf",
+      "sourceFileName": "百年孤独【目录完整】【字体清晰】 (加西亚 马尔克斯,黄锦炎,沈国正,陈泉) (z-library.sk, 1lib.sk, z-lib.sk).pdf",
+      "sourcePathEnv": "OHYS_HUANG_SHEN_CHEN_PDF",
+      "role": "candidate",
+      "includeInQuiz": true
+    },
+    {
+      "id": "ye_shuyin",
+      "label": "叶淑吟译本",
+      "translator": "叶淑吟",
+      "script": "Hant",
+      "sourceType": "epub",
+      "sourceFileName": "百年孤寂【平裝典藏版】= Cien años de soledad ( etc.) (z-library.sk, 1lib.sk, z-lib.sk).epub",
+      "sourcePathEnv": "OHYS_YE_SHUYIN_EPUB",
+      "role": "candidate",
+      "includeInQuiz": true,
+      "normalization": {
+        "traditionalToSimplified": true
+      }
+    },
+    {
+      "id": "yang_naidong",
+      "label": "楊耐冬译本",
+      "translator": "楊耐冬",
+      "script": "Hant",
+      "sourceType": "epub",
+      "sourceFileName": "百年孤寂 = Cien años de soledad ( etc.) (z-library.sk, 1lib.sk, z-lib.sk).epub",
+      "sourcePathEnv": "OHYS_YANG_NAIDONG_EPUB",
+      "role": "candidate",
+      "includeInQuiz": true,
+      "normalization": {
+        "traditionalToSimplified": true
+      }
+    }
+  ]
+}
