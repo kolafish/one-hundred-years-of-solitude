@@ -1,0 +1,966 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>《百年孤独》译本盲选</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202124;
+      --muted: #666f7a;
+      --line: #d9dee7;
+      --paper: #f7f4ec;
+      --paper-overlay: linear-gradient(180deg, rgba(31, 111, 120, 0.08), transparent 330px);
+      --panel: #fefdf8;
+      --panel-soft: #f3efe7;
+      --accent: #1f6f78;
+      --accent-strong: #164f56;
+      --warm: #b95d34;
+      --good: #ecf4f2;
+      --toolbar-bg: rgba(255, 255, 255, 0.92);
+      --toolbar-shadow: 0 8px 24px rgba(34, 39, 46, 0.06);
+      --surface: #fff;
+      --surface-soft: #f7f9f8;
+      --option-bg: #fff;
+      --option-hover-shadow: 0 6px 18px rgba(31, 111, 120, 0.08);
+      --option-checked-shadow: 0 8px 22px rgba(31, 111, 120, 0.12);
+      --progress-bg: #e8edf0;
+      --letter-bg: #f7faf9;
+      --winner-start: rgba(31, 111, 120, 0.12);
+      --winner-end: rgba(185, 93, 52, 0.13);
+      --bar-bg: #e9edf0;
+      --shadow: 0 14px 40px rgba(34, 39, 46, 0.12);
+      --choice-gap: 10px;
+    }
+
+    body[data-theme="parchment"] {
+      --ink: #3d3029;
+      --muted: #6a5a52;
+      --line: #d6c7b8;
+      --paper: #f7f2e7;
+      --paper-overlay: linear-gradient(180deg, rgba(114, 83, 58, 0.16), transparent 330px);
+      --panel: #fffdf8;
+      --panel-soft: #f4ede2;
+      --accent: #835f4f;
+      --accent-strong: #674535;
+      --warm: #a65c3a;
+      --good: #eee5d9;
+      --toolbar-bg: rgba(255, 253, 248, 0.9);
+      --toolbar-shadow: 0 8px 24px rgba(73, 59, 45, 0.12);
+      --surface: #fffaf0;
+      --surface-soft: #f6efe2;
+      --option-bg: #fffdf7;
+      --option-hover-shadow: 0 6px 18px rgba(124, 93, 74, 0.14);
+      --option-checked-shadow: 0 8px 20px rgba(124, 93, 74, 0.16);
+      --progress-bg: #e5d8cc;
+      --letter-bg: #f7efe3;
+      --winner-start: rgba(130, 95, 79, 0.16);
+      --winner-end: rgba(166, 92, 58, 0.15);
+      --bar-bg: #e2d3c5;
+      --choice-gap: 8px;
+    }
+
+    body[data-theme="rain"] {
+      --ink: #d2dfde;
+      --muted: #9fabae;
+      --line: #314f56;
+      --paper: #182a2f;
+      --paper-overlay: linear-gradient(180deg, rgba(8, 38, 46, 0.7), transparent 330px);
+      --panel: #1f3239;
+      --panel-soft: #283f47;
+      --accent: #6bb0bf;
+      --accent-strong: #98d3e0;
+      --warm: #cc8f57;
+      --good: rgba(107, 176, 191, 0.12);
+      --toolbar-bg: rgba(23, 38, 43, 0.92);
+      --toolbar-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      --surface: #23363d;
+      --surface-soft: #2d4a54;
+      --option-bg: #21363d;
+      --option-hover-shadow: 0 6px 18px rgba(15, 35, 40, 0.45);
+      --option-checked-shadow: 0 8px 22px rgba(15, 35, 40, 0.5);
+      --progress-bg: #2c4a54;
+      --letter-bg: #223f4a;
+      --winner-start: rgba(107, 176, 191, 0.18);
+      --winner-end: rgba(204, 143, 87, 0.22);
+      --bar-bg: #24414b;
+      --choice-gap: 10px;
+    }
+
+    body[data-theme="tropical"] {
+      --ink: #2d2218;
+      --muted: #5c4d3f;
+      --line: #d4b48f;
+      --paper: #f5efe2;
+      --paper-overlay: linear-gradient(180deg, rgba(199, 125, 60, 0.16), transparent 330px);
+      --panel: #fff7ec;
+      --panel-soft: #f8efe2;
+      --accent: #9c5636;
+      --accent-strong: #7a3f25;
+      --warm: #c98036;
+      --good: #f4e8d7;
+      --toolbar-bg: rgba(255, 250, 244, 0.94);
+      --toolbar-shadow: 0 8px 24px rgba(111, 69, 36, 0.15);
+      --surface: #fff9f0;
+      --surface-soft: #f5e8d7;
+      --option-bg: #fff9ef;
+      --option-hover-shadow: 0 6px 18px rgba(166, 119, 75, 0.24);
+      --option-checked-shadow: 0 8px 22px rgba(166, 119, 75, 0.28);
+      --progress-bg: #ebd6ba;
+      --letter-bg: #f7e8d3;
+      --winner-start: rgba(156, 86, 54, 0.16);
+      --winner-end: rgba(201, 128, 54, 0.18);
+      --bar-bg: #e3ccb0;
+      --choice-gap: 10px;
+    }
+
+    body[data-theme="film"] {
+      --ink: #342d26;
+      --muted: #6b6259;
+      --line: #d0c5b8;
+      --paper: #f1ede3;
+      --paper-overlay: linear-gradient(180deg, rgba(128, 111, 95, 0.14), transparent 330px);
+      --panel: #fbf7f0;
+      --panel-soft: #f1e6d4;
+      --accent: #7f6350;
+      --accent-strong: #5f4332;
+      --warm: #b17a46;
+      --good: #ece4d9;
+      --toolbar-bg: rgba(252, 247, 239, 0.92);
+      --toolbar-shadow: 0 8px 24px rgba(56, 47, 39, 0.14);
+      --surface: #fff9ef;
+      --surface-soft: #f6ecde;
+      --option-bg: #fff9ef;
+      --option-hover-shadow: 0 6px 18px rgba(122, 99, 80, 0.14);
+      --option-checked-shadow: 0 8px 22px rgba(122, 99, 80, 0.2);
+      --progress-bg: #ddcfbe;
+      --letter-bg: #f3eadc;
+      --winner-start: rgba(127, 99, 80, 0.16);
+      --winner-end: rgba(177, 122, 70, 0.18);
+      --bar-bg: #e1d4c1;
+      --choice-gap: 8px;
+    }
+
+    body[data-theme="ink"] {
+      --ink: #f4f0e8;
+      --muted: #c6bfb4;
+      --line: #3f4d44;
+      --paper: #121a17;
+      --paper-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 330px);
+      --panel: #1f2925;
+      --panel-soft: #2a3833;
+      --accent: #8fc6ad;
+      --accent-strong: #a8ddc4;
+      --warm: #f0a06b;
+      --good: rgba(143, 198, 173, 0.14);
+      --toolbar-bg: rgba(31, 41, 37, 0.94);
+      --toolbar-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      --surface: #25322d;
+      --surface-soft: #2e3d37;
+      --option-bg: #283631;
+      --option-hover-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+      --option-checked-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+      --progress-bg: #2f3f39;
+      --letter-bg: #2b3a34;
+      --winner-start: rgba(143, 198, 173, 0.16);
+      --winner-end: rgba(240, 160, 107, 0.2);
+      --bar-bg: #2f443d;
+      --choice-gap: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--paper-overlay), var(--paper);
+      color: var(--ink);
+      font-family: "Noto Serif SC", "Source Han Serif CN", "Source Han Serif SC", "PingFang SC", "SimSun", serif;
+      line-height: 1.7;
+    }
+
+    main {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 34px 0 56px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 22px;
+      align-items: end;
+      padding: 22px 0 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 48px);
+      line-height: 1.15;
+      font-weight: 780;
+      letter-spacing: 0;
+    }
+
+    .intro {
+      margin: 12px 0 0;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .meter {
+      min-width: 180px;
+      text-align: right;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .meter strong {
+      display: block;
+      color: var(--accent-strong);
+      font-size: 34px;
+      line-height: 1.1;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin: 18px 0 22px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--toolbar-bg);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--toolbar-shadow);
+      flex-wrap: wrap;
+    }
+
+    .theme-picker {
+      display: flex;
+      align-items: stretch;
+      flex-wrap: wrap;
+      gap: var(--choice-gap);
+    }
+
+    .theme-btn {
+      min-height: 40px;
+      padding: 6px 12px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.1;
+      background: var(--surface);
+      color: var(--ink);
+      display: inline-grid;
+      align-content: center;
+      justify-items: start;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 160ms ease, transform 160ms ease;
+    }
+
+    .theme-btn.active {
+      border-color: var(--accent);
+      color: var(--accent-strong);
+      transform: translateY(-1px);
+    }
+
+    .theme-btn .label {
+      font-weight: 680;
+    }
+
+    .theme-swatch {
+      margin-top: 5px;
+      height: 6px;
+      width: 46px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--s1), var(--s2), var(--s3));
+      opacity: 0.9;
+    }
+
+    .theme-btn .desc {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .progress {
+      flex: 1;
+      height: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      min-width: 180px;
+      background: var(--progress-bg);
+    }
+
+    .progress span {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--warm));
+      transition: width 180ms ease;
+    }
+
+    button {
+      min-height: 42px;
+      border: 0;
+      border-radius: 8px;
+      padding: 0 18px;
+      background: var(--accent);
+      color: #fff;
+      font: inherit;
+      font-weight: 680;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--accent-strong);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      background: #aab4bd;
+    }
+
+    .ghost {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+    }
+
+    .ghost:hover {
+      background: var(--surface-soft);
+    }
+
+    .quiz {
+      display: grid;
+      gap: 18px;
+    }
+
+    .question {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 8px 26px rgba(34, 39, 46, 0.05);
+      overflow: hidden;
+    }
+
+    .question-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-soft);
+    }
+
+    .question-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 760;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+    }
+
+    .option {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 12px;
+      align-items: start;
+      min-height: 64px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--option-bg);
+      cursor: pointer;
+      transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
+    }
+
+    .option:hover {
+      border-color: rgba(31, 111, 120, 0.45);
+      box-shadow: var(--option-hover-shadow);
+    }
+
+    .option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .letter {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--accent-strong);
+      font-weight: 760;
+      background: var(--letter-bg);
+    }
+
+    .text {
+      padding-top: 2px;
+      font-size: 17px;
+    }
+
+    .option:has(input:checked) {
+      border-color: var(--accent);
+      background: var(--good);
+      box-shadow: var(--option-checked-shadow);
+    }
+
+    .option:has(input:checked) .letter {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .results {
+      display: none;
+      margin-top: 24px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .results.show {
+      display: block;
+    }
+
+    .winner {
+      padding: 24px;
+      background: linear-gradient(135deg, var(--winner-start), var(--winner-end));
+      border-bottom: 1px solid var(--line);
+    }
+
+    .winner-label {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 680;
+    }
+
+    .winner-name {
+      margin: 4px 0 0;
+      color: var(--accent-strong);
+      font-size: clamp(28px, 5vw, 46px);
+      line-height: 1.16;
+      font-weight: 800;
+    }
+
+    .winner-note {
+      margin: 8px 0 0;
+      color: var(--ink);
+    }
+
+    .scoreboard {
+      display: grid;
+      gap: 14px;
+      padding: 22px;
+    }
+
+    .score {
+      display: grid;
+      grid-template-columns: minmax(92px, 140px) 1fr 48px;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .name {
+      font-weight: 720;
+    }
+
+    .bar {
+      height: 16px;
+      border-radius: 999px;
+      background: var(--bar-bg);
+      overflow: hidden;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: var(--accent);
+    }
+
+    .score.top .bar span {
+      background: var(--warm);
+    }
+
+    .count {
+      text-align: right;
+      font-weight: 760;
+    }
+
+    .answers {
+      display: grid;
+      gap: 8px;
+      padding: 0 22px 22px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      padding: 0 22px 22px;
+    }
+
+    @media (max-width: 720px) {
+      main {
+        width: min(100% - 20px, 1080px);
+        padding-top: 18px;
+      }
+
+      header {
+        grid-template-columns: 1fr;
+      }
+
+      .meter {
+        text-align: left;
+      }
+
+      .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .theme-picker {
+        width: 100%;
+      }
+
+      .theme-btn {
+        flex: 1 1 calc(50% - var(--choice-gap));
+      }
+
+      .question-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .option {
+        grid-template-columns: 36px 1fr;
+      }
+
+      .letter {
+        width: 34px;
+        height: 34px;
+      }
+
+      .text {
+        font-size: 16px;
+      }
+
+      .score {
+        grid-template-columns: 88px 1fr 40px;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>《百年孤独》译本盲选</h1>
+        <p class="intro">20 组同句译文将随机出现，每组的 5 个版本也会随机排列。请选择每一组里你最喜欢的一句，完成后查看自己更偏向哪位译者。</p>
+      </div>
+      <div class="meter" aria-live="polite">
+        已选择
+        <strong><span id="pickedCount">0</span>/20</strong>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="theme-picker" id="themePicker" role="group" aria-label="配色方案演示">
+        <button class="theme-btn active" data-theme-choice="parchment" type="button">
+          <span class="label">旧书黄</span>
+          <span class="theme-swatch" style="--s1:#f7f2e7;--s2:#fffdf8;--s3:#835f4f;"></span>
+          <span class="desc">尘土与旧纸</span>
+        </button>
+        <button class="theme-btn" data-theme-choice="rain" type="button">
+          <span class="label">雨夜镇</span>
+          <span class="theme-swatch" style="--s1:#182a2f;--s2:#1f3239;--s3:#6bb0bf;"></span>
+          <span class="desc">潮湿冷静</span>
+        </button>
+        <button class="theme-btn" data-theme-choice="tropical" type="button">
+          <span class="label">热带花雨</span>
+          <span class="theme-swatch" style="--s1:#f5efe2;--s2:#fff7ec;--s3:#c98036;"></span>
+          <span class="desc">花雨与黄昏</span>
+        </button>
+        <button class="theme-btn" data-theme-choice="film" type="button">
+          <span class="label">胶卷旧色</span>
+          <span class="theme-swatch" style="--s1:#f1ede3;--s2:#fbf7f0;--s3:#7f6350;"></span>
+          <span class="desc">复古回响</span>
+        </button>
+        <button class="theme-btn" data-theme-choice="ink" type="button">
+          <span class="label">黑墨夜</span>
+          <span class="theme-swatch" style="--s1:#121a17;--s2:#1f2925;--s3:#8fc6ad;"></span>
+          <span class="desc">深夜书房</span>
+        </button>
+      </div>
+      <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+      <button id="submitBtn" type="button" disabled>查看结果</button>
+    </div>
+
+    <section id="quiz" class="quiz" aria-label="译文盲选题目"></section>
+
+    <section id="results" class="results" aria-live="polite"></section>
+  </main>
+
+  <script>
+    const translators = {
+      fan: "范晔",
+      gao: "高长荣",
+      huang: "黄锦炎",
+      yang: "杨耐冬",
+      ye: "叶淑吟"
+    };
+
+    const rows = [
+      {
+        fan: "世界新生伊始，许多事物还没有名字，提到的时候尚需用手指指点点。",
+        gao: "这块天地还是新开辟的，许多东西都叫不出名字，不得不用手指指点点。",
+        huang: "这块天地如此之新，许多东西尚未命名，提起它们时还须用手指指点点。",
+        yang: "这是个崭新的新天地，许多东西都还没有命名，想要述说还得用手去指。",
+        ye: "那个世界是如此崭新，许多东西都还没取名，提及时得用手去指。"
+      },
+      {
+        fan: "很快两人都变得委靡不振，都对父亲的炼金术和智慧失去了敬意，都躲藏到孤独之中。",
+        gao: "很快陷入半昏迷状态；两人都同样厌恶炼金术和父亲的聪明才智，变得孤僻了。",
+        huang: "这样，两兄弟很快都得了萎靡症。他们对父亲的炼金术和学识才智都不屑一顾，两人一起躲进了孤独之中。",
+        yang: "两兄弟很快地就同样疲困不堪，对炼金术和父亲的那套智慧也不再感兴趣了，他们见人就躲开。",
+        ye: "兄弟俩很快地同样变得懒散，同样瞧不起父亲的炼金术和智慧，开始躲得不见人影。"
+      },
+      {
+        fan: "“我这样做，”他说，“是因为我宁愿掂起一个活人，也不愿后半辈子都惦着一个死人。”",
+        gao: "“我这么做，”他说，“因为我认为我已到了余年，与其拖一个死人，不如花几分钟拖一个活人。”",
+        huang: "“我这么干，”他说，“是因为我宁愿举个活人，免得一辈子忘不了一个死人。”",
+        yang: "“我这样做，”他说，“那是因为我宁愿把活生生的你举起来不放，而不想以后来抬你的尸体。”",
+        ye: "“我只做到这里。”他告诉他。“因为我宁愿举着活生生的你，也不要后半辈子扛着死不瞑目的你。”"
+      },
+      {
+        fan: "“你适合打仗，”她说，“百发百中呢。”",
+        gao: "“你打仗真行，”她回答。“弹无虚发。”",
+        huang: "“你打仗真行，”她说，“百发百中啊。”",
+        yang: "“我想你打仗一定厉害，”她说，“你目光所到之处，子弹就射中了。”",
+        ye: "“你很会打仗。”她说。“视线扫到哪儿，子弹就打中哪儿。”"
+      },
+      {
+        fan: "从那天起，她就展示出责任感、大方的仪态，以及面对逆境仍波澜不惊的控制力。",
+        gao: "正是从这一天起，在不利的情况下，她都表现了责任心、天生的温厚态度和自制能力。",
+        huang: "从那天起，她就表现出办事认真负责，举止自然大方和在任何逆境中都有处变不惊的自制力的能耐。",
+        yang: "从那天以后，她在逆境中始终表现出充分的责任感、天性的美德和镇静。",
+        ye: "从那天起，她展现她的责任心、天生的优雅，和面对困难状况时沉稳的处理能力。"
+      },
+      {
+        fan: "谎言说得越来越真诚，最后连她自己也从中得到了安慰。",
+        gao: "她学会了把假话说得十分逼真，自己也终于在捏造中寻得安慰。",
+        huang: "在这场欺骗中，她是那样真心诚意，结果自己也从这些谎言中得到了安慰。",
+        yang: "她诚心骗他，最后竟以谎言来安慰自己。",
+        ye: "虽然是欺骗，她却是真心诚意，以致连她都拿自己的谎言来安慰自己。"
+      },
+      {
+        fan: "花雨在镇上落了一整夜，这静寂的风暴覆盖了屋顶，堵住了房门，令露宿的动物窒息而死。",
+        gao: "整整一夜，黄色的花朵象无声的暴雨，在市镇上空纷纷飘落，铺满了所有的房顶，堵塞了房门，遮没了睡在户外的牲畜。",
+        huang: "在寂静的风暴中，镇上下了整整一夜，小黄花盖满了屋顶，堵住了门口，闷死了睡在露天的动物。",
+        yang: "它们有如无声无息的风暴整夜袭击这个城镇；它们覆盖了屋顶，堵塞了门槛，闷毙了睡在户外的动物。",
+        ye: "花雨像是一场无声的暴雨袭击了一整夜，覆盖了屋顶，堵塞了大门，闷死了所有露天而睡的动物。"
+      },
+      {
+        fan: "“只要上帝还让我活着，”她时常这样说，“这个净出疯子的家里就缺不了钱。”",
+        gao: "“只要上帝让我活下去，”她常说，“这个疯人院里总有充足的钱。”",
+        huang: "“只要上帝让我活着，”她经常这样说，“在这幢疯人院里就不会缺钱花。”",
+        yang: "“只要上帝让我活下去，”她说，“这间疯人院就总是有钱。”",
+        ye: "“只要我还有一口气在，这个住着疯子的家就不会为钱发愁。”她总是将这句话挂在嘴边。"
+      },
+      {
+        fan: "她整个上午找遍最隐秘的角落，却没能找到任何能拿来怀想儿子的物事。",
+        gao: "整个早上，她都在房子里——甚至在最秘密的角落里——寻找什么东西，使她能够想到儿子，可是什么也没找到。",
+        huang: "整整一上午，她搜肚刮肠地寻找事由来回忆儿子，却找来找去没找到。",
+        yang: "整个早晨她都在隐密的角落里找寻儿子的纪念品，但一样也没有找到。",
+        ye: "她花了一整个早上，在屋内最隐密的角落寻找儿子的回忆，却怎么也找不到。"
+      },
+      {
+        fan: "约略懂得幸福晚年的秘诀不过是与孤独签下不失尊严的协定罢了。",
+        gao: "他逐渐明白，安度晚年的秘诀不是别的，而是跟孤独签订体面的协议。",
+        huang: "他隐约知道，一个幸福晚年的秘诀不是别的，而是与孤寂签订一个体面的协定。",
+        yang: "他只知道金色晚年的秘诀在于与孤寂结上光荣的誓盟。",
+        ye: "他只懂得安详的晚年就是诚实地跟孤独和解。"
+      },
+      {
+        fan: "她透过尘雾看到他站在往昔的薄雾中，背上斜挎着双铳猎枪，手里拎着一串兔子。",
+        gao: "透过一片尘雾，她看见他立在昔日的迷雾里：背上挎着一杆双筒枪，手里拎着一串兔子。",
+        huang: "透过弥漫的灰雾，她看见了他在往昔的灰茫茫的尘埃中，背上斜挎一支双筒猎枪，手里提着一串野兔子。",
+        yang: "从飞扬的尘埃中，她看见的仿佛是当年肩上扛着猎枪，手上提着着兔子的那个壮汉。",
+        ye: "隔着尘雾，她看见雾里出现的人仿佛斜揹着双管猎枪，手里拎着一串兔子。"
+      },
+      {
+        fan: "我知道你老了，可现在才明白你比看起来的样子还要老得多。",
+        gao: "我知道你老了，可我今天才明白，你比看上去老得多了。",
+        huang: "我早就知道你已经老了，可是我现在发现，你比你的外表还要老得多啊。",
+        yang: "我知道你老了，但没想到现在的你比表面上看起来老多了。",
+        ye: "我知道你老了，但是现在我发现你比外表看起来还要老啊。"
+      },
+      {
+        fan: "在人们的印象中，她似乎白天织晚上拆，却不是为了借此击败孤独，恰恰相反，为的是持守孤独。",
+        gao: "可以看出，她白天缝，晚上拆，但这不是为了摆脱孤独，恰恰相反，而是为了保持孤独。",
+        huang: "据说她是白天绣，晚上拆。她并不想以这种方式打破孤独，相反，想以这种方式来保持孤独。",
+        yang: "或许有人说她是白天制衣晚上拆，不指望用这个方法解除寂寞，反而是在培养孤寂感。",
+        ye: "或许可以说她白天缝制，夜晚再拆掉，她不是想借此排解孤独，而是加以拥抱。"
+      },
+      {
+        fan: "她满怀怨恨地制定了计划，但心中一个念头令她战惊：纵然出于爱意，她也无法做得比这更好。",
+        gao: "她痛恨地拟定自己的计划时突然想到，如果她爱，也会这么干的。",
+        huang: "她怀着如此强烈的仇恨制定这项治丧计划，想到自己如果出于爱的深情也将会同样这么做的时候，不由一阵颤栗。",
+        yang: "她怀著深仇大恨，一心订出内容想起来令人不禁发指的计画；如果这种做法是出于爱心，倒也无可厚非。",
+        ye: "她怀著深仇大恨进行计画，她曾发抖地想著即使是基于爱应该也是同样的一套方式，但她不容自己犹豫惊惶。"
+      },
+      {
+        fan: "他同样无法相信大屠杀的发生，更不相信满载尸体的火车驶向大海的梦魇。",
+        gao: "他既不相信广场上的大屠杀事件，也不相信夜间列车载着尸体开往海边的恶梦。",
+        huang: "连他也不相信发生过大屠杀的说法，更不相信火车满载尸体运往海边的梦呓。",
+        yang: "他不相信大屠杀和火车载运尸体往海边去的说法。",
+        ye: "他不相信大屠杀一事，也不相信有辆载满尸体的火车驶向大海的恶梦。"
+      },
+      {
+        fan: "他们把她当作一个陈旧的玩偶在角落里拖来拖去，给她披上花布条，往她脸上涂满油烟和胭脂。",
+        gao: "他们拿她当做老朽的大玩偶，把她从一个角落拖到另一个角落，给她穿上花衣服，在她脸上涂抹油烟。",
+        huang: "他们把她当作一个老朽的大洋娃娃，给她披上花花绿绿的破布，给她脸上涂了烟垢和胭脂，抱着她走来走去。",
+        yang: "他们把她当作破旧的大囡囡，给她披上彩色的花布，在她脸上涂上煤烟灰的亚纳托果油，扛着在屋里到处走。",
+        ye: "他们把她当作破旧的大娃娃，带着她到处走，给她盖上彩色破布，拿煤灰和胭脂树红涂抹她的脸。"
+      },
+      {
+        fan: "夫妻俩在烈日下一动不动，看着火车变作地平线上的黑点，这是自从婚礼那天后两人第一次挽臂并肩。",
+        gao: "一对老夫妇一动不动地长久站在灼人的太阳下，望着列车怎样变成地平线上的一个小黑点——他们婚后还是头一次手携着手地站在一起。",
+        huang: "夫妻俩在烈日下呆呆地站着，看着火车在地平线上变成了一个小黑点。从结婚以来，他俩第一次手挽手站在一起。",
+        yang: "夫妇木然在艳阳下，望着火车与黑色的地平线交叠在一起，这是他们婚后第一次手挽着手。",
+        ye: "他们夫妻从婚礼那天之后第一次牵着手，伫立在炎热的大太阳底下动也不动，凝视火车变成黑点慢慢地没入地平线。"
+      },
+      {
+        fan: "比起家具的损坏，更令他怒火中烧的是在狂欢后的空虚中对自己的厌恶和怜悯。",
+        gao: "他不由得火冒三丈，倒不是由于他面前出现的一片毁灭景象，而是出于对自己的可怜和厌恶，一场破坏性的纵酒把他的心都劫掠一空了。",
+        huang: "他的发作倒并不是因为这场浩劫，而是因为在纵情狂欢之中他感到了无法慰藉的空虚，他对自己感到厌恶，感到遗憾。",
+        yang: "他气得不得了，但与其说是气他们弄坏了东西，不如说是气他们纵欲的空虚，他讨厌自己，也同情自己。",
+        ye: "他勃然大怒，不只是因为他们的破坏，也因为在纵情狂欢后浮起一种悲凉的空虚，让他对自己感到恶心又同情。"
+      },
+      {
+        fan: "并且坚决捍卫已然在法庭案卷和小学教科书中根深蒂固的说法：根本没有过什么香蕉公司。",
+        gao: "他们甚至还坚持说，在司法文件中以及小学教科书上，一切都讲得明明白白：香蕉公司从来不曾有过。",
+        huang: "他们甚至相信，“果品公司压根儿就没有存在过”，因为不管怎么说，这是写进了法律文件和小学教科书的说法。",
+        yang: "他们甚至坚持法律文件和小学教科书上的说法，亦即不曾有过所谓的香蕉公司。",
+        ye: "他们甚至深信法院档案跟小学课本：香蕉公司从来不存在。"
+      },
+      {
+        fan: "过去都是假的，回忆没有归路，春天总是一去不返，最疯狂执著的爱情也终究是过眼云烟。",
+        gao: "过去是虚假的，往事是不能返回的，每一个消逝的春天都一去不复返了，最狂热、最坚贞的爱情也只是一种过眼烟云似的感情。",
+        huang: "过去都是假的，回忆是一条没有归途的路，一切已往的春天是无法复原的，那最狂乱而又坚韧的爱情归根结底也不过是一种瞬息即逝的现实。",
+        yang: "往事是谎言，回忆中的事情永不复返，每个逝去的春天都不可能再来，再狂热再坚贞的爱情，终究是短暂的。",
+        ye: "过去只是谎言，回忆再也无法回头，所有已经逝去的春天无法寻回，最愚蠢和固执的爱情再怎么样也只是转瞬即逝的片段。"
+      }
+    ];
+
+    const letters = ["A", "B", "C", "D", "E"];
+    const quizEl = document.getElementById("quiz");
+    const resultsEl = document.getElementById("results");
+    const pickedCountEl = document.getElementById("pickedCount");
+    const progressBarEl = document.getElementById("progressBar");
+    const submitBtn = document.getElementById("submitBtn");
+    const themeButtons = document.querySelectorAll("[data-theme-choice]");
+    const themeMap = {
+      parchment: "旧书黄",
+      rain: "雨夜镇",
+      tropical: "热带花雨",
+      film: "胶卷旧色",
+      ink: "黑墨夜"
+    };
+    const state = {
+      questions: [],
+      picks: new Map()
+    };
+
+    function setTheme(theme) {
+      if (!themeMap[theme]) {
+        return;
+      }
+      document.body.dataset.theme = theme;
+      themeButtons.forEach((button) => {
+        const active = button.dataset.themeChoice === theme;
+        button.classList.toggle("active", active);
+      });
+      localStorage.setItem("theme-choice-v2", theme);
+    }
+
+    function bindThemeButtons() {
+      themeButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          setTheme(button.dataset.themeChoice);
+        });
+      });
+    }
+
+    function shuffle(items) {
+      const copy = [...items];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function buildState() {
+      state.picks.clear();
+      state.questions = shuffle(rows.map((row, originalIndex) => ({
+        originalIndex,
+        options: shuffle(Object.keys(translators).map((key) => ({
+          key,
+          text: row[key]
+        })))
+      })));
+    }
+
+    function renderQuiz() {
+      quizEl.innerHTML = state.questions.map((question, questionIndex) => {
+        const optionsHtml = question.options.map((option, optionIndex) => `
+          <label class="option">
+            <input type="radio" name="q-${questionIndex}" value="${option.key}" data-question="${questionIndex}">
+            <span class="letter">${letters[optionIndex]}</span>
+            <span class="text">${option.text}</span>
+          </label>
+        `).join("");
+
+        return `
+          <article class="question" id="question-${questionIndex + 1}">
+            <div class="question-head">
+              <h2 class="question-title">第 ${questionIndex + 1} 题</h2>
+              <span class="status" id="status-${questionIndex}">未选择</span>
+            </div>
+            <div class="options">${optionsHtml}</div>
+          </article>
+        `;
+      }).join("");
+
+      quizEl.querySelectorAll("input[type='radio']").forEach((input) => {
+        input.addEventListener("change", handlePick);
+      });
+      updateProgress();
+    }
+
+    function handlePick(event) {
+      const questionIndex = Number(event.target.dataset.question);
+      state.picks.set(questionIndex, event.target.value);
+      document.getElementById(`status-${questionIndex}`).textContent = "已选择";
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const picked = state.picks.size;
+      pickedCountEl.textContent = String(picked);
+      progressBarEl.style.width = `${(picked / rows.length) * 100}%`;
+      submitBtn.disabled = picked !== rows.length;
+    }
+
+    function calculateScores() {
+      const scores = Object.fromEntries(Object.keys(translators).map((key) => [key, 0]));
+      state.picks.forEach((key) => {
+        scores[key] += 1;
+      });
+      return scores;
+    }
+
+    function renderResults() {
+      const scores = calculateScores();
+      const max = Math.max(...Object.values(scores));
+      const winners = Object.keys(scores).filter((key) => scores[key] === max);
+      const sorted = Object.keys(scores).sort((a, b) => scores[b] - scores[a] || translators[a].localeCompare(translators[b], "zh-Hans-CN"));
+      const winnerText = winners.map((key) => translators[key]).join("、");
+      const winnerNote = winners.length > 1
+        ? `并列最高，各被选择 ${max} 次。`
+        : `被选择 ${max} 次，是你这轮盲选中最常偏爱的译者。`;
+
+      const bars = sorted.map((key) => {
+        const width = rows.length === 0 ? 0 : (scores[key] / rows.length) * 100;
+        const topClass = scores[key] === max ? " top" : "";
+        return `
+          <div class="score${topClass}">
+            <div class="name">${translators[key]}</div>
+            <div class="bar" aria-hidden="true"><span style="width: ${width}%"></span></div>
+            <div class="count">${scores[key]}</div>
+          </div>
+        `;
+      }).join("");
+
+      const answerLines = state.questions.map((question, index) => {
+        const pickedKey = state.picks.get(index);
+        return `<div>第 ${index + 1} 题：${translators[pickedKey]}</div>`;
+      }).join("");
+
+      resultsEl.innerHTML = `
+        <div class="winner">
+          <p class="winner-label">本轮最偏好的译者</p>
+          <div class="winner-name">${winnerText}</div>
+          <p class="winner-note">${winnerNote}</p>
+        </div>
+        <div class="scoreboard">${bars}</div>
+        <div class="answers">${answerLines}</div>
+        <div class="actions">
+          <button class="ghost" type="button" id="restartBtn">重新随机测试</button>
+        </div>
+      `;
+      resultsEl.classList.add("show");
+      document.getElementById("restartBtn").addEventListener("click", restart);
+      resultsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function restart() {
+      resultsEl.classList.remove("show");
+      resultsEl.innerHTML = "";
+      buildState();
+      renderQuiz();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem("theme-choice-v2") || "parchment";
+      setTheme(savedTheme);
+      bindThemeButtons();
+    }
+
+    submitBtn.addEventListener("click", renderResults);
+    initTheme();
+    buildState();
+    renderQuiz();
+  </script>
+</body>
+</html>
