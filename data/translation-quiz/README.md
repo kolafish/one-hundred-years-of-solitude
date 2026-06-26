@@ -90,6 +90,14 @@ python3 data/translation-quiz/scripts/generate_questions.py
 This writes:
 
 - `data/translation-quiz/questions.json`: 400 short-excerpt quiz questions, 20 per chapter.
-- `data/translation-quiz/question_generation_report.json`: matching confidence and QA summary.
+- `data/translation-quiz/question_generation_report.json`: matching confidence, option-level QA summary, and a review list for every non-aligned option.
 
 Traditional Chinese sources are normalized to simplified Chinese before output. If `opencc-python-reimplemented` is installed, the generator uses it; otherwise it falls back to a small built-in character map and keeps running. The Mini Program should initially sample `quality.status === "ready"` questions and keep `review` / `disabled` items out of the default quiz pool until manually checked.
+
+The generator calibrates each of the 400 highlight anchors against every included Chinese version. Each option is marked:
+
+- `aligned`: accepted for the Mini Program.
+- `needs_review`: likely nearby but not strict enough for default display.
+- `unusable`: no reliable match found yet.
+
+The Mini Program samples only `aligned` options from ready questions; `needs_review` and `unusable` data stay in the JSON for later correction.

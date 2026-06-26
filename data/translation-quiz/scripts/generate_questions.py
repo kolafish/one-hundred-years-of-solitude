@@ -322,6 +322,13 @@ def build_question(
                     "versionId": version_id,
                     "text": anchor_text,
                     "confidence": 1.0,
+                    "status": "aligned",
+                    "metrics": {
+                        "keywordRecall": 1.0,
+                        "lengthRatio": 1.0,
+                        "positionDelta": 0.0,
+                    },
+                    "warnings": [],
                     "normalized": True,
                     "source": {
                         "chapterOrder": chapter_order,
@@ -333,11 +340,15 @@ def build_question(
             continue
         model = chapter_models[version_id][chapter_order]
         match = match_excerpt(anchor_text, model, ratio)
+        option_status, option_warnings = classify_option(match)
         options.append(
             {
                 "versionId": version_id,
                 "text": match["text"],
                 "confidence": match["confidence"],
+                "status": option_status,
+                "metrics": match["metrics"],
+                "warnings": option_warnings,
                 "normalized": versions[version_id]["script"] == "Hant",
                 "source": {
                     "chapterOrder": chapter_order,
@@ -350,17 +361,21 @@ def build_question(
                 "questionId": question_id(anchor),
                 "versionId": version_id,
                 "confidence": match["confidence"],
-                "lengthRatio": round(safe_ratio(len(match["text"]), len(anchor_text)), 3),
+                "status": option_status,
+                "keywordRecall": match["metrics"]["keywordRecall"],
+                "lengthRatio": match["metrics"]["lengthRatio"],
                 "positionRatio": round(ratio, 4),
+                "positionDelta": match["metrics"]["positionDelta"],
             }
         )
 
     warnings = quality_warnings(anchor_text, options)
     min_confidence = min(option["confidence"] for option in options if option["versionId"] != "fanye")
+    usable_version_ids = [option["versionId"] for option in options if option["status"] == "aligned"]
     status = "ready"
-    if min_confidence < 0.18 or any(not option["text"] for option in options):
+    if len(usable_version_ids) < 3 or any(not option["text"] for option in options):
         status = "disabled"
-    elif min_confidence < 0.32 or warnings:
+    elif len(usable_version_ids) < len(options) or warnings:
         status = "review"
 
     question = {
@@ -377,6 +392,7 @@ def build_question(
         "quality": {
             "status": status,
             "minConfidence": round(min_confidence, 3),
+            "usableVersionIds": usable_version_ids,
             "warnings": warnings,
         },
     }
@@ -385,7 +401,12 @@ def build_question(
 
 def match_excerpt(anchor_text: str, model: ChapterModel, position_ratio: float) -> dict[str, Any]:
     if not model.sentences:
-        return {"text": "", "confidence": 0.0, "sentenceIndex": []}
+        return {
+            "text": "",
+            "confidence": 0.0,
+            "sentenceIndex": [],
+            "metrics": {"keywordRecall": 0.0, "lengthRatio": 0.0, "positionDelta": 1.0},
+        }
     target = position_ratio * model.char_count
     window = max(1200, model.char_count * 0.1)
     candidates = [
@@ -401,12 +422,15 @@ def match_excerpt(anchor_text: str, model: ChapterModel, position_ratio: float) 
         reverse=True,
     )[:24]
     candidates = unique_sentences([*candidates, *content_candidates])
-    scored = [(candidate_score(anchor_text, sentence, target, window), sentence) for sentence in candidates]
+    candidate_windows = candidate_excerpt_windows(candidates, model.sentences, anchor_text)
+    scored = [(candidate_window_score(anchor_text, candidate, target, window), candidate) for candidate in candidate_windows]
     scored.sort(key=lambda item: item[0], reverse=True)
     best_score, best = scored[0]
-    excerpt, indices = expand_excerpt(anchor_text, model.sentences, best.index)
+    excerpt = best["text"]
+    indices = best["indices"]
     score = calibrate_confidence(best_score * length_guard(anchor_text, excerpt))
-    return {"text": excerpt, "confidence": score, "sentenceIndex": indices}
+    metrics = option_metrics(anchor_text, excerpt, best["mid"], target, model.char_count)
+    return {"text": excerpt, "confidence": score, "sentenceIndex": indices, "metrics": metrics}
 
 
 def candidate_score(anchor_text: str, sentence: Sentence, target: float, window: float) -> float:
@@ -414,6 +438,14 @@ def candidate_score(anchor_text: str, sentence: Sentence, target: float, window:
     sentence_mid = (sentence.start + sentence.end) / 2
     position_score = max(0.0, 1.0 - abs(sentence_mid - target) / max(1.0, window))
     return 0.9 * content_score + 0.1 * position_score
+
+
+def candidate_window_score(anchor_text: str, candidate: dict[str, Any], target: float, window: float) -> float:
+    content_score = content_similarity(anchor_text, candidate["text"])
+    position_score = max(0.0, 1.0 - abs(candidate["mid"] - target) / max(1.0, window * 2.2))
+    keyword_score = keyword_recall(anchor_text, candidate["text"])
+    length_score = length_similarity(len(anchor_text), len(candidate["text"]))
+    return 0.58 * content_score + 0.2 * keyword_score + 0.12 * length_score + 0.1 * position_score
 
 
 def content_similarity(anchor_text: str, candidate_text: str) -> float:
@@ -430,6 +462,37 @@ def content_similarity(anchor_text: str, candidate_text: str) -> float:
     return 0.4 * full_overlap + 0.32 * key_overlap + 0.22 * sequence + 0.06 * length_score
 
 
+def candidate_excerpt_windows(
+    candidates: list[Sentence],
+    sentences: list[Sentence],
+    anchor_text: str,
+) -> list[dict[str, Any]]:
+    start_indices: set[int] = set()
+    for sentence in candidates:
+        for delta in (-2, -1, 0):
+            index = sentence.index + delta
+            if 0 <= index < len(sentences):
+                start_indices.add(index)
+
+    windows: list[dict[str, Any]] = []
+    anchor_len = len(anchor_text)
+    max_len = max(90, min(280, math.ceil(anchor_len * 2.35)))
+    for start in sorted(start_indices):
+        text = ""
+        indices: list[int] = []
+        for end in range(start, min(len(sentences), start + 4)):
+            next_text = sentences[end].text
+            combined = normalize_text(text + next_text)
+            if text and len(combined) > max_len:
+                break
+            text = combined
+            indices.append(sentences[end].index)
+            if text:
+                mid = (sentences[start].start + sentences[end].end) / 2
+                windows.append({"text": text, "indices": indices[:], "mid": mid})
+    return unique_windows(windows)
+
+
 def unique_sentences(sentences: list[Sentence]) -> list[Sentence]:
     seen: set[int] = set()
     output: list[Sentence] = []
@@ -438,6 +501,18 @@ def unique_sentences(sentences: list[Sentence]) -> list[Sentence]:
             continue
         seen.add(sentence.index)
         output.append(sentence)
+    return output
+
+
+def unique_windows(windows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    seen: set[tuple[int, ...]] = set()
+    output: list[dict[str, Any]] = []
+    for window in windows:
+        key = tuple(window["indices"])
+        if key in seen:
+            continue
+        seen.add(key)
+        output.append(window)
     return output
 
 
@@ -460,16 +535,57 @@ def expand_excerpt(anchor_text: str, sentences: list[Sentence], center_index: in
 
 def quality_warnings(anchor_text: str, options: list[dict[str, Any]]) -> list[str]:
     warnings: list[str] = []
-    anchor_len = len(anchor_text)
     for option in options:
         if option["versionId"] == "fanye":
             continue
-        ratio = safe_ratio(len(option["text"]), anchor_len)
-        if option["confidence"] < 0.32:
-            warnings.append(f"low_confidence:{option['versionId']}")
-        if ratio < 0.35 or ratio > 2.2:
-            warnings.append(f"length_ratio_outlier:{option['versionId']}")
+        for warning in option.get("warnings", []):
+            warnings.append(f"{warning}:{option['versionId']}")
     return warnings
+
+
+def classify_option(match: dict[str, Any]) -> tuple[str, list[str]]:
+    warnings: list[str] = []
+    metrics = match["metrics"]
+    if not match["text"]:
+        return "unusable", ["empty_match"]
+    if match["confidence"] < 0.28:
+        warnings.append("low_confidence")
+    if metrics["keywordRecall"] < 0.24:
+        warnings.append("low_keyword_recall")
+    if metrics["lengthRatio"] < 0.36 or metrics["lengthRatio"] > 2.35:
+        warnings.append("length_ratio_outlier")
+    if metrics["positionDelta"] > 0.28:
+        warnings.append("position_delta_outlier")
+
+    if "empty_match" in warnings or match["confidence"] < 0.18 or metrics["keywordRecall"] < 0.16:
+        return "unusable", warnings
+    if warnings:
+        return "needs_review", warnings
+    return "aligned", warnings
+
+
+def option_metrics(anchor_text: str, excerpt: str, candidate_mid: float, target: float, chapter_chars: int) -> dict[str, float]:
+    return {
+        "keywordRecall": round(keyword_recall(anchor_text, excerpt), 3),
+        "lengthRatio": round(safe_ratio(len(excerpt), len(anchor_text)), 3),
+        "positionDelta": round(abs(candidate_mid - target) / max(1, chapter_chars), 3),
+    }
+
+
+def keyword_recall(anchor_text: str, candidate_text: str) -> float:
+    anchor_keywords = distinctive_chars(anchor_text)
+    if not anchor_keywords:
+        return 1.0
+    candidate_chars = set(comparable_text(candidate_text, keep_common=True))
+    return len(anchor_keywords & candidate_chars) / len(anchor_keywords)
+
+
+def distinctive_chars(text: str) -> set[str]:
+    chars = set(comparable_text(text, keep_common=True))
+    chars = {char for char in chars if char not in COMMON_CHARS}
+    if len(chars) >= 8:
+        return chars
+    return set(comparable_text(text, keep_common=True))
 
 
 def build_report(
@@ -478,6 +594,8 @@ def build_report(
     normalizer: ScriptNormalizer,
 ) -> dict[str, Any]:
     status_counts = Counter(question["quality"]["status"] for question in questions)
+    usable_counts = Counter(len(question["quality"]["usableVersionIds"]) for question in questions)
+    option_status_counts = Counter(option["status"] for question in questions for option in question["options"])
     warning_counts = Counter(warning for question in questions for warning in question["quality"].get("warnings", []))
     by_version: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for record in records:
@@ -487,13 +605,37 @@ def build_report(
     for version_id, items in by_version.items():
         confidences = [item["confidence"] for item in items]
         length_ratios = [item["lengthRatio"] for item in items]
+        keyword_recalls = [item["keywordRecall"] for item in items]
+        statuses = Counter(item["status"] for item in items)
         version_summary[version_id] = {
             "items": len(items),
+            "statusCounts": dict(sorted(statuses.items())),
             "averageConfidence": round(sum(confidences) / len(confidences), 3),
             "minConfidence": min(confidences),
+            "averageKeywordRecall": round(sum(keyword_recalls) / len(keyword_recalls), 3),
             "averageLengthRatio": round(sum(length_ratios) / len(length_ratios), 3),
             "lengthOutliers": sum(1 for value in length_ratios if value < 0.35 or value > 2.2),
         }
+
+    issues = []
+    for question in questions:
+        for option in question["options"]:
+            if option["status"] == "aligned":
+                continue
+            issues.append(
+                {
+                    "questionId": question["id"],
+                    "chapterOrder": question["chapterOrder"],
+                    "rank": question["rank"],
+                    "versionId": option["versionId"],
+                    "status": option["status"],
+                    "confidence": option["confidence"],
+                    "warnings": option.get("warnings", []),
+                    "metrics": option.get("metrics", {}),
+                    "anchor": question["anchor"]["text"][:120],
+                    "text": option["text"][:160],
+                }
+            )
 
     return {
         "schemaVersion": 1,
@@ -505,9 +647,12 @@ def build_report(
         "summary": {
             "questions": len(questions),
             "statusCounts": dict(sorted(status_counts.items())),
+            "usableOptionCounts": dict(sorted(usable_counts.items())),
+            "optionStatusCounts": dict(sorted(option_status_counts.items())),
             "warningCounts": dict(warning_counts.most_common()),
             "versions": version_summary,
         },
+        "issues": issues,
     }
 
 
@@ -639,14 +784,17 @@ def question_id(anchor: dict[str, Any]) -> str:
 
 def repair_pdf_spacing(text: str) -> str:
     text = CJK_SPACE_RE.sub("", text)
+    text = re.sub(r"观者藏书", "", text)
+    text = re.sub(r"[①②③④⑤⑥⑦⑧⑨⑩][^。\n]{0,90}。", "", text)
     text = re.sub(r"第\s*([一二三四五六七八九十百〇零两0-9]+)\s*章", r"第\1章", text)
     return text
 
 
 def normalize_text(text: str) -> str:
     text = text.replace("\u200b", "").replace("\xa0", " ")
+    text = re.sub(r"(?<=[\u3400-\u9fff])\n+(?=[\u3400-\u9fff])", "", text)
+    text = re.sub(r"\n+", " ", text)
     text = re.sub(r"[ \t\r\f\v]+", " ", text)
-    text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
 

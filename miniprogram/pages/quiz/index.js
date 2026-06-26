@@ -23,8 +23,10 @@ Page({
   },
 
   restartSession() {
-    const readyQuestions = questionBank.questions.filter((question) => question.quality.status === "ready");
-    const fallbackQuestions = questionBank.questions.filter((question) => question.quality.status === "review");
+    const readyQuestions = questionBank.questions.filter(isUsableQuestion);
+    const fallbackQuestions = questionBank.questions.filter(
+      (question) => question.quality.status === "review" && usableOptions(question).length >= OPTION_COUNT
+    );
     const pool = readyQuestions.length >= SESSION_SIZE ? readyQuestions : readyQuestions.concat(fallbackQuestions);
     const questions = shuffle(pool).slice(0, SESSION_SIZE).map(prepareQuestion);
 
@@ -98,8 +100,17 @@ Page({
   }
 });
 
+function isUsableQuestion(question) {
+  return question.quality.status === "ready" && usableOptions(question).length >= OPTION_COUNT;
+}
+
+function usableOptions(question) {
+  const usableIds = question.quality.usableVersionIds || [];
+  return question.options.filter((option) => option.status === "aligned" && usableIds.includes(option.versionId));
+}
+
 function prepareQuestion(question) {
-  const options = shuffle(question.options).slice(0, OPTION_COUNT).map((option, index) => ({
+  const options = shuffle(usableOptions(question)).slice(0, OPTION_COUNT).map((option, index) => ({
     key: `${question.id}-${index}`,
     label: LABELS[index],
     text: option.text,
