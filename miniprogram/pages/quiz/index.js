@@ -1,4 +1,5 @@
 const questionBank = require("../../data/questions.js");
+const statsStore = require("../../utils/storage.js");
 
 const SESSION_SIZE = 10;
 const LABELS = ["A", "B", "C", "D", "E"];
@@ -12,7 +13,8 @@ Page({
     isLastQuestion: false,
     currentQuestion: null,
     questions: [],
-    answers: []
+    answers: [],
+    stats: statsStore.getStats()
   },
 
   onLoad() {
@@ -33,7 +35,8 @@ Page({
       isLastQuestion: questions.length <= 1,
       currentQuestion: questions[0] || null,
       questions,
-      answers: []
+      answers: [],
+      stats: statsStore.getStats()
     });
   },
 
@@ -60,7 +63,8 @@ Page({
 
     const nextIndex = this.data.currentIndex + 1;
     if (nextIndex >= this.data.questions.length) {
-      this.setData({ mode: "result" });
+      const stats = statsStore.recordSession(this.data.answers);
+      this.setData({ mode: "result", stats });
       return;
     }
 
@@ -70,6 +74,26 @@ Page({
       isLastQuestion: nextIndex === this.data.questions.length - 1,
       currentQuestion: this.data.questions[nextIndex]
     });
+  },
+
+  copyStats() {
+    wx.setClipboardData({
+      data: statsStore.exportStats(),
+      success: () => wx.showToast({ title: "已复制统计", icon: "success" })
+    });
+  },
+
+  clearStats() {
+    const stats = statsStore.clearStats();
+    this.setData({ stats });
+    wx.showToast({ title: "已清空", icon: "none" });
+  },
+
+  onShareAppMessage() {
+    return {
+      title: "中年的百年孤独：译本盲选",
+      path: "/pages/quiz/index"
+    };
   }
 });
 

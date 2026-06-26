@@ -39,6 +39,21 @@
   <view wx:else class="result">
     <view class="result-title">本轮完成</view>
     <view class="result-count">{{answers.length}} / {{sessionTotal}}</view>
+    <view class="stats">
+      <view>
+        <text class="stats-number">{{stats.totalSessions}}</text>
+        <text class="stats-label">轮</text>
+      </view>
+      <view>
+        <text class="stats-number">{{stats.totalAnswers}}</text>
+        <text class="stats-label">题</text>
+      </view>
+    </view>
+    <view class="result-actions">
+      <button class="ghost compact" open-type="share">分享</button>
+      <button class="ghost compact" bindtap="copyStats">复制统计</button>
+      <button class="ghost compact" bindtap="clearStats">清空</button>
+    </view>
     <button class="primary wide" bindtap="restartSession">再来一轮</button>
   </view>
 </view>
