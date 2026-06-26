@@ -60,12 +60,12 @@
       >
         <view class="translator-line">
           <text class="translator-name">{{item.name}}</text>
-          <text class="translator-count">本轮 {{item.roundVotes}} 次 · 累计 {{item.totalVotes}} 次</text>
+          <text class="translator-count">本轮 {{item.roundVotes}} / {{item.roundAppearances}} · 累计 {{item.totalVotes}} / {{item.totalAppearances}}</text>
         </view>
         <view class="translator-track">
           <view class="translator-bar" style="width: {{item.roundPercent}}%; background: {{item.color}};"></view>
         </view>
-        <view class="translator-percent">本轮 {{item.roundPercentText}} · 累计 {{item.totalPercentText}}</view>
+        <view class="translator-percent">选中率 本轮 {{item.roundPercentText}} · 累计 {{item.totalPercentText}}</view>
       </view>
     </view>
 

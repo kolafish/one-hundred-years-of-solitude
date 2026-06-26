@@ -76,7 +76,8 @@ Page({
     answers[this.data.currentIndex] = {
       questionId: currentQuestion.id,
       selectedKey: key,
-      versionId: selectedOption.versionId
+      versionId: selectedOption.versionId,
+      appearedVersionIds: currentQuestion.options.map((option) => option.versionId)
     };
 
     this.setData({ currentQuestion, answers, isAdvancing: true });
@@ -178,26 +179,37 @@ function markSelected(question, selectedKey) {
 
 function buildResultRows(answers, stats) {
   const roundVotes = {};
+  const roundAppearances = {};
   const totalVotes = (stats && stats.versionVotes) || {};
-  const totalAnswers = (stats && stats.totalAnswers) || 0;
+  const totalAppearances = (stats && stats.versionAppearances) || {};
 
   answers.forEach((answer) => {
+    const appearedVersionIds = answer.appearedVersionIds || [answer.versionId];
+
+    appearedVersionIds.forEach((versionId) => {
+      roundAppearances[versionId] = (roundAppearances[versionId] || 0) + 1;
+    });
+
     roundVotes[answer.versionId] = (roundVotes[answer.versionId] || 0) + 1;
   });
 
   return VERSION_META.map((version) => {
     const roundCount = roundVotes[version.id] || 0;
+    const roundSeen = roundAppearances[version.id] || 0;
     const totalCount = totalVotes[version.id] || 0;
-    const roundPercent = answers.length ? Math.round((roundCount / answers.length) * 100) : 0;
-    const totalPercent = totalAnswers ? Math.round((totalCount / totalAnswers) * 100) : 0;
+    const totalSeen = Math.max(totalAppearances[version.id] || 0, totalCount);
+    const roundRate = roundSeen ? Math.round((roundCount / roundSeen) * 100) : 0;
+    const totalRate = totalSeen ? Math.round((totalCount / totalSeen) * 100) : 0;
 
     return {
       ...version,
       roundVotes: roundCount,
+      roundAppearances: roundSeen,
       totalVotes: totalCount,
-      roundPercent,
-      roundPercentText: `${roundPercent}%`,
-      totalPercentText: `${totalPercent}%`
+      totalAppearances: totalSeen,
+      roundPercent: roundRate,
+      roundPercentText: `${roundRate}%`,
+      totalPercentText: `${totalRate}%`
     };
   });
 }
