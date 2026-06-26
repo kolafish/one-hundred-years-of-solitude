@@ -80,3 +80,16 @@ python3 data/translation-quiz/scripts/extract_sources.py --write-extracted
 ```
 
 PDF extraction requires `PyMuPDF` (`fitz`). The Codex bundled Python runtime includes it; a normal system Python may need `pip install pymupdf`.
+
+Generate the static blind-quiz question bank:
+
+```bash
+python3 data/translation-quiz/scripts/generate_questions.py
+```
+
+This writes:
+
+- `data/translation-quiz/questions.json`: 400 short-excerpt quiz questions, 20 per chapter.
+- `data/translation-quiz/question_generation_report.json`: matching confidence and QA summary.
+
+Traditional Chinese sources are normalized to simplified Chinese before output. If `opencc-python-reimplemented` is installed, the generator uses it; otherwise it falls back to a small built-in character map and keeps running. The Mini Program should initially sample `quality.status === "ready"` questions and keep `review` / `disabled` items out of the default quiz pool until manually checked.
