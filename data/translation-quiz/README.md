@@ -72,3 +72,11 @@ Run the current source preflight:
 ```bash
 python3 data/translation-quiz/scripts/prepare_sources.py
 ```
+
+Extract source text locally and write a committed summary report plus ignored full-text intermediates:
+
+```bash
+python3 data/translation-quiz/scripts/extract_sources.py --write-extracted
+```
+
+PDF extraction requires `PyMuPDF` (`fitz`). The Codex bundled Python runtime includes it; a normal system Python may need `pip install pymupdf`.

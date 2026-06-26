@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "versions": "data/translation-quiz/versions.json",
+    "localOverrides": "data/translation-quiz/versions.local.json"
+  },
+  "items": [
+    {
+      "id": "fanye",
+      "label": "范晔译本",
+      "sourceType": "repo-data",
+      "script": "Hans",
+      "sourceResolved": true,
+      "sourceExists": true,
+      "warnings": [],
+      "documents": 20,
+      "totalChars": 21828,
+      "minChars": 806,
+      "maxChars": 1394,
+      "totalBlocks": 400,
+      "sampleTitles": [
+        "第1章热门划线",
+        "第2章热门划线",
+        "第3章热门划线",
+        "第4章热门划线",
+        "第5章热门划线"
+      ],
+      "mode": "highlight_anchor_text"
+    },
+    {
+      "id": "gao_changrong",
+      "label": "高长荣译本",
+      "sourceType": "epub",
+      "script": "Hans",
+      "sourceResolved": true,
+      "sourceExists": true,
+      "warnings": [],
+      "documents": 20,
+      "totalChars": 246309,
+      "minChars": 8592,
+      "maxChars": 15327,
+      "totalBlocks": 875,
+      "sampleTitles": [
+        "第一章",
+        "第二章",
+        "第三章",
+        "第四章",
+        "第五章"
+      ],
+      "mode": "epub_spine",
+      "zipWarnings": [
+        "zip_central_directory_unreadable"
+      ],
+      "rawDocuments": 24
+    },
+    {
+      "id": "huang_shen_chen",
+      "label": "黄锦炎、沈国正、陈泉译本",
+      "sourceType": "pdf",
+      "script": "Hans",
+      "sourceResolved": true,
+      "sourceExists": true,
+      "warnings": [],
+      "documents": 20,
+      "totalChars": 265549,
+      "minChars": 11120,
+      "maxChars": 15655,
+      "totalBlocks": 10133,
+      "sampleTitles": [
+        "第一章",
+        "第二章",
+        "第三章",
+        "第四章",
+        "第五章"
+      ],
+      "mode": "pdf_toc_chapters",
+      "rawPages": 402,
+      "chapterHeadingMatches": 20
+    },
+    {
+      "id": "ye_shuyin",
+      "label": "叶淑吟译本",
+      "sourceType": "epub",
+      "script": "Hant",
+      "sourceResolved": true,
+      "sourceExists": true,
+      "warnings": [
+        "traditional_conversion_pending"
+      ],
+      "documents": 20,
+      "totalChars": 230442,
+      "minChars": 9800,
+      "maxChars": 13356,
+      "totalBlocks": 854,
+      "sampleTitles": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "mode": "epub_spine",
+      "zipWarnings": [],
+      "rawDocuments": 24
+    },
+    {
+      "id": "yang_naidong",
+      "label": "楊耐冬译本",
+      "sourceType": "epub",
+      "script": "Hant",
+      "sourceResolved": true,
+      "sourceExists": true,
+      "warnings": [
+        "traditional_conversion_pending"
+      ],
+      "documents": 20,
+      "totalChars": 225569,
+      "minChars": 9573,
+      "maxChars": 13396,
+      "totalBlocks": 40,
+      "sampleTitles": [
+        "第一章",
+        "第二章",
+        "第三章",
+        "第四章",
+        "第五章"
+      ],
+      "mode": "epub_spine",
+      "zipWarnings": [],
+      "rawDocuments": 25
+    }
+  ]
+}
