@@ -2,7 +2,8 @@ const questionBank = require("../../data/questions.js");
 const statsStore = require("../../utils/storage.js");
 
 const SESSION_SIZE = 10;
-const LABELS = ["A", "B", "C", "D", "E"];
+const OPTION_COUNT = 3;
+const LABELS = ["A", "B", "C"];
 
 Page({
   data: {
@@ -98,7 +99,7 @@ Page({
 });
 
 function prepareQuestion(question) {
-  const options = shuffle(question.options).map((option, index) => ({
+  const options = shuffle(question.options).slice(0, OPTION_COUNT).map((option, index) => ({
     key: `${question.id}-${index}`,
     label: LABELS[index],
     text: option.text,
