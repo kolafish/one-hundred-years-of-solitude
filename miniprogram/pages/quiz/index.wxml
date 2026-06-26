@@ -1,0 +1,44 @@
+<view class="page">
+  <view class="masthead">
+    <view>
+      <view class="kicker">中年的百年孤独</view>
+      <view class="title">译本盲选</view>
+    </view>
+    <view class="progress">{{currentNumber}} / {{sessionTotal}}</view>
+  </view>
+
+  <view wx:if="{{mode === 'quiz'}}" class="quiz">
+    <view class="meta">
+      <text>第 {{currentQuestion.chapterOrder}} 章</text>
+      <text>热度 {{currentQuestion.highlightCount}}</text>
+      <text>{{currentQuestion.quality.status}}</text>
+    </view>
+
+    <view class="cue" wx:if="{{currentQuestion.cue}}">{{currentQuestion.cue}}</view>
+    <view class="prompt">请选择你更喜欢的版本</view>
+
+    <view class="options">
+      <button
+        wx:for="{{currentQuestion.options}}"
+        wx:key="key"
+        class="option {{item.selected ? 'selected' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="selectOption"
+      >
+        <view class="option-label">{{item.label}}</view>
+        <view class="option-text">{{item.text}}</view>
+      </button>
+    </view>
+
+    <view class="actions">
+      <button class="ghost" bindtap="restartSession">重来</button>
+      <button class="primary" bindtap="nextQuestion">{{isLastQuestion ? '完成' : '下一题'}}</button>
+    </view>
+  </view>
+
+  <view wx:else class="result">
+    <view class="result-title">本轮完成</view>
+    <view class="result-count">{{answers.length}} / {{sessionTotal}}</view>
+    <button class="primary wide" bindtap="restartSession">再来一轮</button>
+  </view>
+</view>

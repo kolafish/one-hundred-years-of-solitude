@@ -6,3 +6,5 @@ data/bilingual/.zh_es_epub_build/
 data/translation-quiz/build/
 data/translation-quiz/extracted/
 data/translation-quiz/*.local.json
+miniprogram/project.private.config.json
+miniprogram/miniprogram_npm/

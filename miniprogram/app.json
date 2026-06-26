@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "pages/quiz/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "中年的百年孤独",
+    "navigationBarBackgroundColor": "#f7f3ea",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f7f3ea"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
