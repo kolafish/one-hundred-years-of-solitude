@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-26T02:34:38+00:00",
+  "normalization": {
+    "opencc": true,
+    "fallbackHantMapSize": 117
+  },
+  "summary": {
+    "questions": 400,
+    "statusCounts": {
+      "disabled": 17,
+      "ready": 225,
+      "review": 158
+    },
+    "warningCounts": {
+      "low_confidence:yang_naidong": 97,
+      "low_confidence:gao_changrong": 89,
+      "low_confidence:ye_shuyin": 76,
+      "low_confidence:huang_shen_chen": 41,
+      "length_ratio_outlier:gao_changrong": 22,
+      "length_ratio_outlier:ye_shuyin": 21,
+      "length_ratio_outlier:huang_shen_chen": 18,
+      "length_ratio_outlier:yang_naidong": 14
+    },
+    "versions": {
+      "gao_changrong": {
+        "items": 400,
+        "averageConfidence": 0.493,
+        "minConfidence": 0.005,
+        "averageLengthRatio": 1.204,
+        "lengthOutliers": 22
+      },
+      "huang_shen_chen": {
+        "items": 400,
+        "averageConfidence": 0.623,
+        "minConfidence": 0.085,
+        "averageLengthRatio": 1.209,
+        "lengthOutliers": 18
+      },
+      "ye_shuyin": {
+        "items": 400,
+        "averageConfidence": 0.53,
+        "minConfidence": 0.075,
+        "averageLengthRatio": 1.185,
+        "lengthOutliers": 21
+      },
+      "yang_naidong": {
+        "items": 400,
+        "averageConfidence": 0.471,
+        "minConfidence": 0.118,
+        "averageLengthRatio": 1.104,
+        "lengthOutliers": 14
+      }
+    }
+  }
+}
