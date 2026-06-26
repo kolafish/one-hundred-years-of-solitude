@@ -144,6 +144,14 @@
   margin-top: 34rpx;
 }
 
+.quiz-actions {
+  justify-content: flex-start;
+}
+
+.quiz-restart {
+  flex: 0 0 180rpx;
+}
+
 .primary,
 .ghost {
   display: flex;
@@ -311,4 +319,10 @@
 
 .wide {
   width: 100%;
+}
+
+.restart-primary {
+  height: 104rpx;
+  font-size: 34rpx;
+  box-shadow: 0 14rpx 30rpx rgba(79, 111, 63, 0.22);
 }

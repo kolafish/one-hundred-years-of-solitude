@@ -30,9 +30,8 @@
       </view>
     </view>
 
-    <view class="actions">
-      <button class="ghost" bindtap="restartSession">重来</button>
-      <button class="primary" bindtap="nextQuestion">{{isLastQuestion ? '完成' : '下一题'}}</button>
+    <view class="actions quiz-actions">
+      <button class="ghost quiz-restart" bindtap="restartSession">重来</button>
     </view>
   </view>
 
@@ -75,6 +74,6 @@
       <button class="ghost compact" bindtap="copyStats">复制统计</button>
       <button class="ghost compact" bindtap="clearStats">清空</button>
     </view>
-    <button class="primary wide" bindtap="restartSession">再来一轮</button>
+    <button class="primary wide restart-primary" bindtap="restartSession">再来一次</button>
   </view>
 </view>

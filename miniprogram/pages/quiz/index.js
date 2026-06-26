@@ -3,6 +3,7 @@ const statsStore = require("../../utils/storage.js");
 
 const SESSION_SIZE = 10;
 const OPTION_COUNT = 3;
+const AUTO_ADVANCE_DELAY_MS = 260;
 const LABELS = ["A", "B", "C"];
 const VERSION_META = [
   { id: "fanye", name: "范晔", color: "#4f6f3f" },
@@ -13,6 +14,8 @@ const VERSION_META = [
 ];
 
 Page({
+  advanceTimer: null,
+
   data: {
     mode: "quiz",
     currentIndex: 0,
@@ -22,6 +25,7 @@ Page({
     currentQuestion: null,
     questions: [],
     answers: [],
+    isAdvancing: false,
     stats: statsStore.getStats(),
     resultRows: []
   },
@@ -30,7 +34,13 @@ Page({
     this.restartSession();
   },
 
+  onUnload() {
+    this.clearAdvanceTimer();
+  },
+
   restartSession() {
+    this.clearAdvanceTimer();
+
     const readyQuestions = questionBank.questions.filter(isUsableQuestion);
     const fallbackQuestions = questionBank.questions.filter(
       (question) => question.quality.status === "review" && usableOptions(question).length >= OPTION_COUNT
@@ -47,12 +57,17 @@ Page({
       currentQuestion: questions[0] || null,
       questions,
       answers: [],
+      isAdvancing: false,
       stats: statsStore.getStats(),
       resultRows: []
     });
   },
 
   selectOption(event) {
+    if (this.data.isAdvancing) {
+      return;
+    }
+
     const key = event.currentTarget.dataset.key;
     const currentQuestion = markSelected(this.data.currentQuestion, key);
     const selectedOption = currentQuestion.options.find((option) => option.key === key);
@@ -64,7 +79,12 @@ Page({
       versionId: selectedOption.versionId
     };
 
-    this.setData({ currentQuestion, answers });
+    this.setData({ currentQuestion, answers, isAdvancing: true });
+    this.clearAdvanceTimer();
+    this.advanceTimer = setTimeout(() => {
+      this.advanceTimer = null;
+      this.nextQuestion();
+    }, AUTO_ADVANCE_DELAY_MS);
   },
 
   nextQuestion() {
@@ -76,7 +96,7 @@ Page({
     const nextIndex = this.data.currentIndex + 1;
     if (nextIndex >= this.data.questions.length) {
       const stats = statsStore.recordSession(this.data.answers);
-      this.setData({ mode: "result", stats, resultRows: buildResultRows(this.data.answers, stats) });
+      this.setData({ mode: "result", isAdvancing: false, stats, resultRows: buildResultRows(this.data.answers, stats) });
       return;
     }
 
@@ -84,8 +104,17 @@ Page({
       currentIndex: nextIndex,
       currentNumber: nextIndex + 1,
       isLastQuestion: nextIndex === this.data.questions.length - 1,
-      currentQuestion: this.data.questions[nextIndex]
+      currentQuestion: this.data.questions[nextIndex],
+      isAdvancing: false
     });
+  },
+
+  clearAdvanceTimer() {
+    if (!this.advanceTimer) {
+      return;
+    }
+    clearTimeout(this.advanceTimer);
+    this.advanceTimer = null;
   },
 
   copyStats() {
