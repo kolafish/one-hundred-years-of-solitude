@@ -10,7 +10,7 @@
   <view wx:if="{{mode === 'quiz'}}" class="quiz">
     <view class="meta">
       <text>第 {{currentQuestion.chapterOrder}} 章</text>
-      <text>热度 {{currentQuestion.highlightCount}}</text>
+      <text wx:if="{{currentQuestion.highlightCount}}">热度 {{currentQuestion.highlightCount}}</text>
     </view>
 
     <view class="cue" wx:if="{{currentQuestion.cue}}">{{currentQuestion.cue}}</view>
