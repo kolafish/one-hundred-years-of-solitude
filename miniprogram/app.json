@@ -4,9 +4,9 @@
   ],
   "window": {
     "navigationBarTitleText": "中年的百年孤独",
-    "navigationBarBackgroundColor": "#f7f3ea",
+    "navigationBarBackgroundColor": "#edf0dc",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#f7f3ea"
+    "backgroundColor": "#f2e2bf"
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json"

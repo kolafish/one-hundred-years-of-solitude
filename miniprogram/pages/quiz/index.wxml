@@ -37,18 +37,39 @@
   </view>
 
   <view wx:else class="result">
-    <view class="result-title">本轮完成</view>
-    <view class="result-count">{{answers.length}} / {{sessionTotal}}</view>
-    <view class="stats">
-      <view>
-        <text class="stats-number">{{stats.totalSessions}}</text>
-        <text class="stats-label">轮</text>
-      </view>
-      <view>
-        <text class="stats-number">{{stats.totalAnswers}}</text>
-        <text class="stats-label">题</text>
+    <view class="result-summary">
+      <view class="result-title">本轮完成</view>
+      <view class="result-count">{{answers.length}} / {{sessionTotal}}</view>
+      <view class="stats">
+        <view>
+          <text class="stats-number">{{stats.totalSessions}}</text>
+          <text class="stats-label">累计轮次</text>
+        </view>
+        <view>
+          <text class="stats-number">{{stats.totalAnswers}}</text>
+          <text class="stats-label">累计选择</text>
+        </view>
       </view>
     </view>
+
+    <view class="translator-results">
+      <view class="section-title">译者选择统计</view>
+      <view
+        wx:for="{{resultRows}}"
+        wx:key="id"
+        class="translator-row"
+      >
+        <view class="translator-line">
+          <text class="translator-name">{{item.name}}</text>
+          <text class="translator-count">本轮 {{item.roundVotes}} 次 · 累计 {{item.totalVotes}} 次</text>
+        </view>
+        <view class="translator-track">
+          <view class="translator-bar" style="width: {{item.roundPercent}}%; background: {{item.color}};"></view>
+        </view>
+        <view class="translator-percent">本轮 {{item.roundPercentText}} · 累计 {{item.totalPercentText}}</view>
+      </view>
+    </view>
+
     <view class="result-actions">
       <button class="ghost compact" open-type="share">分享</button>
       <button class="ghost compact" bindtap="copyStats">复制统计</button>

@@ -4,6 +4,13 @@ const statsStore = require("../../utils/storage.js");
 const SESSION_SIZE = 10;
 const OPTION_COUNT = 3;
 const LABELS = ["A", "B", "C"];
+const VERSION_META = [
+  { id: "fanye", name: "范晔", color: "#4f6f3f" },
+  { id: "gao_changrong", name: "高长荣", color: "#a85236" },
+  { id: "huang_shen_chen", name: "黄锦炎、沈国正、陈泉", color: "#6d817c" },
+  { id: "ye_shuyin", name: "叶淑吟", color: "#c09238" },
+  { id: "yang_naidong", name: "杨耐冬", color: "#7b6f3a" }
+];
 
 Page({
   data: {
@@ -15,7 +22,8 @@ Page({
     currentQuestion: null,
     questions: [],
     answers: [],
-    stats: statsStore.getStats()
+    stats: statsStore.getStats(),
+    resultRows: []
   },
 
   onLoad() {
@@ -39,7 +47,8 @@ Page({
       currentQuestion: questions[0] || null,
       questions,
       answers: [],
-      stats: statsStore.getStats()
+      stats: statsStore.getStats(),
+      resultRows: []
     });
   },
 
@@ -67,7 +76,7 @@ Page({
     const nextIndex = this.data.currentIndex + 1;
     if (nextIndex >= this.data.questions.length) {
       const stats = statsStore.recordSession(this.data.answers);
-      this.setData({ mode: "result", stats });
+      this.setData({ mode: "result", stats, resultRows: buildResultRows(this.data.answers, stats) });
       return;
     }
 
@@ -88,7 +97,7 @@ Page({
 
   clearStats() {
     const stats = statsStore.clearStats();
-    this.setData({ stats });
+    this.setData({ stats, resultRows: buildResultRows(this.data.answers, stats) });
     wx.showToast({ title: "已清空", icon: "none" });
   },
 
@@ -136,6 +145,32 @@ function markSelected(question, selectedKey) {
       selected: option.key === selectedKey
     }))
   };
+}
+
+function buildResultRows(answers, stats) {
+  const roundVotes = {};
+  const totalVotes = (stats && stats.versionVotes) || {};
+  const totalAnswers = (stats && stats.totalAnswers) || 0;
+
+  answers.forEach((answer) => {
+    roundVotes[answer.versionId] = (roundVotes[answer.versionId] || 0) + 1;
+  });
+
+  return VERSION_META.map((version) => {
+    const roundCount = roundVotes[version.id] || 0;
+    const totalCount = totalVotes[version.id] || 0;
+    const roundPercent = answers.length ? Math.round((roundCount / answers.length) * 100) : 0;
+    const totalPercent = totalAnswers ? Math.round((totalCount / totalAnswers) * 100) : 0;
+
+    return {
+      ...version,
+      roundVotes: roundCount,
+      totalVotes: totalCount,
+      roundPercent,
+      roundPercentText: `${roundPercent}%`,
+      totalPercentText: `${totalPercent}%`
+    };
+  });
 }
 
 function shuffle(items) {

@@ -184,8 +184,10 @@ class ScriptNormalizer:
         text = normalize_text(text)
         if script == "Hant":
             text = self.hant_to_hans(text)
+        text = normalize_regional_markers(text)
         for variant, canonical in self.name_replacements:
             text = text.replace(variant, canonical)
+        text = normalize_name_boundaries(text)
         return normalize_text(text)
 
     def hant_to_hans(self, text: str) -> str:
@@ -339,7 +341,7 @@ def build_question(
             )
             continue
         model = chapter_models[version_id][chapter_order]
-        match = match_excerpt(anchor_text, model, ratio)
+        match = match_excerpt(anchor_text, model, ratio, normalizer, versions[version_id]["script"])
         option_status, option_warnings = classify_option(match)
         options.append(
             {
@@ -399,7 +401,13 @@ def build_question(
     return question, records
 
 
-def match_excerpt(anchor_text: str, model: ChapterModel, position_ratio: float) -> dict[str, Any]:
+def match_excerpt(
+    anchor_text: str,
+    model: ChapterModel,
+    position_ratio: float,
+    normalizer: ScriptNormalizer,
+    script: str,
+) -> dict[str, Any]:
     if not model.sentences:
         return {
             "text": "",
@@ -426,7 +434,7 @@ def match_excerpt(anchor_text: str, model: ChapterModel, position_ratio: float) 
     scored = [(candidate_window_score(anchor_text, candidate, target, window), candidate) for candidate in candidate_windows]
     scored.sort(key=lambda item: item[0], reverse=True)
     best_score, best = scored[0]
-    excerpt = best["text"]
+    excerpt = normalizer.normalize_visible(best["text"], script)
     indices = best["indices"]
     score = calibrate_confidence(best_score * length_guard(anchor_text, excerpt))
     metrics = option_metrics(anchor_text, excerpt, best["mid"], target, model.char_count)
@@ -790,8 +798,31 @@ def repair_pdf_spacing(text: str) -> str:
     return text
 
 
+def normalize_name_boundaries(text: str) -> str:
+    text = re.sub(r"何塞·阿尔卡蒂奥[，,、。]\s*布恩迪亚", "何塞·阿尔卡蒂奥·布恩迪亚", text)
+    text = re.sub(r"奥雷里亚诺[.。]\s*布恩迪亚", "奥雷里亚诺·布恩迪亚", text)
+    text = re.sub(r"何塞[.。]\s*阿尔卡蒂奥", "何塞·阿尔卡蒂奥", text)
+    text = re.sub(r"阿玛兰妲[.。]\s*乌尔苏拉", "阿玛兰妲·乌尔苏拉", text)
+    return text
+
+
+def normalize_regional_markers(text: str) -> str:
+    protected_tokens = ["著名", "著作", "著书", "著述", "执著", "名著", "巨著", "土著", "原著"]
+    placeholders: dict[str, str] = {}
+    for index, token in enumerate(protected_tokens):
+        placeholder = f"__OHYS_PROTECTED_ZHU_{index}__"
+        if token in text:
+            placeholders[placeholder] = token
+            text = text.replace(token, placeholder)
+    text = text.replace("妳", "你").replace("著", "着")
+    for placeholder, token in placeholders.items():
+        text = text.replace(placeholder, token)
+    return text
+
+
 def normalize_text(text: str) -> str:
-    text = text.replace("\u200b", "").replace("\xa0", " ")
+    text = text.replace("\u200b", "").replace("\xa0", " ").replace("\u3000", " ")
+    text = text.translate(str.maketrans({"「": "“", "」": "”", "『": "“", "』": "”", "．": "·"}))
     text = re.sub(r"(?<=[\u3400-\u9fff])\n+(?=[\u3400-\u9fff])", "", text)
     text = re.sub(r"\n+", " ", text)
     text = re.sub(r"[ \t\r\f\v]+", " ", text)

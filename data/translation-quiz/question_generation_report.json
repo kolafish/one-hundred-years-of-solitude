@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-06-26T03:15:00+00:00",
+  "generatedAt": "2026-06-26T03:56:03+00:00",
   "normalization": {
     "opencc": true,
     "fallbackHantMapSize": 117
@@ -8,90 +8,91 @@
   "summary": {
     "questions": 400,
     "statusCounts": {
-      "disabled": 16,
-      "ready": 272,
-      "review": 112
+      "disabled": 15,
+      "ready": 286,
+      "review": 99
     },
     "usableOptionCounts": {
       "1": 7,
-      "2": 9,
-      "3": 35,
-      "4": 77,
-      "5": 272
+      "2": 8,
+      "3": 25,
+      "4": 74,
+      "5": 286
     },
     "optionStatusCounts": {
-      "aligned": 1798,
-      "needs_review": 135,
-      "unusable": 67
+      "aligned": 1824,
+      "needs_review": 125,
+      "unusable": 51
     },
     "warningCounts": {
-      "low_keyword_recall:yang_naidong": 56,
-      "low_keyword_recall:gao_changrong": 43,
-      "low_keyword_recall:ye_shuyin": 26,
-      "length_ratio_outlier:huang_shen_chen": 18,
-      "length_ratio_outlier:ye_shuyin": 18,
-      "length_ratio_outlier:gao_changrong": 14,
-      "length_ratio_outlier:yang_naidong": 12,
-      "low_keyword_recall:huang_shen_chen": 11,
+      "low_keyword_recall:yang_naidong": 42,
+      "low_keyword_recall:gao_changrong": 32,
+      "low_keyword_recall:ye_shuyin": 25,
+      "length_ratio_outlier:huang_shen_chen": 17,
+      "length_ratio_outlier:ye_shuyin": 16,
+      "length_ratio_outlier:gao_changrong": 15,
+      "length_ratio_outlier:yang_naidong": 13,
+      "low_keyword_recall:huang_shen_chen": 10,
       "position_delta_outlier:gao_changrong": 3,
-      "low_confidence:yang_naidong": 2,
-      "low_confidence:ye_shuyin": 2,
+      "low_confidence:gao_changrong": 2,
+      "position_delta_outlier:yang_naidong": 2,
       "position_delta_outlier:ye_shuyin": 1,
-      "low_confidence:gao_changrong": 1,
+      "low_confidence:yang_naidong": 1,
+      "low_confidence:ye_shuyin": 1,
       "low_confidence:huang_shen_chen": 1
     },
     "versions": {
       "gao_changrong": {
         "items": 400,
         "statusCounts": {
-          "aligned": 340,
-          "needs_review": 38,
-          "unusable": 22
+          "aligned": 350,
+          "needs_review": 34,
+          "unusable": 16
         },
-        "averageConfidence": 0.851,
-        "minConfidence": 0.278,
-        "averageKeywordRecall": 0.472,
-        "averageLengthRatio": 1.227,
-        "lengthOutliers": 20
+        "averageConfidence": 0.868,
+        "minConfidence": 0.22,
+        "averageKeywordRecall": 0.51,
+        "averageLengthRatio": 1.232,
+        "lengthOutliers": 21
       },
       "huang_shen_chen": {
         "items": 400,
         "statusCounts": {
-          "aligned": 371,
-          "needs_review": 23,
-          "unusable": 6
+          "aligned": 373,
+          "needs_review": 22,
+          "unusable": 5
         },
-        "averageConfidence": 0.923,
+        "averageConfidence": 0.925,
         "minConfidence": 0.249,
-        "averageKeywordRecall": 0.588,
-        "averageLengthRatio": 1.268,
-        "lengthOutliers": 20
+        "averageKeywordRecall": 0.599,
+        "averageLengthRatio": 1.267,
+        "lengthOutliers": 19
       },
       "ye_shuyin": {
         "items": 400,
         "statusCounts": {
-          "aligned": 355,
-          "needs_review": 31,
-          "unusable": 14
+          "aligned": 358,
+          "needs_review": 29,
+          "unusable": 13
         },
-        "averageConfidence": 0.879,
-        "minConfidence": 0.188,
-        "averageKeywordRecall": 0.521,
-        "averageLengthRatio": 1.222,
-        "lengthOutliers": 20
+        "averageConfidence": 0.889,
+        "minConfidence": 0.235,
+        "averageKeywordRecall": 0.545,
+        "averageLengthRatio": 1.214,
+        "lengthOutliers": 19
       },
       "yang_naidong": {
         "items": 400,
         "statusCounts": {
-          "aligned": 332,
-          "needs_review": 43,
-          "unusable": 25
+          "aligned": 343,
+          "needs_review": 40,
+          "unusable": 17
         },
-        "averageConfidence": 0.84,
+        "averageConfidence": 0.863,
         "minConfidence": 0.205,
-        "averageKeywordRecall": 0.432,
-        "averageLengthRatio": 1.18,
-        "lengthOutliers": 14
+        "averageKeywordRecall": 0.472,
+        "averageLengthRatio": 1.187,
+        "lengthOutliers": 15
       }
     }
   },
@@ -102,17 +103,17 @@
       "rank": 7,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.542,
+      "confidence": 0.519,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 1.0,
-        "lengthRatio": 4.059,
+        "lengthRatio": 4.353,
         "positionDelta": 0.003
       },
       "anchor": "“这是我们这个时代最伟大的发明。”",
-      "text": "霍·阿·布恩蒂亚又付了五个里亚尔，就象出庭作证的人把手放在《圣经》上一样，庄严地将手放在冰块上，说道： “这是我们这个时代最伟大的发明。”"
+      "text": "何塞·阿尔卡蒂奥·布恩迪亚又付了五个里亚尔，就象出庭作证的人把手放在《圣经》上一样，庄严地将手放在冰块上，说道： “这是我们这个时代最伟大的发明。”"
     },
     {
       "questionId": "ch01-007",
@@ -120,7 +121,7 @@
       "rank": 7,
       "versionId": "huang_shen_chen",
       "status": "needs_review",
-      "confidence": 0.475,
+      "confidence": 0.474,
       "warnings": [
         "length_ratio_outlier"
       ],
@@ -148,7 +149,7 @@
         "positionDelta": 0.004
       },
       "anchor": "“这是我们这个时代最伟大的发明。”",
-      "text": "他又付了五块里亚尔币，把手放在冰块上，像是见证《圣经》般惊呼： 「这是我们时代最伟大的发明。」"
+      "text": "他又付了五块里亚尔币，把手放在冰块上，像是见证《圣经》般惊呼： “这是我们时代最伟大的发明。”"
     },
     {
       "questionId": "ch01-007",
@@ -156,17 +157,17 @@
       "rank": 7,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.565,
+      "confidence": 0.569,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 1.0,
-        "lengthRatio": 3.647,
-        "positionDelta": 0.003
+        "lengthRatio": 3.529,
+        "positionDelta": 0.004
       },
       "anchor": "“这是我们这个时代最伟大的发明。”",
-      "text": "他又付了五里拉，把手放在那块糕饼样的东西上面，就像是在证明圣经上的真理，大声叫著说： 　　「这是我们这个时代最伟大的发明。」"
+      "text": "他又付了五里拉，把手放在那块糕饼样的东西上面，就像是在证明圣经上的真理，大声叫着说： “这是我们这个时代最伟大的发明。”"
     },
     {
       "questionId": "ch01-008",
@@ -174,14 +175,14 @@
       "rank": 8,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.802,
+      "confidence": 0.801,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.222,
         "lengthRatio": 1.032,
-        "positionDelta": 0.022
+        "positionDelta": 0.023
       },
       "anchor": "世界新生伊始，许多事物还没有名字，提到的时候尚需用手指指点点。",
       "text": "这是个崭新的新天地，许多东西都还没有命名，想要述说还得用手去指。"
@@ -192,17 +193,17 @@
       "rank": 10,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.316,
+      "confidence": 0.314,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.9,
-        "lengthRatio": 6.286,
+        "lengthRatio": 6.357,
         "positionDelta": 0.078
       },
       "anchor": "“地球是圆的，就像个橙子。”",
-      "text": "孩子们至死部记得，由于长期熬夜和冥思苦想而变得精疲力竭的父亲，如何洋洋得意地向他们宣布自己的发现： “地球是圆的，象橙子。”乌苏娜失去了耐心，“如果你想发癫，你就自个几发吧！”"
+      "text": "孩子们至死部记得，由于长期熬夜和冥思苦想而变得精疲力竭的父亲，如何洋洋得意地向他们宣布自己的发现： “地球是圆的，象橙子。”乌尔苏拉失去了耐心，“如果你想发癫，你就自个几发吧！”"
     },
     {
       "questionId": "ch01-010",
@@ -246,7 +247,7 @@
       "rank": 10,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.285,
+      "confidence": 0.284,
       "warnings": [
         "length_ratio_outlier"
       ],
@@ -256,7 +257,7 @@
         "positionDelta": 0.081
       },
       "anchor": "“地球是圆的，就像个橙子。”",
-      "text": "终于，在十二月的一个星期二午餐时间，他突然把他所有的痛苦都宣泄出来，孩子们终生也难忘他们的父亲，在长期熬夜、饱受想像力的摧折后，终于严肃地把他的发现说了出来：「地球是圆的，像橘子那个样子。」"
+      "text": "终于，在十二月的一个星期二午餐时间，他突然把他所有的痛苦都宣泄出来，孩子们终生也难忘他们的父亲，在长期熬夜、饱受想像力的摧折后，终于严肃地把他的发现说了出来：“地球是圆的，像橘子那个样子。”"
     },
     {
       "questionId": "ch01-012",
@@ -264,53 +265,17 @@
       "rank": 12,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.325,
+      "confidence": 0.404,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
-        "keywordRecall": 0.667,
-        "lengthRatio": 3.321,
+        "keywordRecall": 0.8,
+        "lengthRatio": 3.357,
         "positionDelta": 0.053
       },
       "anchor": "乌尔苏拉宝贵的遗产最后变成一坨碳化的油渣，死死粘在锅底。",
-      "text": "经过多次拼命的、冒阶的试验：蒸馏啦，跟七种天体金属一起熔炼啦，加进黑梅斯水银和塞浦路斯硫酸盐啦，在猪油里重新熬煮啦（因为没有萝卜油），乌苏娜的宝贵遗产变成了一大块焦糊的渣滓，粘在锅底了。"
-    },
-    {
-      "questionId": "ch01-012",
-      "chapterOrder": 1,
-      "rank": 12,
-      "versionId": "yang_naidong",
-      "status": "unusable",
-      "confidence": 0.523,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.067,
-        "lengthRatio": 1.143,
-        "positionDelta": 0.024
-      },
-      "anchor": "乌尔苏拉宝贵的遗产最后变成一坨碳化的油渣，死死粘在锅底。",
-      "text": "那种气味使她永远难忘，并且与对梅尔基亚德斯的恶劣印象紧密地相连。"
-    },
-    {
-      "questionId": "ch01-019",
-      "chapterOrder": 1,
-      "rank": 19,
-      "versionId": "gao_changrong",
-      "status": "needs_review",
-      "confidence": 0.674,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.2,
-        "lengthRatio": 1.027,
-        "positionDelta": 0.018
-      },
-      "anchor": "何塞·阿尔卡蒂奥·布恩迪亚和一起探险的四个男人将盔甲成功拆卸之后，发现里面有一具已经钙化的骷髅，骷髅的颈子上挂着铜质的圣物盒，盒里有一缕女人的头发。",
-      "text": "梅尔基亚德斯是个诚实的人，他告诫说：“磁铁干这个却不行。”可是霍·阿·布恩蒂亚当时还不相信吉卜赛人的诚实，因此用自己的一匹骡子和两只山羊换下了两块磁铁。"
+      "text": "经过多次拼命的、冒阶的试验：蒸馏啦，跟七种天体金属一起熔炼啦，加进黑梅斯水银和塞浦路斯硫酸盐啦，在猪油里重新熬煮啦（因为没有萝卜油），乌尔苏拉的宝贵遗产变成了一大块焦糊的渣滓，粘在锅底了。"
     },
     {
       "questionId": "ch02-004",
@@ -325,10 +290,10 @@
       "metrics": {
         "keywordRecall": 0.588,
         "lengthRatio": 3.158,
-        "positionDelta": 0.057
+        "positionDelta": 0.058
       },
       "anchor": "很快两人都变得委靡不振，都对父亲的炼金术和智慧失去了敬意，都躲藏到孤独之中。",
-      "text": "他牢记著他的故事最细微的情节，感受他的痛苦与喜悦，他心惊胆跳，却又觉得快乐，他孤零零躺在如炭火般烫人的床上，熬夜等他到天明，然后两人毫无睡意，继续聊到起床时间，因此，兄弟俩很快地同样变得懒散，同样瞧不起父亲的炼金术和智慧，开始躲得不见人影。"
+      "text": "他牢记着他的故事最细微的情节，感受他的痛苦与喜悦，他心惊胆跳，却又觉得快乐，他孤零零躺在如炭火般烫人的床上，熬夜等他到天明，然后两人毫无睡意，继续聊到起床时间，因此，兄弟俩很快地同样变得懒散，同样瞧不起父亲的炼金术和智慧，开始躲得不见人影。"
     },
     {
       "questionId": "ch02-006",
@@ -343,10 +308,10 @@
       "metrics": {
         "keywordRecall": 0.6,
         "lengthRatio": 0.929,
-        "positionDelta": 0.71
+        "positionDelta": 0.711
       },
       "anchor": "她离村子越来越远，等发觉时已经走出太远，便索性不再回头。",
-      "text": "「我们会离开这座村庄，走得越远越好，永远不会再回来。"
+      "text": "“我们会离开这座村庄，走得越远越好，永远不会再回来。"
     },
     {
       "questionId": "ch02-007",
@@ -354,18 +319,18 @@
       "rank": 7,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.278,
+      "confidence": 0.257,
       "warnings": [
         "low_confidence",
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.667,
-        "lengthRatio": 3.333,
-        "positionDelta": 0.139
+        "lengthRatio": 3.667,
+        "positionDelta": 0.137
       },
       "anchor": "“像狗屎。”",
-      "text": "霍·阿卡蒂奥直耿耿地回答： “象狗屎。”"
+      "text": "何塞·阿尔卡蒂奥直耿耿地回答： “象狗屎。”"
     },
     {
       "questionId": "ch02-007",
@@ -373,17 +338,17 @@
       "rank": 7,
       "versionId": "huang_shen_chen",
       "status": "needs_review",
-      "confidence": 0.327,
+      "confidence": 0.317,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.667,
-        "lengthRatio": 3.167,
-        "positionDelta": 0.055
+        "lengthRatio": 3.333,
+        "positionDelta": 0.054
       },
       "anchor": "“像狗屎。”",
-      "text": "霍塞·阿卡迪奥坦率地回答： “狗屎。”"
+      "text": "何塞·阿尔卡蒂奥坦率地回答： “狗屎。”"
     },
     {
       "questionId": "ch02-007",
@@ -391,17 +356,17 @@
       "rank": 7,
       "versionId": "ye_shuyin",
       "status": "needs_review",
-      "confidence": 0.666,
+      "confidence": 0.667,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.667,
         "lengthRatio": 2.5,
-        "positionDelta": 0.041
+        "positionDelta": 0.04
       },
       "anchor": "“像狗屎。”",
-      "text": "儿子很老实地回答： 「狗屎。」"
+      "text": "儿子很老实地回答： “狗屎。”"
     },
     {
       "questionId": "ch02-009",
@@ -409,14 +374,14 @@
       "rank": 9,
       "versionId": "ye_shuyin",
       "status": "needs_review",
-      "confidence": 0.631,
+      "confidence": 0.63,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.179,
         "lengthRatio": 1.113,
-        "positionDelta": 0.025
+        "positionDelta": 0.026
       },
       "anchor": "他觉得再也无法忍受腰间冰冷的声响和腹内的气流，无法忍受恐惧和迷乱的渴望，渴望逃走，又渴望永远留在这恼人的静寂和可怖的孤独中。",
       "text": "他由衷希望大门是上闩的，而不是如她保证只是拉上而已。但是门没上锁。他用指尖一推，门链发出一连串沉闷响声松开了，在他的内心印下冰冷冷的回声。"
@@ -434,7 +399,7 @@
       "metrics": {
         "keywordRecall": 0.188,
         "lengthRatio": 0.812,
-        "positionDelta": 0.02
+        "positionDelta": 0.019
       },
       "anchor": "爱情或许可以是一种比夜晚幽会中疯狂而短暂的快乐更平和深沉的感觉。",
       "text": "她想挪开一些，可他把她贴得更紧。于是，她感觉到了他。"
@@ -445,7 +410,7 @@
       "rank": 19,
       "versionId": "huang_shen_chen",
       "status": "needs_review",
-      "confidence": 0.787,
+      "confidence": 0.786,
       "warnings": [
         "length_ratio_outlier"
       ],
@@ -470,7 +435,7 @@
       "metrics": {
         "keywordRecall": 0.1,
         "lengthRatio": 1.13,
-        "positionDelta": 0.104
+        "positionDelta": 0.103
       },
       "anchor": "联结他们的是比爱情更坚固的东西：共同的良心谴责",
       "text": "大家把这个事件当作光荣的决斗，然而他们俩都良心不安。"
@@ -481,17 +446,17 @@
       "rank": 20,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.511,
+      "confidence": 0.509,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.5,
-        "lengthRatio": 2.667,
+        "lengthRatio": 2.611,
         "positionDelta": 0.013
       },
       "anchor": "“就算你不敬畏上帝，也该敬畏金属。”",
-      "text": "这回小邦迪亚听到他说： 　　「如果你不畏惧老天爷，你可要对我们这些用来炼金的金属敬畏敬畏才是。」"
+      "text": "这回奥雷里亚诺听到他说： “如果你不畏惧老天爷，你可要对我们这些用来炼金的金属敬畏敬畏才是。”"
     },
     {
       "questionId": "ch03-002",
@@ -499,14 +464,14 @@
       "rank": 2,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.731,
+      "confidence": 0.73,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.667,
         "lengthRatio": 2.4,
-        "positionDelta": 0.122
+        "positionDelta": 0.123
       },
       "anchor": "那人是梅尔基亚德斯。",
       "text": "他忘了一切旧怨，决定让梅尔基亚德斯住在他们家里。"
@@ -534,18 +499,18 @@
       "chapterOrder": 3,
       "rank": 13,
       "versionId": "yang_naidong",
-      "status": "unusable",
-      "confidence": 0.601,
+      "status": "needs_review",
+      "confidence": 0.429,
       "warnings": [
-        "low_keyword_recall"
+        "length_ratio_outlier"
       ],
       "metrics": {
-        "keywordRecall": 0.111,
-        "lengthRatio": 1.0,
-        "positionDelta": 0.012
+        "keywordRecall": 0.444,
+        "lengthRatio": 2.905,
+        "positionDelta": 0.029
       },
       "anchor": "就这样继续下去，整夜整夜重复这一恶性循环。",
-      "text": "易家兰知道这个男人和女人就是莉比卡的父母。"
+      "text": "谁也不可以先离去，因为讲故事的人说他不是叫他们离开，而是问他们要不要听他讲阉鸡的故事，就这样反反复复说这一件事说了一整夜。"
     },
     {
       "questionId": "ch03-016",
@@ -553,17 +518,17 @@
       "rank": 16,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.435,
+      "confidence": 0.434,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.75,
         "lengthRatio": 3.28,
-        "positionDelta": 0.006
+        "positionDelta": 0.007
       },
       "anchor": "发现她只喜欢吃院子里的湿土和用指甲刮下的石灰墙皮。",
-      "text": "谁也不明白她为什么没有饿死，直到熟悉一切的印第安人发现（因为他们在屋子里用无声的脚步不断地来回走动）雷贝卡喜欢吃的只是院子里的泥土和她用指甲从墙上刨下的一块块石灰。"
+      "text": "谁也不明白她为什么没有饿死，直到熟悉一切的印第安人发现（因为他们在屋子里用无声的脚步不断地来回走动）丽贝卡喜欢吃的只是院子里的泥土和她用指甲从墙上刨下的一块块石灰。"
     },
     {
       "questionId": "ch03-016",
@@ -589,17 +554,17 @@
       "rank": 16,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.441,
+      "confidence": 0.439,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.75,
         "lengthRatio": 3.52,
-        "positionDelta": 0.015
+        "positionDelta": 0.016
       },
       "anchor": "发现她只喜欢吃院子里的湿土和用指甲刮下的石灰墙皮。",
-      "text": "没有人了解为什么她不会饿死，后来，还是因为那两个对家里的事无所不知无所不晓的印第安人在家里蹑手蹑脚地到处走动，才发现了莉比卡只喜欢吃院子里的湿泥土，和用指甲从墙上抓下来的灰泥。"
+      "text": "没有人了解为什么她不会饿死，后来，还是因为那两个对家里的事无所不知无所不晓的印第安人在家里蹑手蹑脚地到处走动，才发现了丽贝卡只喜欢吃院子里的湿泥土，和用指甲从墙上抓下来的灰泥。"
     },
     {
       "questionId": "ch03-017",
@@ -607,53 +572,17 @@
       "rank": 17,
       "versionId": "gao_changrong",
       "status": "unusable",
-      "confidence": 0.61,
+      "confidence": 0.685,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.094,
-        "lengthRatio": 1.038,
+        "keywordRecall": 0.156,
+        "lengthRatio": 1.05,
         "positionDelta": 0.003
       },
       "anchor": "乌尔苏拉忽然意识到家里已人满为患，儿女们即将成婚并生儿育女，到时势必会因为屋子拥挤而离开家门。于是她取出长年辛劳攒下的积蓄，又从顾客那里预支货款，着手扩建家宅。",
-      "text": "有一天傍晚，乌苏娜听唱时希望知道儿子的消息，却完全意外地听到了自己母亲的死讯。“弗兰西斯科人”这个绰号的由来，是他在编歌比赛中战胜过魔鬼，他的真名实姓是谁也不知道的；"
-    },
-    {
-      "questionId": "ch03-017",
-      "chapterOrder": 3,
-      "rank": 17,
-      "versionId": "yang_naidong",
-      "status": "unusable",
-      "confidence": 0.576,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.031,
-        "lengthRatio": 1.0,
-        "positionDelta": 0.0
-      },
-      "anchor": "乌尔苏拉忽然意识到家里已人满为患，儿女们即将成婚并生儿育女，到时势必会因为屋子拥挤而离开家门。于是她取出长年辛劳攒下的积蓄，又从顾客那里预支货款，着手扩建家宅。",
-      "text": "歌曲内容都是一些有关沿途城镇上所发生的事情，他的路线是从孟牛尔到沼泽区一带地方；因此，如果有人要传递口信或向大家发布消息，可以花两分钱请他把事情编入他的歌词里。"
-    },
-    {
-      "questionId": "ch03-019",
-      "chapterOrder": 3,
-      "rank": 19,
-      "versionId": "gao_changrong",
-      "status": "needs_review",
-      "confidence": 0.661,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.214,
-        "lengthRatio": 0.944,
-        "positionDelta": 0.058
-      },
-      "anchor": "“你有什么可抱怨的，”乌尔苏拉对丈夫说，“有发疯的父母就有发疯的儿女。”",
-      "text": "袋子里老是发出“咔嚓、咔嚓、咔嚓”的响声--那儿装的是她父母的骸骨。"
+      "text": "有一天傍晚，乌尔苏拉听唱时希望知道儿子的消息，却完全意外地听到了自己母亲的死讯。“弗兰西斯科人”这个绰号的由来，是他在编歌比赛中战胜过魔鬼，他的真名实姓是谁也不知道的；"
     },
     {
       "questionId": "ch04-002",
@@ -661,7 +590,7 @@
       "rank": 2,
       "versionId": "huang_shen_chen",
       "status": "needs_review",
-      "confidence": 0.341,
+      "confidence": 0.342,
       "warnings": [
         "length_ratio_outlier"
       ],
@@ -704,7 +633,7 @@
       "metrics": {
         "keywordRecall": 0.182,
         "lengthRatio": 0.898,
-        "positionDelta": 0.029
+        "positionDelta": 0.028
       },
       "anchor": "他花了六个小时观察各种事物，试图找出一分一毫与前一天的不同之处，期待发现某种变化能证明时间的流逝。",
       "text": "他花了六个小时检查事物，看看事物里面的情景和前一天有什么差别，希望发现一些时序上的变迁。"
@@ -715,14 +644,14 @@
       "rank": 3,
       "versionId": "gao_changrong",
       "status": "unusable",
-      "confidence": 0.632,
+      "confidence": 0.633,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.154,
         "lengthRatio": 0.931,
-        "positionDelta": 0.004
+        "positionDelta": 0.003
       },
       "anchor": "理由是既然都同意遵守规则，他无法理解两个对手如何还能争斗。",
       "text": "尼康诺神父对于下棋从来没有这种观点，但又无法把他说服。"
@@ -733,17 +662,17 @@
       "rank": 3,
       "versionId": "ye_shuyin",
       "status": "unusable",
-      "confidence": 0.578,
+      "confidence": 0.577,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.115,
         "lengthRatio": 1.0,
-        "positionDelta": 0.035
+        "positionDelta": 0.036
       },
       "anchor": "理由是既然都同意遵守规则，他无法理解两个对手如何还能争斗。",
-      "text": "尼卡诺神父举起手，椅子的四只脚跟著同时降落地面。「不对。」"
+      "text": "尼卡诺神父举起手，椅子的四只脚跟着同时降落地面。“不对。”"
     },
     {
       "questionId": "ch05-011",
@@ -751,7 +680,7 @@
       "rank": 11,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.688,
+      "confidence": 0.689,
       "warnings": [
         "low_keyword_recall"
       ],
@@ -761,7 +690,7 @@
         "positionDelta": 0.003
       },
       "anchor": "从那天起，她就展示出责任感、大方的仪态，以及面对逆境仍波澜不惊的控制力。",
-      "text": "正是从这一天起，在不利的情况下，雷麦黛丝都表现了责任心、天生的温厚态度和自制能力。"
+      "text": "正是从这一天起，在不利的情况下，蕾梅黛丝都表现了责任心、天生的温厚态度和自制能力。"
     },
     {
       "questionId": "ch05-011",
@@ -779,7 +708,7 @@
         "positionDelta": 0.003
       },
       "anchor": "从那天起，她就展示出责任感、大方的仪态，以及面对逆境仍波澜不惊的控制力。",
-      "text": "从那天起，蕾梅蒂丝展现她的责任心、天生的优雅，和面对困难状况时沉稳的处理能力。"
+      "text": "从那天起，蕾梅黛丝展现她的责任心、天生的优雅，和面对困难状况时沉稳的处理能力。"
     },
     {
       "questionId": "ch05-018",
@@ -787,14 +716,14 @@
       "rank": 18,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.622,
+      "confidence": 0.62,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.214,
         "lengthRatio": 1.075,
-        "positionDelta": 0.085
+        "positionDelta": 0.086
       },
       "anchor": "在节庆般的狂热气氛中，他在柜台上展示了自己那令人难以置信的阳物，上面红蓝两色纵横交错，覆满多种语言的刺青。",
       "text": "为了搬回柜台，需要十一个男人。在兴味正浓的时候，他让大家参观他那异乎寻常的男性器官，上面刺了蓝色和红色的各种文字。"
@@ -805,35 +734,17 @@
       "rank": 18,
       "versionId": "huang_shen_chen",
       "status": "unusable",
-      "confidence": 0.559,
+      "confidence": 0.567,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.071,
-        "lengthRatio": 0.925,
+        "lengthRatio": 0.943,
         "positionDelta": 0.003
       },
       "anchor": "在节庆般的狂热气氛中，他在柜台上展示了自己那令人难以置信的阳物，上面红蓝两色纵横交错，覆满多种语言的刺青。",
-      "text": "打一件粉红色的，预备生女儿时用。不多几年后面对着行刑队，阿卡迪奥最后想到的一个人也正是她雷梅苔丝。"
-    },
-    {
-      "questionId": "ch05-019",
-      "chapterOrder": 5,
-      "rank": 19,
-      "versionId": "yang_naidong",
-      "status": "unusable",
-      "confidence": 0.563,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.065,
-        "lengthRatio": 1.077,
-        "positionDelta": 0.006
-      },
-      "anchor": "乌尔苏拉坐在桌边哭个不停，仿佛在阅读一封封从未抵达的家书，阅读何塞·阿尔卡蒂奥讲述的英雄业绩和不幸际遇。",
-      "text": "易家兰张著口呆立了好一会儿，凝视他的眼睛，惊叫了一声，伸手去摸他的脖子，高兴得又哭又叫；原来是她的长子亚克迪奥。"
+      "text": "打一件粉红色的，预备生女儿时用。不多几年后面对着行刑队，阿尔卡蒂奥最后想到的一个人也正是她蕾梅黛丝。"
     },
     {
       "questionId": "ch06-003",
@@ -848,10 +759,10 @@
       "metrics": {
         "keywordRecall": 0.5,
         "lengthRatio": 2.49,
-        "positionDelta": 0.013
+        "positionDelta": 0.012
       },
       "anchor": "在这纷乱的合奏中，皮埃特罗·克雷斯皮伏在店后的写字台上，双腕用剃刀割破，双手浸没在一盆安息香水里。",
-      "text": "十一月二日清明节那天，他的弟弟打开商店大门，发现所有的灯都点亮，所有的音乐盒都打开，以及所有的时钟都卡在一个永远不会结束的时间，他在这一场疯狂的音乐会当中，找到皮耶特．克雷斯皮坐在商店后面的办公桌前，用利刃割断手腕，双手插在装盛安息香的盆子里。"
+      "text": "十一月二日清明节那天，他的弟弟打开商店大门，发现所有的灯都点亮，所有的音乐盒都打开，以及所有的时钟都卡在一个永远不会结束的时间，他在这一场疯狂的音乐会当中，找到皮耶特·克雷斯皮坐在商店后面的办公桌前，用利刃割断手腕，双手插在装盛安息香的盆子里。"
     },
     {
       "questionId": "ch06-014",
@@ -895,17 +806,17 @@
       "rank": 16,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.372,
+      "confidence": 0.358,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.733,
-        "lengthRatio": 3.25,
-        "positionDelta": 0.021
+        "lengthRatio": 3.531,
+        "positionDelta": 0.022
       },
       "anchor": "她感觉如此孤单，只好到被人遗忘在栗树下的丈夫那里徒劳地寻求陪伴。",
-      "text": "她感到太孤单了，只得到栗树下去陪伴被遗忘的丈夫老邦迪亚，「瞧瞧我们的下场，」当六月的雨有冲垮栗树下棚子的来势时，她告诉他说，「瞧瞧那些空房子，我们的孩子散落各地，又只剩我俩孤孤单单了，跟开始的时候完全一样。」"
+      "text": "她感到太孤单了，只得到栗树下去陪伴被遗忘的丈夫何塞·阿尔卡蒂奥·布恩迪亚，“瞧瞧我们的下场，”当六月的雨有冲垮栗树下棚子的来势时，她告诉他说，“瞧瞧那些空房子，我们的孩子散落各地，又只剩我俩孤孤单单了，跟开始的时候完全一样。”"
     },
     {
       "questionId": "ch06-018",
@@ -913,14 +824,14 @@
       "rank": 18,
       "versionId": "ye_shuyin",
       "status": "unusable",
-      "confidence": 0.647,
+      "confidence": 0.648,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.05,
         "lengthRatio": 0.9,
-        "positionDelta": 0.015
+        "positionDelta": 0.014
       },
       "anchor": "但这些人，他旧日的学生，受他那慷慨激昂的宣言所鼓动变得热血沸腾，时刻准备着为一项无望的事业献出生命。",
       "text": "军队中有些是他的昔日学生，他们听到他野心勃勃的宣告，全都决定为一个注定失败的目标牺牲生命。"
@@ -931,14 +842,14 @@
       "rank": 18,
       "versionId": "yang_naidong",
       "status": "unusable",
-      "confidence": 0.745,
+      "confidence": 0.743,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.15,
         "lengthRatio": 0.88,
-        "positionDelta": 0.015
+        "positionDelta": 0.016
       },
       "anchor": "但这些人，他旧日的学生，受他那慷慨激昂的宣言所鼓动变得热血沸腾，时刻准备着为一项无望的事业献出生命。",
       "text": "这些人有的是他以前的学生，由于他一番高调的宣言而满怀兴奋，决心为一个失败的目标牺牲到底。"
@@ -949,7 +860,7 @@
       "rank": 20,
       "versionId": "ye_shuyin",
       "status": "needs_review",
-      "confidence": 0.76,
+      "confidence": 0.761,
       "warnings": [
         "low_keyword_recall"
       ],
@@ -967,17 +878,17 @@
       "rank": 3,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.604,
+      "confidence": 0.912,
       "warnings": [
-        "low_keyword_recall"
+        "position_delta_outlier"
       ],
       "metrics": {
-        "keywordRecall": 0.2,
-        "lengthRatio": 1.037,
-        "positionDelta": 0.095
+        "keywordRecall": 0.533,
+        "lengthRatio": 1.0,
+        "positionDelta": 0.303
       },
       "anchor": "她给双胞胎取名为何塞·阿尔卡蒂奥第二和奥雷里亚诺第二。",
-      "text": "双生子则分别取名叫席甘多和席根铎。两个都由亚玛兰塔照管。"
+      "text": "她叫大家来帮忙把何塞·阿尔卡蒂奥·布恩迪亚弄进房里去。"
     },
     {
       "questionId": "ch07-004",
@@ -1031,7 +942,7 @@
         "positionDelta": 0.005
       },
       "anchor": "“我来是为了王的下葬。”",
-      "text": "薇西塔森问他为什么回来，他用他神圣的语言回答： 「我是来参加国王的葬礼。」"
+      "text": "薇西塔森问他为什么回来，他用他神圣的语言回答： “我是来参加国王的葬礼。”"
     },
     {
       "questionId": "ch07-005",
@@ -1039,35 +950,35 @@
       "rank": 5,
       "versionId": "gao_changrong",
       "status": "unusable",
-      "confidence": 0.481,
+      "confidence": 0.471,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.053,
-        "lengthRatio": 1.048,
-        "positionDelta": 0.07
+        "lengthRatio": 0.762,
+        "positionDelta": 0.006
       },
       "anchor": "尽管心里无比渴望，她仍能克制着不出去见面。",
-      "text": "于是，她请人帮她把霍·阿·布恩蒂亚搬进卧室。"
+      "text": "“我能发誓，这是梅尔基亚德斯。”"
     },
     {
       "questionId": "ch07-005",
       "chapterOrder": 7,
       "rank": 5,
       "versionId": "ye_shuyin",
-      "status": "unusable",
-      "confidence": 0.541,
+      "status": "needs_review",
+      "confidence": 0.571,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.158,
+        "keywordRecall": 0.211,
         "lengthRatio": 1.048,
         "positionDelta": 0.087
       },
       "anchor": "尽管心里无比渴望，她仍能克制着不出去见面。",
-      "text": "他继续来她家。她关在房里，咬著嘴唇无声哭泣。"
+      "text": "他继续来她家。她关在房里，咬着嘴唇无声哭泣。"
     },
     {
       "questionId": "ch07-005",
@@ -1075,71 +986,17 @@
       "rank": 5,
       "versionId": "yang_naidong",
       "status": "unusable",
-      "confidence": 0.591,
+      "confidence": 0.545,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.158,
-        "lengthRatio": 1.0,
-        "positionDelta": 0.061
+        "keywordRecall": 0.053,
+        "lengthRatio": 0.952,
+        "positionDelta": 0.023
       },
       "anchor": "尽管心里无比渴望，她仍能克制着不出去见面。",
-      "text": "她说。她叫大家来帮忙把老邦迪亚弄进房里去。"
-    },
-    {
-      "questionId": "ch07-007",
-      "chapterOrder": 7,
-      "rank": 7,
-      "versionId": "huang_shen_chen",
-      "status": "needs_review",
-      "confidence": 0.576,
-      "warnings": [
-        "length_ratio_outlier"
-      ],
-      "metrics": {
-        "keywordRecall": 0.706,
-        "lengthRatio": 2.621,
-        "positionDelta": 0.095
-      },
-      "anchor": "何塞·阿尔卡蒂奥穿过街道，手中端着可怖的猎枪随时准备开火。",
-      "text": "他怀着胆战心惊的好奇睁开了眼睛，等候炽热的子弹迎面飞来，但却只见罗克·卡尼塞洛上尉举着双手，霍塞·阿卡迪奥端着骇人的猎枪，随时准备射击，正大步穿过街来。"
-    },
-    {
-      "questionId": "ch07-007",
-      "chapterOrder": 7,
-      "rank": 7,
-      "versionId": "ye_shuyin",
-      "status": "needs_review",
-      "confidence": 0.519,
-      "warnings": [
-        "length_ratio_outlier"
-      ],
-      "metrics": {
-        "keywordRecall": 0.647,
-        "lengthRatio": 2.793,
-        "positionDelta": 0.096
-      },
-      "anchor": "何塞·阿尔卡蒂奥穿过街道，手中端着可怖的猎枪随时准备开火。",
-      "text": "一股好奇像是冷颤一般窜过，他张开双眼，以为热烫的子弹会迎面飞来，但是他只看到罗格．卡尼塞洛队长举高双手，荷西．阿尔卡迪欧正穿越街道，拿著他那把骇人的猎枪准备开火。"
-    },
-    {
-      "questionId": "ch07-007",
-      "chapterOrder": 7,
-      "rank": 7,
-      "versionId": "yang_naidong",
-      "status": "unusable",
-      "confidence": 0.58,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.118,
-        "lengthRatio": 0.931,
-        "positionDelta": 0.046
-      },
-      "anchor": "何塞·阿尔卡蒂奥穿过街道，手中端着可怖的猎枪随时准备开火。",
-      "text": "他每天骑马回来，带著猎犬和双管猎枪，马鞍上挂一串兔子。"
+      "text": "它们有如无声无息的风暴整夜袭击这个城镇；"
     },
     {
       "questionId": "ch07-009",
@@ -1183,14 +1040,14 @@
       "rank": 10,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.541,
+      "confidence": 0.542,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.636,
         "lengthRatio": 2.6,
-        "positionDelta": 0.081
+        "positionDelta": 0.08
       },
       "anchor": "“找热石头贴到疖子上。”她说。",
       "text": "“拿热石头贴着脓疮（注：这是治疗脓疮的土法子），”说着，她一转身就走出了房间。"
@@ -1199,19 +1056,37 @@
       "questionId": "ch07-011",
       "chapterOrder": 7,
       "rank": 11,
+      "versionId": "gao_changrong",
+      "status": "needs_review",
+      "confidence": 0.83,
+      "warnings": [
+        "length_ratio_outlier"
+      ],
+      "metrics": {
+        "keywordRecall": 1.0,
+        "lengthRatio": 2.433,
+        "positionDelta": 0.096
+      },
+      "anchor": "最后出现在厨房，乌尔苏拉在那里正准备打上三十六个鸡蛋做面包。",
+      "text": "悄悄地溜过阿玛兰妲的椅子下面（她正在教奥雷里亚诺·何塞·阿尔卡蒂奥学习算术），穿过库房，进了厨房（乌尔苏拉正在那儿准备打碎三十六只鸡蛋来做面包）。"
+    },
+    {
+      "questionId": "ch07-011",
+      "chapterOrder": 7,
+      "rank": 11,
       "versionId": "huang_shen_chen",
       "status": "needs_review",
-      "confidence": 0.768,
+      "confidence": 0.74,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.923,
-        "lengthRatio": 2.467,
+        "lengthRatio": 2.667,
         "positionDelta": 0.087
       },
       "anchor": "最后出现在厨房，乌尔苏拉在那里正准备打上三十六个鸡蛋做面包。",
-      "text": "急急地穿过海棠花长廊，从正在给奥雷里亚诺·霍塞上算术课的阿玛兰妲的椅子下偷偷流过，渗进谷仓，最后流到厨房里，那儿乌尔苏拉正预备打三十六只鸡蛋做面包。"
+      "text": "急急地穿过海棠花长廊，从正在给奥雷里亚诺·何塞·阿尔卡蒂奥上算术课的阿玛兰妲的椅子下偷偷流过，渗进谷仓，最后流到厨房里，那儿乌尔苏拉正预备打三十六只鸡蛋做面包。"
     },
     {
       "questionId": "ch07-011",
@@ -1219,18 +1094,17 @@
       "rank": 11,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.278,
+      "confidence": 0.411,
       "warnings": [
-        "low_confidence",
         "length_ratio_outlier"
       ],
       "metrics": {
-        "keywordRecall": 0.692,
-        "lengthRatio": 5.567,
+        "keywordRecall": 1.0,
+        "lengthRatio": 5.6,
         "positionDelta": 0.083
       },
       "anchor": "最后出现在厨房，乌尔苏拉在那里正准备打上三十六个鸡蛋做面包。",
-      "text": "一道鲜血从门下流出来，流过起居室，流往街上去，成直线流过凹凸不平的巷道，从紧封的门流进家中，越过客厅，沿著墙壁却不沾污地毯地继续往另一间起居室流去，绕个大圈，不曾沾污餐桌，再沿著植有秋海棠的走廊，从亚玛兰塔的椅子底下流过，却未被看见，这时亚玛兰塔在教约塞算术，再流经餐具室，进入厨房，易家兰在厨房里，正准备打三十六个鸡蛋"
+      "text": "一道鲜血从门下流出来，流过起居室，流往街上去，成直线流过凹凸不平的巷道，从紧封的门流进家中，越过客厅，沿着墙壁却不沾污地毯地继续往另一间起居室流去，绕个大圈，不曾沾污餐桌，再沿着植有秋海棠的走廊，从阿玛兰妲的椅子底下流过，却未被看见，这时阿玛兰妲在教约塞算术，再流经餐具室，进入厨房，乌尔苏拉在厨房里，正准备打三十六个鸡"
     },
     {
       "questionId": "ch07-019",
@@ -1245,10 +1119,10 @@
       "metrics": {
         "keywordRecall": 0.231,
         "lengthRatio": 0.812,
-        "positionDelta": 0.052
+        "positionDelta": 0.051
       },
       "anchor": "然而实际上，他很久以来还保持交流的对象只有普鲁邓希奥·阿基拉尔。",
-      "text": "但许久以来他唯一能沟通的对象其实只有普登修．阿奇勒。"
+      "text": "但许久以来他唯一能沟通的对象其实只有普登修·阿奇勒。"
     },
     {
       "questionId": "ch07-019",
@@ -1256,17 +1130,17 @@
       "rank": 19,
       "versionId": "yang_naidong",
       "status": "unusable",
-      "confidence": 0.564,
+      "confidence": 0.64,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.077,
-        "lengthRatio": 1.125,
-        "positionDelta": 0.016
+        "keywordRecall": 0.154,
+        "lengthRatio": 1.0,
+        "positionDelta": 0.009
       },
       "anchor": "然而实际上，他很久以来还保持交流的对象只有普鲁邓希奥·阿基拉尔。",
-      "text": "而后，他一个个房间往回走，沿著他原来的路线，他会找到真实房间里的亚奎拉。"
+      "text": "第二天早晨，乌尔苏拉端早点来给他吃时，看到一个人沿着大厅走过来；"
     },
     {
       "questionId": "ch08-001",
@@ -1274,17 +1148,17 @@
       "rank": 1,
       "versionId": "gao_changrong",
       "status": "unusable",
-      "confidence": 0.567,
+      "confidence": 0.604,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.067,
-        "lengthRatio": 1.0,
-        "positionDelta": 0.014
+        "keywordRecall": 0.133,
+        "lengthRatio": 1.017,
+        "positionDelta": 0.052
       },
       "anchor": "你那么憎恨军人，跟他们斗了那么久，琢磨了他们那么久，最终却变得和他们一样。人世间没有任何理想值得以这样的沉沦作为代价。",
-      "text": "于是，狂怒的上尉拿起一支步枪，冲到街道中间，立即瞄准。“全是胆小鬼！”他怒吼起来。“哪怕这是奥雷连诺上校，我也不伯！”"
+      "text": "“就睡在这儿，卡梅丽达，蒙蒂埃尔早就要我让她到你的房间里去了。”奥雷里亚诺·何塞·阿尔卡蒂奥没有理解母亲话里的深刻涵义。"
     },
     {
       "questionId": "ch08-001",
@@ -1292,17 +1166,17 @@
       "rank": 1,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.725,
+      "confidence": 0.724,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.2,
         "lengthRatio": 1.051,
-        "positionDelta": 0.02
+        "positionDelta": 0.022
       },
       "anchor": "你那么憎恨军人，跟他们斗了那么久，琢磨了他们那么久，最终却变得和他们一样。人世间没有任何理想值得以这样的沉沦作为代价。",
-      "text": "他把眼镜放在床上，脱下手表和链子，「我所忧心的，是你这么恨军方，拼命对抗他们，整天在为他们伤脑筋，到头来你是跟他们一样糟糕。"
+      "text": "他把眼镜放在床上，脱下手表和链子，“我所忧心的，是你这么恨军方，拼命对抗他们，整天在为他们伤脑筋，到头来你是跟他们一样糟糕。"
     },
     {
       "questionId": "ch08-002",
@@ -1310,17 +1184,17 @@
       "rank": 2,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.497,
+      "confidence": 0.496,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.643,
         "lengthRatio": 2.361,
-        "positionDelta": 0.104
+        "positionDelta": 0.106
       },
       "anchor": "“只要上帝还让我活着，”她时常这样说，“这个净出疯子的家里就缺不了钱。”",
-      "text": "在匹达黛的协助下，她的糕饼生意愈来愈赚钱，几年间不仅赚回了儿子打仗耗去的财产，而且塞满了几葫芦的纯金，埋在卧室里，「只要上帝让我活下去，」她说，「这间疯人院就总是有钱。」"
+      "text": "在匹达黛的协助下，她的糕饼生意愈来愈赚钱，几年间不仅赚回了儿子打仗耗去的财产，而且塞满了几葫芦的纯金，埋在卧室里，“只要上帝让我活下去，”她说，“这间疯人院就总是有钱。”"
     },
     {
       "questionId": "ch08-003",
@@ -1328,14 +1202,14 @@
       "rank": 3,
       "versionId": "gao_changrong",
       "status": "unusable",
-      "confidence": 0.673,
+      "confidence": 0.674,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.091,
         "lengthRatio": 1.026,
-        "positionDelta": 0.007
+        "positionDelta": 0.006
       },
       "anchor": "故事主人公和既是自己姑妈又是自己表姐的女人结婚，结果生出的儿子成了自己的祖父。",
       "text": "她是象她希望的那样自然死亡的，由于害怕失眠症使她过早死去，她曾离开了自己的家乡。"
@@ -1346,35 +1220,17 @@
       "rank": 4,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.634,
+      "confidence": 0.627,
       "warnings": [
         "position_delta_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.353,
         "lengthRatio": 0.864,
-        "positionDelta": 0.288
+        "positionDelta": 0.285
       },
       "anchor": "“不光可以娶姑妈，”一个士兵回答，“我们现在跟教士打这场仗，就是为了让人连亲娘都能娶。”",
       "text": "“不仅可以跟姑姑结婚，”有个士兵胡说八道地回答他。“要不，咱们为啥反对教士？"
-    },
-    {
-      "questionId": "ch08-005",
-      "chapterOrder": 8,
-      "rank": 5,
-      "versionId": "gao_changrong",
-      "status": "needs_review",
-      "confidence": 0.712,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.222,
-        "lengthRatio": 1.0,
-        "positionDelta": 0.043
-      },
-      "anchor": "不到两年内，他们为上校在战场上一路播撒的儿子命了名，都叫奥雷里亚诺，姓氏则随母亲：共计十七个。",
-      "text": "有一次从战略考虑，他不得不把一个要塞让给奥雷连诺上校的部队，离开时给奥雷连诺上校冒下了两封信。"
     },
     {
       "questionId": "ch08-006",
@@ -1382,35 +1238,35 @@
       "rank": 6,
       "versionId": "gao_changrong",
       "status": "unusable",
-      "confidence": 0.571,
+      "confidence": 0.577,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.138,
-        "lengthRatio": 0.836,
+        "lengthRatio": 0.849,
         "positionDelta": 0.006
       },
       "anchor": "当他走入蓝色的晨雾，脸庞像当年另一个清晨那般湿润，他才明白为什么要下令在院中行刑，而不是在墓地的墙前。行刑队在门前列开，向他致以对国家元首的敬礼。",
-      "text": "只有在宣布军事法庭缺席判决奥雷连诺上校死刑时，政府当局才承认故争状态。哪一个警备队首先逮住上校，就由哪一个警备队执行判决。"
+      "text": "只有在宣布军事法庭缺席判决奥雷里亚诺上校死刑时，政府当局才承认故争状态。哪一个警备队首先逮住上校，就由哪一个警备队执行判决。"
     },
     {
       "questionId": "ch08-008",
       "chapterOrder": 8,
       "rank": 8,
       "versionId": "gao_changrong",
-      "status": "unusable",
-      "confidence": 0.664,
+      "status": "needs_review",
+      "confidence": 0.651,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.154,
+        "keywordRecall": 0.231,
         "lengthRatio": 1.034,
-        "positionDelta": 0.009
+        "positionDelta": 0.057
       },
       "anchor": "但是请别忘了，只要上帝还让我们活着，我们就还是母亲；不管你们有多么革命，只要没规矩，我们就有权脱了你们的裤子打一顿。",
-      "text": "他俩不仅是母亲和儿子，而且是孤独中的伙伴。在皮拉·苔列娜心中，最后一点希望的火星也熄灭了。她的笑声已经低得象风琴的音响；"
+      "text": "“就睡在这儿，卡梅丽达，蒙蒂埃尔早就要我让她到你的房间里去了。”奥雷里亚诺·何塞·阿尔卡蒂奥没有理解母亲话里的深刻涵义。"
     },
     {
       "questionId": "ch08-009",
@@ -1418,35 +1274,17 @@
       "rank": 9,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.706,
+      "confidence": 0.822,
       "warnings": [
         "position_delta_outlier"
       ],
       "metrics": {
-        "keywordRecall": 0.481,
-        "lengthRatio": 1.062,
-        "positionDelta": 0.294
+        "keywordRecall": 0.593,
+        "lengthRatio": 1.087,
+        "positionDelta": 0.291
       },
       "anchor": "乌尔苏拉那时还不知道将少女送进军人卧室的习俗，那就像把母鸡赶到良种公鸡那里去。但在这一年她有了充分的了解：又有九个奥雷里亚诺·布恩迪亚上校的孩子被送到家里起名。",
-      "text": "就象拿母鸡跟良种公鸡交配一样，让姑娘去跟著名的军人睡觉，这种风习是乌苏娜从没听说过的，们在这一年中，她坚决相信确有这种风习，因为奥雷连诺上校的其他九个儿子也送来请她命名。"
-    },
-    {
-      "questionId": "ch08-013",
-      "chapterOrder": 8,
-      "rank": 13,
-      "versionId": "yang_naidong",
-      "status": "needs_review",
-      "confidence": 0.597,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.222,
-        "lengthRatio": 1.364,
-        "positionDelta": 0.021
-      },
-      "anchor": "他怀着秘密的目的回来，一心要和阿玛兰妲结婚。",
-      "text": "突然，当易家兰与亚玛兰塔旧孝接新孝之间，意外获得的消息传来。"
+      "text": "就象拿母鸡跟良种公鸡交配一样，让姑娘去跟著名的军人睡觉，这种风习是乌尔苏拉从没听说过的，们在这一年中，她坚决相信确有这种风习，因为奥雷里亚诺上校的其他九个儿子也送来请她命名。"
     },
     {
       "questionId": "ch08-015",
@@ -1454,17 +1292,17 @@
       "rank": 15,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.985,
+      "confidence": 0.99,
       "warnings": [
         "position_delta_outlier"
       ],
       "metrics": {
-        "keywordRecall": 0.667,
-        "lengthRatio": 1.0,
-        "positionDelta": 0.286
+        "keywordRecall": 0.722,
+        "lengthRatio": 1.024,
+        "positionDelta": 0.283
       },
       "anchor": "他们给他起名为奥雷里亚诺，用了母亲的姓氏，因为法律不允许在生父尚未承认前使用父姓。",
-      "text": "孩子给命名为奥雷连诺，随母亲的姓，——根据法律，他不能随父亲的姓。除非父亲承认他。"
+      "text": "孩子给命名为奥雷里亚诺，随母亲的姓，——根据法律，他不能随父亲的姓。除非父亲承认他。"
     },
     {
       "questionId": "ch08-016",
@@ -1472,14 +1310,14 @@
       "rank": 16,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.622,
+      "confidence": 0.623,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.167,
         "lengthRatio": 1.105,
-        "positionDelta": 0.01
+        "positionDelta": 0.009
       },
       "anchor": "她岁月的航船正在绕过盛年的最后一个岬角",
       "text": "“如果他这样走下去，再过一年就到天边啦。”"
@@ -1490,14 +1328,14 @@
       "rank": 16,
       "versionId": "huang_shen_chen",
       "status": "needs_review",
-      "confidence": 0.666,
+      "confidence": 0.667,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.222,
         "lengthRatio": 1.053,
-        "positionDelta": 0.03
+        "positionDelta": 0.029
       },
       "anchor": "她岁月的航船正在绕过盛年的最后一个岬角",
       "text": "在吃饭的时候他俩谁都不敢正面看对方一眼。"
@@ -1515,28 +1353,28 @@
       "metrics": {
         "keywordRecall": 0.167,
         "lengthRatio": 1.0,
-        "positionDelta": 0.043
+        "positionDelta": 0.042
       },
       "anchor": "她岁月的航船正在绕过盛年的最后一个岬角",
-      "text": "她试著无时无刻黏在美人蕾梅蒂丝的身边。"
+      "text": "她试着无时无刻黏在美人蕾梅黛丝的身边。"
     },
     {
-      "questionId": "ch08-017",
-      "chapterOrder": 8,
-      "rank": 17,
-      "versionId": "gao_changrong",
+      "questionId": "ch09-001",
+      "chapterOrder": 9,
+      "rank": 1,
+      "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.724,
+      "confidence": 0.772,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.196,
-        "lengthRatio": 0.979,
-        "positionDelta": 0.004
+        "keywordRecall": 0.2,
+        "lengthRatio": 1.036,
+        "positionDelta": 0.019
       },
-      "anchor": "奥雷里亚诺·何塞在几近窒息中惊醒，感觉她的手指像滚烫的虫子在焦灼地向他的腹部蠕动。他装作熟睡未醒，调整姿势为她除去一切障碍，随即感到那只未缠黑纱的手宛如失明的软体动物在他饥渴的水藻间潜游。",
-      "text": "有一天拂晓时——这件事正好发生在阿玛兰妲拒绝了格休列尔多·马克斯上校的时候——奥雷连诺。霍塞醒了过来，觉得自己喘不过气。他感到阿玛兰妲的手指，活象急切、贪婪的小虫子，悄悄地摸他的肚子。"
+      "anchor": "奥雷里亚诺·布恩迪亚上校没有显出丝毫不快，但在私人卫队将那位寡妇的家舍夷为平地化为灰烬之后，他的心才恢复平静。",
+      "text": "布恩迪亚上校惊慌的并不是这个冷酷的建议，而是自己心里的预计居然一瞬间被人识破了。“别期盼我下达这样的命令。”他说。"
     },
     {
       "questionId": "ch09-009",
@@ -1544,17 +1382,17 @@
       "rank": 9,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.499,
+      "confidence": 0.501,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.545,
-        "lengthRatio": 2.585,
+        "lengthRatio": 2.537,
         "positionDelta": 0.011
       },
       "anchor": "四年间他多次求爱，她总能找到办法拒绝却不伤害他，因为她虽然不再爱他，却也离不开他。",
-      "text": "四年来他一直表白他爱她，她却常在不使他伤心的情形下找理由推拒他，她虽未爱上他，没有他却活不下去 　　，「美女瑞米迪娥」似乎对什么都漠不关心，被视为心智迟缓，但对这份专注的爱却并非没有感觉，甚至曾帮马魁兹上校说话。"
+      "text": "四年来他一直表白他爱她，她却常在不使他伤心的情形下找理由推拒他，她虽未爱上他，没有他却活不下去 ，“美女瑞米迪娥”似乎对什么都漠不关心，被视为心智迟缓，但对这份专注的爱却并非没有感觉，甚至曾帮马魁兹上校说话。"
     },
     {
       "questionId": "ch09-010",
@@ -1572,7 +1410,7 @@
         "positionDelta": 0.001
       },
       "anchor": "新年那天，年轻的警卫队队长受不了美人儿蕾梅黛丝的冷落而失去理智，天亮前在她窗前殉情而死。",
-      "text": "有一年的元旦，卫兵指挥官因追求「美女瑞米迪娥」遭到拒绝而发疯，他被发现死在她的窗下。"
+      "text": "有一年的元旦，卫兵指挥官因追求“美女瑞米迪娥”遭到拒绝而发疯，他被发现死在她的窗下。"
     },
     {
       "questionId": "ch09-011",
@@ -1580,7 +1418,7 @@
       "rank": 11,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.67,
+      "confidence": 0.671,
       "warnings": [
         "low_keyword_recall"
       ],
@@ -1598,17 +1436,35 @@
       "rank": 16,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.717,
+      "confidence": 0.716,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.233,
         "lengthRatio": 1.068,
-        "positionDelta": 0.103
+        "positionDelta": 0.105
       },
       "anchor": "他从未像那时一样骁勇善战。他终于能为自己的自由而战，而不再为抽象的概念，不再为政客见风使舵、翻云覆雨的口号而战，这样的信念令他激情满怀、斗志昂扬。",
       "text": "他当军人没有比那段时间更了不起的了。他确认自己自始至终是为自由而战，不是为了某些抽象的理想，也不是为政客们因应环境左右曲解口号而战，他一直是内心充满热诚的。"
+    },
+    {
+      "questionId": "ch09-019",
+      "chapterOrder": 9,
+      "rank": 19,
+      "versionId": "yang_naidong",
+      "status": "needs_review",
+      "confidence": 0.66,
+      "warnings": [
+        "low_keyword_recall"
+      ],
+      "metrics": {
+        "keywordRecall": 0.227,
+        "lengthRatio": 0.9,
+        "positionDelta": 0.028
+      },
+      "anchor": "“别犯傻了，赫里内勒多，”电码如是说道，“八月下雨很正常。”",
+      "text": "“布恩迪亚，”他按着通话电报的键说，“马孔多下雨啦。”"
     },
     {
       "questionId": "ch09-020",
@@ -1623,7 +1479,7 @@
       "metrics": {
         "keywordRecall": 0.2,
         "lengthRatio": 1.045,
-        "positionDelta": 0.023
+        "positionDelta": 0.024
       },
       "anchor": "他大权独揽却在孤独中陷入迷途，开始失去方向。",
       "text": "陶醉于权力的心情在阵阵冷颤中开始变得索然无味。"
@@ -1644,7 +1500,7 @@
         "positionDelta": 0.02
       },
       "anchor": "约略懂得幸福晚年的秘诀不过是与孤独签下不失尊严的协定罢了。",
-      "text": "有一次，有个人打断他的孤独。「您好吗？上校？」那人经过时问。"
+      "text": "有一次，有个人打断他的孤独。“您好吗？上校？”那人经过时问。"
     },
     {
       "questionId": "ch10-005",
@@ -1652,14 +1508,14 @@
       "rank": 5,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.741,
+      "confidence": 0.742,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.238,
         "lengthRatio": 0.938,
-        "positionDelta": 0.054
+        "positionDelta": 0.053
       },
       "anchor": "不变的坐姿令他脊柱变形，精确到毫米的工艺使他视力受损，但不容丝毫分心的专注让他获得了心灵的平静。",
       "text": "由于长时间坐着干活，他的背驼了，由于精雕细琢的工作，他的视力弱了，但他却得到了心灵的宁静。"
@@ -1670,7 +1526,7 @@
       "rank": 7,
       "versionId": "huang_shen_chen",
       "status": "needs_review",
-      "confidence": 0.284,
+      "confidence": 0.285,
       "warnings": [
         "length_ratio_outlier"
       ],
@@ -1683,40 +1539,22 @@
       "text": "什么保守派政府在自由派的支持下正在改革历法以便让每届总统掌权一百年啦，什么终于跟神圣教廷签订了条约，一个红衣主教已从罗马来了，他的教冠用钻石镶嵌，他的宝座是用实心的金子做的，自由派的部长们在仪式上伏地亲吻主教的戒指，还让人照相啦，什么一个西班牙剧团的主要女领唱队员，经过首都时在化妆室里被一群蒙面人抢走了，而星期天却在共"
     },
     {
-      "questionId": "ch10-014",
-      "chapterOrder": 10,
-      "rank": 14,
-      "versionId": "yang_naidong",
-      "status": "unusable",
-      "confidence": 0.544,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.0,
-        "lengthRatio": 0.972,
-        "positionDelta": 0.009
-      },
-      "anchor": "“这些我太熟悉了。”乌尔苏拉喊道，“时间好像倒转了，我们又回到了从前。”",
-      "text": "他们常是等了许久许久才见到她，他们不见还好，一见到她以后就寝食不安了。"
-    },
-    {
       "questionId": "ch10-019",
       "chapterOrder": 10,
       "rank": 19,
       "versionId": "yang_naidong",
       "status": "unusable",
-      "confidence": 0.597,
+      "confidence": 0.598,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.125,
         "lengthRatio": 1.105,
-        "positionDelta": 0.027
+        "positionDelta": 0.026
       },
       "anchor": "不到一百年，就不该有人知道其中的含义。",
-      "text": "「你在跟谁说话呀？」她问他。「没有人呀。」"
+      "text": "“你在跟谁说话呀？”她问他。“没有人呀。”"
     },
     {
       "questionId": "ch11-001",
@@ -1724,17 +1562,17 @@
       "rank": 1,
       "versionId": "gao_changrong",
       "status": "unusable",
-      "confidence": 0.488,
+      "confidence": 0.487,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.0,
-        "lengthRatio": 1.273,
-        "positionDelta": 0.004
+        "lengthRatio": 0.909,
+        "positionDelta": 0.029
       },
       "anchor": "她辛苦多年忍受折磨好不容易赢得的孤独特权，绝不肯用来换取一个被虚假迷人的怜悯打扰的晚年。",
-      "text": "这种难以改变的特性甚至使奥雷连诺·森腾诺本人感到气恼，但他见面就令人信任的热情和惊人的工作能力弥补了自己的缺陷。"
+      "text": "但是跟祖先不同，奥雷里亚诺·特里斯特没有失去睡眠或胃口，也没有对任何人发过脾气。"
     },
     {
       "questionId": "ch11-001",
@@ -1749,7 +1587,7 @@
       "metrics": {
         "keywordRecall": 0.087,
         "lengthRatio": 1.114,
-        "positionDelta": 0.005
+        "positionDelta": 0.004
       },
       "anchor": "她辛苦多年忍受折磨好不容易赢得的孤独特权，绝不肯用来换取一个被虚假迷人的怜悯打扰的晚年。",
       "text": "为了弥补连他自己都认为讨厌的破坏力，他做人态度诚恳，很容易得到别人的信任，而且表现出惊人的工作量。"
@@ -1760,14 +1598,14 @@
       "rank": 3,
       "versionId": "huang_shen_chen",
       "status": "needs_review",
-      "confidence": 0.75,
+      "confidence": 0.749,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.75,
         "lengthRatio": 2.413,
-        "positionDelta": 0.052
+        "positionDelta": 0.053
       },
       "anchor": "他看见堂费尔南多躺在匣子里，身着黑衣，胸前挂着耶稣受难像，皮肤寸寸迸裂溢出臭气，浑身浸泡在文火熬煮的汤里，翻滚的泡沫宛如珍珠。",
       "text": "奥雷里亚诺第二旋掉了八只螺栓，孩子们已等得不耐烦了，但他几乎来不及喊一声叫孩子们让到一边，掀开铅板，看见堂费尔南多躺在里面，穿了一身黑的，胸前放着耶稣受难像，他的皮肤胀得破裂了，发出打嗝时的响声，散发出难闻的臭气，他整个身子浸在泛着泡沫、发出噗噜噗噜响声、用文火在煮的汤里，翻滚的泡沫犹如鲜亮晶莹的珍珠。"
@@ -1777,54 +1615,54 @@
       "chapterOrder": 11,
       "rank": 3,
       "versionId": "ye_shuyin",
-      "status": "needs_review",
-      "confidence": 0.436,
+      "status": "unusable",
+      "confidence": 0.628,
       "warnings": [
-        "length_ratio_outlier"
+        "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.472,
-        "lengthRatio": 2.825,
-        "positionDelta": 0.041
+        "keywordRecall": 0.111,
+        "lengthRatio": 1.032,
+        "positionDelta": 0.017
       },
       "anchor": "他看见堂费尔南多躺在匣子里，身着黑衣，胸前挂着耶稣受难像，皮肤寸寸迸裂溢出臭气，浑身浸泡在文火熬煮的汤里，翻滚的泡沫宛如珍珠。",
-      "text": "奥雷里亚诺二世照例帮忙，他们一起撕开树脂封条，掀开盖子，拿出保护作用的木屑，发现里面是一具锁上铜栓的长形铅箱，孩子们焦急难耐，奥雷里亚诺二世松开八个螺栓，拿开铅盖，他及时发出一声惨叫，赶快把他们带到一边，因为他看见穿著一身黑的费南多先生就这么躺在里面，胸前放置一个十字架，胀破的皮肤发出恶臭，浸泡在冒著一颗颗珍珠般泡泡的"
+      "text": "起初，费尔南达不谈娘家，但慢慢地她开始理想化父亲的形象。她在餐桌上把父亲形容为超凡入圣的人物，不受所有浮华虚荣牵绊，成了一位圣人。"
     },
     {
       "questionId": "ch11-004",
       "chapterOrder": 11,
       "rank": 4,
       "versionId": "yang_naidong",
-      "status": "needs_review",
-      "confidence": 0.611,
+      "status": "unusable",
+      "confidence": 0.554,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.222,
-        "lengthRatio": 0.85,
-        "positionDelta": 0.02
+        "keywordRecall": 0.111,
+        "lengthRatio": 1.0,
+        "positionDelta": 0.05
       },
       "anchor": "奥雷里亚诺第二没有放过款待堂兄弟们的机会",
-      "text": "叫亚玛兰塔跳克雷斯皮的悲怆圆舞曲；"
+      "text": "他们冠母姓，都因取名布恩迪亚而引以为傲。"
     },
     {
       "questionId": "ch11-005",
       "chapterOrder": 11,
       "rank": 5,
       "versionId": "gao_changrong",
-      "status": "unusable",
-      "confidence": 0.589,
+      "status": "needs_review",
+      "confidence": 0.787,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.059,
-        "lengthRatio": 1.06,
-        "positionDelta": 0.002
+        "keywordRecall": 0.235,
+        "lengthRatio": 1.059,
+        "positionDelta": 0.021
       },
-      "anchor": "在这种情形下，他采取了非常幼稚的做法，不是无端发火便是凭空抱怨，总之想让佩特拉·科特斯主动提出分手。",
-      "text": "有个女邻居劝她在失去的情人像前点起蜡烛祈祷，她却自信而神秘地说： “让他回来的那支蜡烛，是永远不熄灭的。”"
+      "anchor": "在这种情形下，他采取了非常幼稚的做法，不是无端发火便是凭空抱怨，总之想让佩特拉·科特斯斯主动提出分手。",
+      "text": "他结婚还不到两个月，可是佩特拉·科特斯斯立即发觉，他的夫妻生活过得并不美满，于是她感到了报复以后的一种酣畅。"
     },
     {
       "questionId": "ch11-005",
@@ -1832,16 +1670,16 @@
       "rank": 5,
       "versionId": "yang_naidong",
       "status": "unusable",
-      "confidence": 0.684,
+      "confidence": 0.673,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.059,
-        "lengthRatio": 0.98,
-        "positionDelta": 0.021
+        "lengthRatio": 0.961,
+        "positionDelta": 0.022
       },
-      "anchor": "在这种情形下，他采取了非常幼稚的做法，不是无端发火便是凭空抱怨，总之想让佩特拉·科特斯主动提出分手。",
+      "anchor": "在这种情形下，他采取了非常幼稚的做法，不是无端发火便是凭空抱怨，总之想让佩特拉·科特斯斯主动提出分手。",
       "text": "只是他不敢把这个消息告诉她。在这种情形下，他假装很孩子气，故意生气，无事找碴，想激柯蒂丝与他分手。"
     },
     {
@@ -1850,14 +1688,14 @@
       "rank": 8,
       "versionId": "huang_shen_chen",
       "status": "needs_review",
-      "confidence": 0.439,
+      "confidence": 0.44,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.364,
         "lengthRatio": 2.657,
-        "positionDelta": 0.024
+        "positionDelta": 0.023
       },
       "anchor": "这份表格可以看作是二十年战争的缩影，凭着它足以重绘上校夜间的行军路线，",
       "text": "这张名单可以概述二十年的战争风云，人们借助它可以重温上校的夜间行军线路， 从那天凌晨他领着二十一条汉子离开马孔多去进行一场幻想式的起义直到最后一次他被裹在一条结着硬血块的毯子里回到镇里。"
@@ -1866,37 +1704,19 @@
       "questionId": "ch11-009",
       "chapterOrder": 11,
       "rank": 9,
-      "versionId": "gao_changrong",
-      "status": "needs_review",
-      "confidence": 0.74,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.176,
-        "lengthRatio": 1.022,
-        "positionDelta": 0.014
-      },
-      "anchor": "奥雷里亚诺第二羞愧不已，装出勃然大怒的样子，声称这是对自己的曲解和侮辱，于是一去再没回来。",
-      "text": "她满足奥雷连诺第二期望的屈从态度，只是证实了大家对她的认识：她是一个值得同情的、可怜的女人。"
-    },
-    {
-      "questionId": "ch11-009",
-      "chapterOrder": 11,
-      "rank": 9,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.631,
+      "confidence": 0.63,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.235,
         "lengthRatio": 1.244,
-        "positionDelta": 0.032
+        "positionDelta": 0.033
       },
       "anchor": "奥雷里亚诺第二羞愧不已，装出勃然大怒的样子，声称这是对自己的曲解和侮辱，于是一去再没回来。",
-      "text": "「这只不过表示，」她说，「你要娶那位女王罢了。」恼羞成怒的席甘多说他是被误解了，被乱戴帽子了，于是他不再去看她。"
+      "text": "“这只不过表示，”她说，“你要娶那位女王罢了。”恼羞成怒的席甘多说他是被误解了，被乱戴帽子了，于是他不再去看她。"
     },
     {
       "questionId": "ch11-011",
@@ -1911,7 +1731,7 @@
       "metrics": {
         "keywordRecall": 0.688,
         "lengthRatio": 2.412,
-        "positionDelta": 0.053
+        "positionDelta": 0.054
       },
       "anchor": "有人告诉他那房子没有主人，过去曾经住过一位以泥土和墙皮为食的孤单寡妇，她晚年时别人在街上只见过她两次。",
       "text": "他打听谁是房子的主人，有人告诉他说：这房子是不属于任何人的，从前住在里面的是个孤零零的寡妇，用泥土和墙上的石灰充饥，在她死前的最后几年，有人在街上只见过她两次，她戴了一顶别着小朵假花的帽子，穿了一双旧式银色鞋子，经过广场，到邮局上给一个主教寄信。"
@@ -1929,7 +1749,7 @@
       "metrics": {
         "keywordRecall": 0.765,
         "lengthRatio": 2.722,
-        "positionDelta": 0.053
+        "positionDelta": 0.054
       },
       "anchor": "她透过尘雾看到他站在往昔的薄雾中，背上斜挎着双铳猎枪，手里拎着一串兔子。",
       "text": "那女人在大厅中央仍然纹丝不动，在堆满了破烂家什的大厅里，她一点一点慢慢地打量着这个额上有灰纹的阔背巨汉，透过弥漫的灰雾，她看见了他在往昔的灰茫茫的尘埃中，背上斜挎一支双筒猎枪，手里提着一串野兔子。"
@@ -1940,7 +1760,7 @@
       "rank": 14,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.744,
+      "confidence": 0.767,
       "warnings": [
         "low_keyword_recall"
       ],
@@ -1950,7 +1770,7 @@
         "positionDelta": 0.051
       },
       "anchor": "她透过尘雾看到他站在往昔的薄雾中，背上斜挎着双铳猎枪，手里拎着一串兔子。",
-      "text": "从飞扬的尘埃中，她看见的仿佛是当年肩上扛著猎枪，手上提著著兔子的那个壮汉。"
+      "text": "从飞扬的尘埃中，她看见的仿佛是当年肩上扛着猎枪，手上提着着兔子的那个壮汉。"
     },
     {
       "questionId": "ch11-020",
@@ -1976,14 +1796,14 @@
       "rank": 4,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.75,
+      "confidence": 0.751,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.235,
         "lengthRatio": 1.02,
-        "positionDelta": 0.002
+        "positionDelta": 0.001
       },
       "anchor": "或许想要征服她乃至祛除她带来的危险，只需一种最自然最简单、被称为“爱”的情感，但从没有人想到过这一点。",
       "text": "以前，她还想挽救这个姑娘的时候，曾让她对一些简单的家务发生兴趣。“男人需要的比你所想的多，”她神秘地说。"
@@ -2019,7 +1839,7 @@
       "metrics": {
         "keywordRecall": 0.056,
         "lengthRatio": 1.013,
-        "positionDelta": 0.014
+        "positionDelta": 0.015
       },
       "anchor": "这些淫靡放荡的风月高手，古老技艺无一不精，药膏器具无所不备，能够使无能者受振奋，腼腆者获激励，贪婪者得餍足，节制者生欲望，纵欲者遭惩戒，孤僻者变性情。",
       "text": "这种不安比老一代的吉卜赛人所造成的还要厉害，只是不像吉卜赛人那样变幻无常而难以捉摸罢了。他们使出以前只有上帝才能的手法，改变降雨的方式，加速收获的周期；"
@@ -2028,55 +1848,19 @@
       "questionId": "ch12-010",
       "chapterOrder": 12,
       "rank": 10,
-      "versionId": "gao_changrong",
-      "status": "unusable",
-      "confidence": 0.509,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.1,
-        "lengthRatio": 1.36,
-        "positionDelta": 0.003
-      },
-      "anchor": "费尔南达只有在心里哀叹，家里这些傻子都活得太久了。",
-      "text": "傍晚，在土耳其人街上，这个工人吹嘘自己的勇敢和运气，可是几分钟之后。"
-    },
-    {
-      "questionId": "ch12-010",
-      "chapterOrder": 12,
-      "rank": 10,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.518,
+      "confidence": 0.519,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.2,
         "lengthRatio": 1.08,
-        "positionDelta": 0.096
+        "positionDelta": 0.095
       },
       "anchor": "费尔南达只有在心里哀叹，家里这些傻子都活得太久了。",
-      "text": "「那未免太傻气了，」她说，「人们从来不在背后抹肥皂。」"
-    },
-    {
-      "questionId": "ch12-012",
-      "chapterOrder": 12,
-      "rank": 12,
-      "versionId": "gao_changrong",
-      "status": "unusable",
-      "confidence": 0.588,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.154,
-        "lengthRatio": 0.913,
-        "positionDelta": 0.061
-      },
-      "anchor": "美人儿蕾梅黛丝独自留在孤独的荒漠中，一无牵绊。",
-      "text": "而菲兰达呢，她根本不想了解俏姑娘雷麦黛丝。"
+      "text": "“那未免太傻气了，”她说，“人们从来不在背后抹肥皂。”"
     },
     {
       "questionId": "ch12-012",
@@ -2091,10 +1875,10 @@
       "metrics": {
         "keywordRecall": 0.077,
         "lengthRatio": 1.087,
-        "positionDelta": 0.069
+        "positionDelta": 0.07
       },
       "anchor": "美人儿蕾梅黛丝独自留在孤独的荒漠中，一无牵绊。",
-      "text": "「美女瑞米迪娥」抓住床单的另一端，脸露惨淡的微笑。"
+      "text": "“美女瑞米迪娥”抓住床单的另一端，脸露惨淡的微笑。"
     },
     {
       "questionId": "ch12-013",
@@ -2120,35 +1904,17 @@
       "rank": 6,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.564,
+      "confidence": 0.7,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
-        "keywordRecall": 0.5,
-        "lengthRatio": 2.413,
-        "positionDelta": 0.015
+        "keywordRecall": 0.65,
+        "lengthRatio": 2.435,
+        "positionDelta": 0.016
       },
       "anchor": "拥有冲动心性和炽热情欲的丽贝卡，才拥有无畏的勇气，而那正是乌尔苏拉希望自己的后代具备的品质。",
-      "text": "这姑娘血管里流着的不是布思蒂亚的血，而是陌生人的血，陌生人的骸骨甚至还在坟墓里发出咔嚓咔嚓的响声，可是只有雷贝卡——性情急躁的雷贝卡，热情奔放的雷贝卡，是唯一具有豪迈勇气的，而这种勇气正是乌苏娜希望她的子孙后代具备的品质。"
-    },
-    {
-      "questionId": "ch13-006",
-      "chapterOrder": 13,
-      "rank": 6,
-      "versionId": "yang_naidong",
-      "status": "unusable",
-      "confidence": 0.524,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.0,
-        "lengthRatio": 0.957,
-        "positionDelta": 0.019
-      },
-      "anchor": "拥有冲动心性和炽热情欲的丽贝卡，才拥有无畏的勇气，而那正是乌尔苏拉希望自己的后代具备的品质。",
-      "text": "相反地，她确认并害怕那深沉的低泣声是可怕的猪尾巴的第一个征兆。她祈求上帝让孩子胎死腹中。"
+      "text": "这姑娘血管里流着的不是布思蒂亚的血，而是陌生人的血，陌生人的骸骨甚至还在坟墓里发出咔嚓咔嚓的响声，可是只有丽贝卡——性情急躁的丽贝卡，热情奔放的丽贝卡，是唯一具有豪迈勇气的，而这种勇气正是乌尔苏拉希望她的子孙后代具备的品质。"
     },
     {
       "questionId": "ch13-008",
@@ -2156,7 +1922,7 @@
       "rank": 8,
       "versionId": "ye_shuyin",
       "status": "needs_review",
-      "confidence": 0.746,
+      "confidence": 0.747,
       "warnings": [
         "low_keyword_recall"
       ],
@@ -2166,25 +1932,7 @@
         "positionDelta": 0.018
       },
       "anchor": "一段时间后她发现家里的每个人每天都在无意中重复同样的路线，做同样的事，甚至在同一时刻说同样的话。只有当他们偏离这些刻板的常规时，才会有丢东西的危险。",
-      "text": "事情很简单，因为当其他人在屋子里漫不经心走著，她可是聚精会神监视他们，以免他们意外发现她的秘密，过了一段日子后，她发现每个家族成员每天都不知不觉走同样的路线，重复同样的动作，几乎在同个时间说同样的话。"
-    },
-    {
-      "questionId": "ch13-010",
-      "chapterOrder": 13,
-      "rank": 10,
-      "versionId": "yang_naidong",
-      "status": "unusable",
-      "confidence": 0.623,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.154,
-        "lengthRatio": 1.032,
-        "positionDelta": 0.057
-      },
-      "anchor": "他胡乱度日，不动感情，毫无志气，仿佛乌尔苏拉星系中的一颗流星。",
-      "text": "他年龄越大就越清楚，时间仿佛把他带往那次的回忆里去，更为接近它。"
+      "text": "事情很简单，因为当其他人在屋子里漫不经心走着，她可是聚精会神监视他们，以免他们意外发现她的秘密，过了一段日子后，她发现每个家族成员每天都不知不觉走同样的路线，重复同样的动作，几乎在同个时间说同样的话。"
     },
     {
       "questionId": "ch13-011",
@@ -2192,14 +1940,14 @@
       "rank": 11,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.728,
+      "confidence": 0.73,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.211,
         "lengthRatio": 0.983,
-        "positionDelta": 0.012
+        "positionDelta": 0.01
       },
       "anchor": "然而，在晚年无法穿透的孤独中，她获得了非凡的洞察力，能察觉到家中任何不起眼的小事，也第一次看清了过去因忙碌而忽略的真相。",
       "text": "但是她老来寂寞，在检视家中极细小的事情时，以她极为锐利的眼光，仍能发现以前在忙中未曾发现过的真相，并且一眼就可以看清。"
@@ -2210,14 +1958,14 @@
       "rank": 12,
       "versionId": "gao_changrong",
       "status": "unusable",
-      "confidence": 0.655,
+      "confidence": 0.656,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.1,
         "lengthRatio": 1.121,
-        "positionDelta": 0.04
+        "positionDelta": 0.039
       },
       "anchor": "一个人只要能完全拥有良心上的安宁，就可以不断进食直到疲惫无力为止。",
       "text": "她那实践检验过的理论原则是：一个人只要心地平静，就能不停地吃到疲乏的时候。"
@@ -2228,7 +1976,7 @@
       "rank": 12,
       "versionId": "huang_shen_chen",
       "status": "unusable",
-      "confidence": 0.586,
+      "confidence": 0.585,
       "warnings": [
         "low_keyword_recall"
       ],
@@ -2264,7 +2012,7 @@
       "rank": 12,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.73,
+      "confidence": 0.731,
       "warnings": [
         "low_keyword_recall"
       ],
@@ -2282,14 +2030,14 @@
       "rank": 15,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.729,
+      "confidence": 0.73,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.182,
         "lengthRatio": 1.079,
-        "positionDelta": 0.022
+        "positionDelta": 0.021
       },
       "anchor": "随后他又想起其他纷杂的事情，却无意评判，因为既然无法引开思绪，他便学会了冷静地回想过往，不让那些无法删除的记忆勾起自己的情感。",
       "text": "然后，他开始反复思量战争中的一件件事情，可是回忆过去并没有在他心里激起欢乐和悲哀，因为他无法避免去想战争他就学会了平静地想它，不动感情。"
@@ -2300,14 +2048,14 @@
       "rank": 5,
       "versionId": "ye_shuyin",
       "status": "unusable",
-      "confidence": 0.575,
+      "confidence": 0.576,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.083,
         "lengthRatio": 0.976,
-        "positionDelta": 0.031
+        "positionDelta": 0.03
       },
       "anchor": "她满怀怨恨地制定了计划，但心中一个念头令她战惊：纵然出于爱意，她也无法做得比这更好。",
       "text": "那台琴再一次搬出屋子送到布朗先生家，而梅妹在他们那儿得到更真诚的掌声和热情的祝贺。"
@@ -2318,35 +2066,17 @@
       "rank": 5,
       "versionId": "yang_naidong",
       "status": "unusable",
-      "confidence": 0.578,
+      "confidence": 0.577,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.083,
-        "lengthRatio": 1.0,
-        "positionDelta": 0.05
+        "lengthRatio": 0.976,
+        "positionDelta": 0.011
       },
       "anchor": "她满怀怨恨地制定了计划，但心中一个念头令她战惊：纵然出于爱意，她也无法做得比这更好。",
-      "text": "她帮忙抬尸体，为他穿上军装、刮胡子、梳头，把他的胡子用蜡涂得比他得意时更加硬挺漂亮。"
-    },
-    {
-      "questionId": "ch14-007",
-      "chapterOrder": 14,
-      "rank": 7,
-      "versionId": "yang_naidong",
-      "status": "needs_review",
-      "confidence": 0.661,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.188,
-        "lengthRatio": 1.132,
-        "positionDelta": 0.013
-      },
-      "anchor": "阿玛兰妲直截了当地回答说，她不需要任何宗教仪式的帮助，因为她的良心是清白的。",
-      "text": "亚玛兰塔一向熟悉死亡的仪式，家人也早就习惯了，谁也不觉得那种动作中含有亲人的情分在内。"
+      "text": "不过，美美又告诉他，那个男孩已经回国了，现在不在这边。她理智成熟，一家人都很放心。"
     },
     {
       "questionId": "ch14-010",
@@ -2390,35 +2120,35 @@
       "rank": 11,
       "versionId": "ye_shuyin",
       "status": "needs_review",
-      "confidence": 0.428,
+      "confidence": 0.423,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.714,
-        "lengthRatio": 3.192,
+        "lengthRatio": 3.231,
         "positionDelta": 0.017
       },
       "anchor": "家人不顾做母亲的意愿，给她起名为阿玛兰妲·乌尔苏拉。",
-      "text": "奥雷里亚诺二世照例在女儿放假期间回家过夜，费兰妲也趁机多少夺回一点合法妻子的优势，因为隔年梅妹迎接了新生的妹妹，家人不顾妈妈的反对，替小宝宝取名为阿玛兰妲．乌尔苏拉。"
+      "text": "奥雷里亚诺二世照例在女儿放假期间回家过夜，费尔南达也趁机多少夺回一点合法妻子的优势，因为隔年梅妹迎接了新生的妹妹，家人不顾妈妈的反对，替小宝宝取名为阿玛兰妲·乌尔苏拉。"
     },
     {
       "questionId": "ch14-011",
       "chapterOrder": 14,
       "rank": 11,
       "versionId": "yang_naidong",
-      "status": "unusable",
-      "confidence": 0.575,
+      "status": "needs_review",
+      "confidence": 0.894,
       "warnings": [
-        "low_keyword_recall"
+        "position_delta_outlier"
       ],
       "metrics": {
-        "keywordRecall": 0.143,
-        "lengthRatio": 1.385,
-        "positionDelta": 0.001
+        "keywordRecall": 0.643,
+        "lengthRatio": 1.115,
+        "positionDelta": 0.573
       },
       "anchor": "家人不顾做母亲的意愿，给她起名为阿玛兰妲·乌尔苏拉。",
-      "text": "事实上，她并无明显的天赋，却是在不断苦练中得到最高的成绩，免得母亲生气。"
+      "text": "乌尔苏拉为阿玛兰妲守丧九夜之后，一病不起，由匹达黛照顾她。"
     },
     {
       "questionId": "ch14-012",
@@ -2444,53 +2174,35 @@
       "rank": 20,
       "versionId": "huang_shen_chen",
       "status": "needs_review",
-      "confidence": 0.322,
+      "confidence": 0.316,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.769,
-        "lengthRatio": 3.857,
+        "lengthRatio": 4.0,
         "positionDelta": 0.06
       },
       "anchor": "热恋中的焦灼只能在床上平息。",
-      "text": "对于这一点，就是在庇拉·特内拉用挑逗性的大实话向她指出恋爱时的焦渴只有在床上才能平息下来之后，她也没有相信。"
-    },
-    {
-      "questionId": "ch15-005",
-      "chapterOrder": 15,
-      "rank": 5,
-      "versionId": "yang_naidong",
-      "status": "needs_review",
-      "confidence": 0.759,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.214,
-        "lengthRatio": 0.969,
-        "positionDelta": 0.002
-      },
-      "anchor": "“和奥雷里亚诺一个样，”乌尔苏拉感叹道，“世界好像在原地转圈。”",
-      "text": "「就像邦迪亚上校一样，」易家兰惊叹著说，「世局好像又重演了。」"
+      "text": "对于这一点，就是在庇拉尔·特尔内拉用挑逗性的大实话向她指出恋爱时的焦渴只有在床上才能平息下来之后，她也没有相信。"
     },
     {
       "questionId": "ch15-007",
       "chapterOrder": 15,
       "rank": 7,
       "versionId": "gao_changrong",
-      "status": "unusable",
-      "confidence": 0.598,
+      "status": "needs_review",
+      "confidence": 0.679,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.091,
-        "lengthRatio": 1.042,
-        "positionDelta": 0.001
+        "keywordRecall": 0.182,
+        "lengthRatio": 0.896,
+        "positionDelta": 0.034
       },
       "anchor": "但费尔南达仍然将她视为自家耻辱的一个知情者，暗自惋惜中世纪绞死通报噩耗的使者的习俗没能流传至今。",
-      "text": "因为谁该支付犯人的伙食费，政府和香蕉公司未能达成协议。食品质量恶劣和劳动条件不好又引起了不满的浪潮。"
+      "text": "“如果大家相信《圣经》里的说法，”费尔南达回答，“我看不出人家为什么不相信我的说法。”"
     },
     {
       "questionId": "ch15-007",
@@ -2498,14 +2210,14 @@
       "rank": 7,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.571,
+      "confidence": 0.573,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.227,
         "lengthRatio": 1.708,
-        "positionDelta": 0.007
+        "positionDelta": 0.005
       },
       "anchor": "但费尔南达仍然将她视为自家耻辱的一个知情者，暗自惋惜中世纪绞死通报噩耗的使者的习俗没能流传至今。",
       "text": "修女在邦家吃午饭，等回程的火车，他们要求她要谨慎保密，她便再也不提这个孩子了，但是卡碧娥把她当作是这件丑闻的可恶证人，哀叹现代人已不再有中古时代绞死噩耗信差的风俗。"
@@ -2516,17 +2228,17 @@
       "rank": 14,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.808,
+      "confidence": 0.806,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.2,
         "lengthRatio": 1.125,
-        "positionDelta": 0.003
+        "positionDelta": 0.004
       },
       "anchor": "“既然大家都相信《圣经》，”费尔南达反驳道，“我看不出有什么理由不相信我的话。”",
-      "text": "「圣经里有这种说法，人家都相信；」卡碧娥回答说，「我看不出我这样说，人家怎么就不会相信。」"
+      "text": "“圣经里有这种说法，人家都相信；”卡碧娥回答说，“我看不出我这样说，人家怎么就不会相信。”"
     },
     {
       "questionId": "ch16-008",
@@ -2534,17 +2246,17 @@
       "rank": 8,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.642,
+      "confidence": 0.638,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.194,
-        "lengthRatio": 1.051,
-        "positionDelta": 0.045
+        "lengthRatio": 1.071,
+        "positionDelta": 0.044
       },
       "anchor": "马孔多所有的居民都在等待雨停后死去。一路上，他看见他们坐在厅堂里，眼神迷茫，抱手胸前，感受着浑然一体、未经分割的时光在流逝。既然除了看雨再无事可做，那么将时光分为年月、将日子分为钟点都终归是徒劳。",
-      "text": "“只要雨停，其他的牲畜又会生下来了。”在佩特娜.柯特眼前，牲畜成群死去，她好不容易才把陷在泥淖里的剁成了块。她束手无策地望着洪水无情地消灭了她的财产－－以前被认为是马孔多最可靠的财产，现在剩下的只是臭气了。"
+      "text": "“只要雨停，其他的牲畜又会生下来了。”在佩特拉·科特斯斯眼前，牲畜成群死去，她好不容易才把陷在泥淖里的剁成了块。她束手无策地望着洪水无情地消灭了她的财产－－以前被认为是马孔多最可靠的财产，现在剩下的只是臭气了。"
     },
     {
       "questionId": "ch16-009",
@@ -2570,35 +2282,17 @@
       "rank": 11,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.767,
+      "confidence": 0.765,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.188,
         "lengthRatio": 1.0,
-        "positionDelta": 0.021
+        "positionDelta": 0.022
       },
       "anchor": "但即使是这些年轻时的荒唐回忆也没能触发他的激情，仿佛最后一场欢宴已经耗尽他所有的欲望，只为他留下一项奇妙的奖励，即可以纵情回忆过往而不带半点儿苦涩与悔恨。",
       "text": "不过这些与姘妇享受青春的回忆，现在想起来，心底也起不了波纹；最后一段荒唐的日子中，他放荡的能力已经枯竭，只剩下一种开朗心境，回忆起往事，既不辛酸也不后悔。"
-    },
-    {
-      "questionId": "ch16-013",
-      "chapterOrder": 16,
-      "rank": 13,
-      "versionId": "gao_changrong",
-      "status": "needs_review",
-      "confidence": 0.668,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.222,
-        "lengthRatio": 1.021,
-        "positionDelta": 0.016
-      },
-      "anchor": "总有那么多事要做，总有那么多事要忍耐要纠正，却从没有人说一句“早上好，费尔南达”或“晚上睡得怎么样，费尔南达”，也从没有人哪怕是出于礼貌问一声她脸色为什么这样苍白或为什么早上起来眼圈发紫，",
-      "text": "“人家把你父亲送到这儿的时候，他已经臭得相当厉害了。”他耐着性子听了整整一天，最后才揭穿菲兰达说得不准。菲兰达什么也没回答，只是降低了嗓门。这天吃晚饭的时候，她那恼怒的聒噪声把雨声都给压住了。"
     },
     {
       "questionId": "ch16-014",
@@ -2606,7 +2300,7 @@
       "rank": 14,
       "versionId": "ye_shuyin",
       "status": "unusable",
-      "confidence": 0.532,
+      "confidence": 0.531,
       "warnings": [
         "low_keyword_recall"
       ],
@@ -2643,17 +2337,17 @@
       "rank": 16,
       "versionId": "gao_changrong",
       "status": "unusable",
-      "confidence": 0.534,
+      "confidence": 0.626,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.07,
-        "lengthRatio": 0.922,
+        "keywordRecall": 0.14,
+        "lengthRatio": 0.944,
         "positionDelta": 0.04
       },
       "anchor": "随着谷仓存粮日渐匮乏，费尔南达的怨气也日益增长，偶尔的牢骚、少见的怨言终于爆发为势不可当的洪涛，在一个早上以仿佛吉他叠句的单调起始，一天里音调渐渐升高，音色越发丰富，韵律益显激越。",
-      "text": "奥雷连诺第二耷拉着脑袋，坐在桌边，吃得很少，很早就到自己的卧室里去了。第二天早餐时，菲兰达浑身发抖，显然过了一个不眠之夜，她反复回忆过去受到的委屈，似乎已经精疲力尽。"
+      "text": "奥雷里亚诺第二耷拉着脑袋，坐在桌边，吃得很少，很早就到自己的卧室里去了。第二天早餐时，费尔南达浑身发抖，显然过了一个不眠之夜，她反复回忆过去受到的委屈，似乎已经精疲力尽。"
     },
     {
       "questionId": "ch16-016",
@@ -2661,35 +2355,17 @@
       "rank": 16,
       "versionId": "yang_naidong",
       "status": "unusable",
-      "confidence": 0.575,
+      "confidence": 0.574,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.093,
         "lengthRatio": 0.978,
-        "positionDelta": 0.074
+        "positionDelta": 0.075
       },
       "anchor": "随着谷仓存粮日渐匮乏，费尔南达的怨气也日益增长，偶尔的牢骚、少见的怨言终于爆发为势不可当的洪涛，在一个早上以仿佛吉他叠句的单调起始，一天里音调渐渐升高，音色越发丰富，韵律益显激越。",
-      "text": "食品室的东西愈来愈少，造成了燃眉之急，卡碧娥也就愈来愈愤慨。最后，她的抗议和少见的怒火陆续发泄出来了，就像六弦琴发出某种单调的声音，从早到晚响著。她的声音愈来愈高，愈来愈响亮。"
-    },
-    {
-      "questionId": "ch16-017",
-      "chapterOrder": 16,
-      "rank": 17,
-      "versionId": "gao_changrong",
-      "status": "needs_review",
-      "confidence": 0.716,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.2,
-        "lengthRatio": 1.0,
-        "positionDelta": 0.007
-      },
-      "anchor": "费尔南达做梦都没想到他会如此卖力，见他这样投入地干活，就将他的冒进当作勤勉，贪婪当作忘我，固执当作坚毅，内心深深悔恨不该用那样恶毒的言语来攻讦他的懒散。",
-      "text": "菲兰达看见奥雷连诺第二拼命干活（这种拼命精神是她以前在他身上没有料到的），就把他的狂热看做是爱好劳动，把他的黄金梦看做是忘我精神，把他的顽固看做是坚定。"
+      "text": "食品室的东西愈来愈少，造成了燃眉之急，卡碧娥也就愈来愈愤慨。最后，她的抗议和少见的怒火陆续发泄出来了，就像六弦琴发出某种单调的声音，从早到晚响着。她的声音愈来愈高，愈来愈响亮。"
     },
     {
       "questionId": "ch16-018",
@@ -2697,7 +2373,7 @@
       "rank": 18,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.732,
+      "confidence": 0.731,
       "warnings": [
         "low_keyword_recall"
       ],
@@ -2708,24 +2384,6 @@
       },
       "anchor": "那些木屋，那些午后常有轻松牌戏的清凉露台，都被飓风刮走，仿佛是多年后马孔多必将从世间被抹去的预演。",
       "text": "多年以后，那种飓风注定要把马孔多从地面上一扫而光。在这一次致命的狂风之后，从前这儿住过人的唯一证明。"
-    },
-    {
-      "questionId": "ch16-019",
-      "chapterOrder": 16,
-      "rank": 19,
-      "versionId": "yang_naidong",
-      "status": "needs_review",
-      "confidence": 0.613,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.185,
-        "lengthRatio": 1.385,
-        "positionDelta": 0.003
-      },
-      "anchor": "就在此时，桑塔索菲亚·德拉·彼达发现她后背上密密麻麻全是水蛭。赶在乌尔苏拉的鲜血被吸干之前，她用未熄的木炭烫灼把水蛭一条条揭下来。",
-      "text": "有一天早上，易家兰醒来，觉得昏昏沉沉快要死去，叫人带她去看伊撒贝尔神父，用担架抬去也行，这时匹达黛发现她背上爬满了水蛭，她一只一只捉下来，用火箝夹住烧死，才使牠们不致害她失血丧命。"
     },
     {
       "questionId": "ch17-004",
@@ -2740,7 +2398,7 @@
       "metrics": {
         "keywordRecall": 0.237,
         "lengthRatio": 0.859,
-        "positionDelta": 0.055
+        "positionDelta": 0.054
       },
       "anchor": "但不出一年，他便被空气里弥漫的惰性所感染，被能令一切衰朽、停滞的炙烈尘埃所降服，被午饭中的肉丸在酷热难熬的午休时刻搅得昏昏欲睡，最终彻底妥协。",
       "text": "然而，不到一年的时间，他也感染了疏懒怠惰的风气，受不了使人易老的热灼尘埃，燠热的时候又吃些肉丸当午餐，他也变得懒洋洋的了。"
@@ -2751,17 +2409,17 @@
       "rank": 8,
       "versionId": "huang_shen_chen",
       "status": "needs_review",
-      "confidence": 0.656,
+      "confidence": 0.729,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
-        "keywordRecall": 0.63,
+        "keywordRecall": 0.704,
         "lengthRatio": 2.434,
         "positionDelta": 0.075
       },
       "anchor": "不要让红蚂蚁毁掉房子，不要让蕾梅黛丝照片前的长明灯熄灭，不要让布恩迪亚家的人近亲结婚，生下长猪尾巴的孩子。",
-      "text": "她开始祈祷，那无穷无尽的、仓促而深切的祷告持续了两天多，到了星期三，那祷告词变成了一堆对主的哀求和对现实生活的劝告，诸如别让红蚂蚁蛀塌屋子啦，千万别把雷梅苔丝肖像前的长明灯熄灭啦，留神不要让布恩迪亚家的人跟同血统的人结婚，因为那样会生下长猪尾巴的后代啦等等。"
+      "text": "她开始祈祷，那无穷无尽的、仓促而深切的祷告持续了两天多，到了星期三，那祷告词变成了一堆对主的哀求和对现实生活的劝告，诸如别让红蚂蚁蛀塌屋子啦，千万别把蕾梅黛丝肖像前的长明灯熄灭啦，留神不要让布恩迪亚家的人跟同血统的人结婚，因为那样会生下长猪尾巴的后代啦等等。"
     },
     {
       "questionId": "ch17-010",
@@ -2769,17 +2427,18 @@
       "rank": 10,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.391,
+      "confidence": 0.22,
       "warnings": [
+        "low_confidence",
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.364,
-        "lengthRatio": 2.882,
+        "lengthRatio": 3.029,
         "positionDelta": 0.003
       },
       "anchor": "原来时间也会失误和出现意外，并因此迸裂，在某个房间里留下永恒的断片。",
-      "text": "这时，他俩才明白全家把霍.阿.布恩蒂亚看成疯子是错误的，恰恰相反，他是家里唯一头脑清醒的人，清楚地了解这样一个真理：时间在自己的运动中也会碰到挫折，遇到障碍，所以某一段时间也会滞留在哪一个房间里。"
+      "text": "这时，他俩才明白全家把何塞·阿尔卡蒂奥·布恩迪亚看成疯子是错误的，恰恰相反，他是家里唯一头脑清醒的人，清楚地了解这样一个真理：时间在自己的运动中也会碰到挫折，遇到障碍，所以某一段时间也会滞留在哪一个房间里。"
     },
     {
       "questionId": "ch17-010",
@@ -2794,7 +2453,7 @@
       "metrics": {
         "keywordRecall": 0.091,
         "lengthRatio": 1.029,
-        "positionDelta": 0.026
+        "positionDelta": 0.025
       },
       "anchor": "原来时间也会失误和出现意外，并因此迸裂，在某个房间里留下永恒的断片。",
       "text": "奥雷里亚诺第二除了结婚时的照相外没有相片，印出的照片全都在家庭相册里。"
@@ -2805,17 +2464,17 @@
       "rank": 10,
       "versionId": "ye_shuyin",
       "status": "needs_review",
-      "confidence": 0.302,
+      "confidence": 0.3,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.545,
         "lengthRatio": 3.441,
-        "positionDelta": 0.017
+        "positionDelta": 0.018
       },
       "anchor": "原来时间也会失误和出现意外，并因此迸裂，在某个房间里留下永恒的断片。",
-      "text": "他们同时发现，在这间房子里，时光永远停驻在三月的礼拜一，因此他们恍然大悟荷西．阿尔卡迪欧．波恩地亚并非家人口中无可救药的疯子，他是唯一一个看清楚真相的聪明人，那就是时间也可能会出错和发生意外，因此可能分裂，在这个房间留下一块永恒碎片。"
+      "text": "他们同时发现，在这间房子里，时光永远停驻在三月的礼拜一，因此他们恍然大悟何塞·阿尔卡蒂奥·布恩迪亚并非家人口中无可救药的疯子，他是唯一一个看清楚真相的聪明人，那就是时间也可能会出错和发生意外，因此可能分裂，在这个房间留下一块永恒碎片。"
     },
     {
       "questionId": "ch17-010",
@@ -2823,53 +2482,17 @@
       "rank": 10,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.549,
+      "confidence": 0.323,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.545,
-        "lengthRatio": 2.941,
-        "positionDelta": 0.01
+        "lengthRatio": 3.206,
+        "positionDelta": 0.009
       },
       "anchor": "原来时间也会失误和出现意外，并因此迸裂，在某个房间里留下永恒的断片。",
-      "text": "他们两个人都描述说，这个老头总是在三月的星期一出现，于是他们明白了老邦迪亚并不如别人所说的那么疯狂，实际上全家只有他一个人清醒，他发觉时间也会出差错，有意外，因此而分裂开来，在这小屋里留下永恒的片断。"
-    },
-    {
-      "questionId": "ch17-012",
-      "chapterOrder": 17,
-      "rank": 12,
-      "versionId": "gao_changrong",
-      "status": "unusable",
-      "confidence": 0.639,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.13,
-        "lengthRatio": 1.0,
-        "positionDelta": 0.016
-      },
-      "anchor": "而多年以后奥雷里亚诺接触到外面的世界时，将会意识到那种说法显得荒谬不经，因为与历史学家在教科书中奉为圭臬的错误观点大相径庭。",
-      "text": "她有点反感地认为这孩子继承了奥雷连诺上校无政府主义的倾向，便叫他闭起嘴来。相反地，奥雷连诺第二却证实了孪生兄弟的话是可靠的。"
-    },
-    {
-      "questionId": "ch17-012",
-      "chapterOrder": 17,
-      "rank": 12,
-      "versionId": "yang_naidong",
-      "status": "needs_review",
-      "confidence": 0.783,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.217,
-        "lengthRatio": 0.855,
-        "positionDelta": 0.016
-      },
-      "anchor": "而多年以后奥雷里亚诺接触到外面的世界时，将会意识到那种说法显得荒谬不经，因为与历史学家在教科书中奉为圭臬的错误观点大相径庭。",
-      "text": "许多年后，倭良诺与世人接触，由于他的说法与历史学家在课本上所说的假史实相反，大家都认为他的说法是一种错觉。"
+      "text": "他们两个人都描述说，这个老头总是在三月的星期一出现，于是他们明白了何塞·阿尔卡蒂奥·布恩迪亚并不如别人所说的那么疯狂，实际上全家只有他一个人清醒，他发觉时间也会出差错，有意外，因此而分裂开来，在这小屋里留下永恒的片断。"
     },
     {
       "questionId": "ch17-016",
@@ -2895,53 +2518,17 @@
       "rank": 17,
       "versionId": "gao_changrong",
       "status": "unusable",
-      "confidence": 0.564,
+      "confidence": 0.557,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.148,
-        "lengthRatio": 1.036,
-        "positionDelta": 0.057
+        "lengthRatio": 1.055,
+        "positionDelta": 0.056
       },
       "anchor": "想起往昔，两人都把荒唐的欢宴、离奇的财富和毫无节制的私情当作妨碍，一同感慨浪掷了多少时光才找到共享孤独的天堂。",
-      "text": "昔日酒宴上这些无聊的作法，使得奥雷连诺第二认识到，他以往的精力已经耗尽，过去那种主宰者和舞蹈家的创造才能也已枯竭。"
-    },
-    {
-      "questionId": "ch18-004",
-      "chapterOrder": 18,
-      "rank": 4,
-      "versionId": "gao_changrong",
-      "status": "needs_review",
-      "confidence": 0.672,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.176,
-        "lengthRatio": 1.048,
-        "positionDelta": 0.063
-      },
-      "anchor": "但她为了让费尔南达有的吃宁可自己挨饿。她坚持履行对自己的承诺，直到看见对方下葬为止。",
-      "text": "当时，她自己也饥肠辘辘地坐着，却还供养菲兰达，依然尽着自己肩负的责任，直到目睹对方入葬。"
-    },
-    {
-      "questionId": "ch18-004",
-      "chapterOrder": 18,
-      "rank": 4,
-      "versionId": "ye_shuyin",
-      "status": "unusable",
-      "confidence": 0.567,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.118,
-        "lengthRatio": 0.81,
-        "positionDelta": 0.038
-      },
-      "anchor": "但她为了让费尔南达有的吃宁可自己挨饿。她坚持履行对自己的承诺，直到看见对方下葬为止。",
-      "text": "奥雷里亚诺问她要去哪儿，她露出茫然的表情，仿佛对自己的命运一无所知。"
+      "text": "昔日酒宴上这些无聊的作法，使得奥雷里亚诺第二认识到，他以往的精力已经耗尽，过去那种主宰者和舞蹈家的创造才能也已枯竭。"
     },
     {
       "questionId": "ch18-004",
@@ -2949,35 +2536,35 @@
       "rank": 4,
       "versionId": "yang_naidong",
       "status": "unusable",
-      "confidence": 0.555,
+      "confidence": 0.556,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.059,
-        "lengthRatio": 1.071,
-        "positionDelta": 0.0
+        "lengthRatio": 0.976,
+        "positionDelta": 0.047
       },
       "anchor": "但她为了让费尔南达有的吃宁可自己挨饿。她坚持履行对自己的承诺，直到看见对方下葬为止。",
-      "text": "匹达黛没有时间，也没有办法去抵挡大自然的挑战，整天在各个卧室里驱除蜥蜴，晚上牠们又回来了。"
+      "text": "然而她决心带着仅有的一披索二十五钱离家，所以奥雷里亚诺取出十四条小金鱼饰物来给她。"
     },
     {
       "questionId": "ch18-006",
       "chapterOrder": 18,
       "rank": 6,
       "versionId": "gao_changrong",
-      "status": "needs_review",
-      "confidence": 0.376,
+      "status": "unusable",
+      "confidence": 0.526,
       "warnings": [
-        "length_ratio_outlier"
+        "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.412,
-        "lengthRatio": 2.629,
-        "positionDelta": 0.061
+        "keywordRecall": 0.059,
+        "lengthRatio": 1.086,
+        "positionDelta": 0.073
       },
       "anchor": "比起家具的损坏，更令他怒火中烧的是在狂欢后的空虚中对自己的厌恶和怜悯。",
-      "text": "霍.阿卡蒂奥回来时，只见他们缩作一团，象睡在一艘沉船的残骸之间，他不由得火冒三丈，倒不是由于他面前出现的一片毁灭景象，而是出于对自己的可怜和厌恶，一场破坏性的纵酒把他的心都劫掠一空了。"
+      "text": "他尽情地漂着，沉浸在自己的思绪中，睁着眼睛怀念阿玛兰妲。男孩们很快就玩累了。"
     },
     {
       "questionId": "ch18-006",
@@ -3002,36 +2589,18 @@
       "questionId": "ch18-014",
       "chapterOrder": 18,
       "rank": 14,
-      "versionId": "ye_shuyin",
-      "status": "unusable",
-      "confidence": 0.538,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.0,
-        "lengthRatio": 1.048,
-        "positionDelta": 0.006
-      },
-      "anchor": "从未谋面的佩特拉·科特斯是唯一顾念她的人。",
-      "text": "「这栋屋子对我这把可怜的老骨头来说太大了。」"
-    },
-    {
-      "questionId": "ch18-014",
-      "chapterOrder": 18,
-      "rank": 14,
       "versionId": "yang_naidong",
       "status": "unusable",
-      "confidence": 0.635,
+      "confidence": 0.612,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.111,
-        "lengthRatio": 0.905,
+        "lengthRatio": 0.864,
         "positionDelta": 0.075
       },
-      "anchor": "从未谋面的佩特拉·科特斯是唯一顾念她的人。",
+      "anchor": "从未谋面的佩特拉·科特斯斯是唯一顾念她的人。",
       "text": "只有向来不曾谋面的柯蒂丝记得她的存在。"
     },
     {
@@ -3040,14 +2609,14 @@
       "rank": 15,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.647,
+      "confidence": 0.646,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.188,
         "lengthRatio": 1.163,
-        "positionDelta": 0.033
+        "positionDelta": 0.034
       },
       "anchor": "同一血脉的两个孤独者之间的接近与友谊无涉，却有助于他们承受将两人分离又联合的神秘孤独。",
       "text": "这两个亲人接近后，并没有建立起深厚的感情，不过由于接近，两人较能忍受使人孤立也使人亲和的无端寂寞了。"
@@ -3058,17 +2627,17 @@
       "rank": 17,
       "versionId": "yang_naidong",
       "status": "unusable",
-      "confidence": 0.624,
+      "confidence": 0.628,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.128,
-        "lengthRatio": 0.965,
+        "lengthRatio": 0.977,
         "positionDelta": 0.027
       },
       "anchor": "桑塔索菲亚·德拉·彼达对这种低人一等的待遇并未流露出任何不满。相反，她给人的感觉是似乎很爱在角落里忙碌，一刻不停、一声不吭，把她从年轻时起一直居住的这座大宅打理得整洁有序。",
-      "text": "然而，她看见梅尔基亚德斯的房间也布满了灰灰的蜘蛛网，即使她每天扫三遍，扑打三遍，尽力清扫，屋内依旧是邦迪亚上校和那位年轻军官所看到的残破气息与破碎杂尘，她自知战败了。"
+      "text": "然而，她看见梅尔基亚德斯的房间也布满了灰灰的蜘蛛网，即使她每天扫三遍，扑打三遍，尽力清扫，屋内依旧是布恩迪亚上校和那位年轻军官所看到的残破气息与破碎杂尘，她自知战败了。"
     },
     {
       "questionId": "ch19-005",
@@ -3076,14 +2645,14 @@
       "rank": 5,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.594,
+      "confidence": 0.593,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.176,
         "lengthRatio": 0.95,
-        "positionDelta": 0.107
+        "positionDelta": 0.108
       },
       "anchor": "并且坚决捍卫已然在法庭案卷和小学教科书中根深蒂固的说法：根本没有过什么香蕉公司。",
       "text": "三千名死难者已经抛进海里，香蕉公司已经离开，多年之后马孔多终于享受到了和平。"
@@ -3112,7 +2681,7 @@
       "rank": 5,
       "versionId": "ye_shuyin",
       "status": "needs_review",
-      "confidence": 0.488,
+      "confidence": 0.487,
       "warnings": [
         "low_keyword_recall"
       ],
@@ -3148,7 +2717,7 @@
       "rank": 7,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.635,
+      "confidence": 0.636,
       "warnings": [
         "low_keyword_recall"
       ],
@@ -3166,17 +2735,17 @@
       "rank": 7,
       "versionId": "yang_naidong",
       "status": "unusable",
-      "confidence": 0.584,
+      "confidence": 0.586,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.032,
-        "lengthRatio": 0.986,
+        "lengthRatio": 1.014,
         "positionDelta": 0.005
       },
       "anchor": "但随着时间的推移，他最终对这世上的种种扫兴习以为常，甚至在一个最疯狂的夜里到待客的小厅中脱个精光，用他那难以想见的阳具托着个啤酒瓶逛遍整幢房子。",
-      "text": "倭良诺早上翻译遗稿，午休时间常到妮格萝蔓塔的房里去；她在那边等他，教他学蚯蚓、蜗牛、螃蟹的方式交媾，最后她又不得不离开他，躺著等那些无赖汉来。"
+      "text": "奥雷里亚诺早上翻译遗稿，午休时间常到妮格萝蔓塔的房里去；她在那边等他，教他学蚯蚓、蜗牛、螃蟹的方式交媾，最后她又不得不离开他，躺着等那些无赖汉来。"
     },
     {
       "questionId": "ch19-013",
@@ -3184,7 +2753,7 @@
       "rank": 13,
       "versionId": "gao_changrong",
       "status": "unusable",
-      "confidence": 0.596,
+      "confidence": 0.595,
       "warnings": [
         "low_keyword_recall"
       ],
@@ -3202,14 +2771,14 @@
       "rank": 13,
       "versionId": "huang_shen_chen",
       "status": "needs_review",
-      "confidence": 0.653,
+      "confidence": 0.654,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.182,
         "lengthRatio": 1.02,
-        "positionDelta": 0.004
+        "positionDelta": 0.003
       },
       "anchor": "她本打算像安慰受惊的孩子似的将他打发，不料遇上的却是一个勇猛异常的男人，搅得她五脏六腑都在巨震中错位。",
       "text": "另外，那时他所享受的自由和空余时间之多，促使他对马孔多产生了一点好奇心，但当他去认识它时却毫无惊异之感。"
@@ -3230,7 +2799,7 @@
         "positionDelta": 0.047
       },
       "anchor": "她本打算像安慰受惊的孩子似的将他打发，不料遇上的却是一个勇猛异常的男人，搅得她五脏六腑都在巨震中错位。",
-      "text": "葛斯顿跟他的妻子都希望奥雷里亚诺加入他们的家庭生活，不过他是个内向的男人，给人的神秘感随著时间有增无减。"
+      "text": "葛斯顿跟他的妻子都希望奥雷里亚诺加入他们的家庭生活，不过他是个内向的男人，给人的神秘感随着时间有增无减。"
     },
     {
       "questionId": "ch19-013",
@@ -3238,17 +2807,17 @@
       "rank": 13,
       "versionId": "yang_naidong",
       "status": "unusable",
-      "confidence": 0.594,
+      "confidence": 0.596,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.091,
         "lengthRatio": 1.02,
-        "positionDelta": 0.009
+        "positionDelta": 0.008
       },
       "anchor": "她本打算像安慰受惊的孩子似的将他打发，不料遇上的却是一个勇猛异常的男人，搅得她五脏六腑都在巨震中错位。",
-      "text": "居民的背脊因揹负著太多的回忆而压弯了。他能想像出香蕉公司时代那已逝的繁荣；已干涸的游泳池堆满了男女鞋子；"
+      "text": "居民的背脊因揹负着太多的回忆而压弯了。他能想像出香蕉公司时代那已逝的繁荣；已干涸的游泳池堆满了男女鞋子；"
     },
     {
       "questionId": "ch19-014",
@@ -3266,7 +2835,7 @@
         "positionDelta": 0.032
       },
       "anchor": "“上帝啊，”她喊道，兴奋大于惊讶，“一看就知道这家里没有女人！”",
-      "text": "她尖叫，声音满溢喜悦而非紧张。「这栋屋子连一个女人都没有了！」"
+      "text": "她尖叫，声音满溢喜悦而非紧张。“这栋屋子连一个女人都没有了！”"
     },
     {
       "questionId": "ch19-014",
@@ -3284,43 +2853,7 @@
         "positionDelta": 0.028
       },
       "anchor": "“上帝啊，”她喊道，兴奋大于惊讶，“一看就知道这家里没有女人！”",
-      "text": "「天哪！」她叫道，欢欣之情胜过了惊惶，「显然家里没有女人！」"
-    },
-    {
-      "questionId": "ch19-016",
-      "chapterOrder": 19,
-      "rank": 16,
-      "versionId": "huang_shen_chen",
-      "status": "unusable",
-      "confidence": 0.699,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.133,
-        "lengthRatio": 1.017,
-        "positionDelta": 0.012
-      },
-      "anchor": "她像乌尔苏拉一样身材娇小却活力十足、不受拘束，拥有与美人儿蕾梅黛丝相近的美貌和诱惑力，生来就具备预见时尚的罕见天赋。",
-      "text": "一年过去了，虽然阿玛兰妲·乌尔苏拉没有交上一个朋友，也没有举行过一次家庭欢会，但她还是相信挽救这个不幸的家族是可能的。"
-    },
-    {
-      "questionId": "ch19-016",
-      "chapterOrder": 19,
-      "rank": 16,
-      "versionId": "yang_naidong",
-      "status": "needs_review",
-      "confidence": 0.67,
-      "warnings": [
-        "low_keyword_recall"
-      ],
-      "metrics": {
-        "keywordRecall": 0.2,
-        "lengthRatio": 0.845,
-        "positionDelta": 0.035
-      },
-      "anchor": "她像乌尔苏拉一样身材娇小却活力十足、不受拘束，拥有与美人儿蕾梅黛丝相近的美貌和诱惑力，生来就具备预见时尚的罕见天赋。",
-      "text": "她像易家兰一样活泼、小巧、坚毅，也几乎像美女瑞米迪娥一样漂亮和诱人，此外，她还具有预估时尚的本领。"
+      "text": "“天哪！”她叫道，欢欣之情胜过了惊惶，“显然家里没有女人！”"
     },
     {
       "questionId": "ch19-017",
@@ -3346,7 +2879,7 @@
       "rank": 17,
       "versionId": "ye_shuyin",
       "status": "unusable",
-      "confidence": 0.596,
+      "confidence": 0.597,
       "warnings": [
         "low_keyword_recall"
       ],
@@ -3356,7 +2889,7 @@
         "positionDelta": 0.024
       },
       "anchor": "因为那些鸟儿全都毫不迟疑地振翅高飞，在空中打个转，只一辨出方位就立刻奔向飞往幸福群岛的归途。",
-      "text": "随著鸟儿逐渐繁殖，阿玛兰妲．乌尔苏拉把牠们成双释放，但是牠们一发现自由，马上就逃离城镇。"
+      "text": "随着鸟儿逐渐繁殖，阿玛兰妲·乌尔苏拉把牠们成双释放，但是牠们一发现自由，马上就逃离城镇。"
     },
     {
       "questionId": "ch19-018",
@@ -3364,17 +2897,17 @@
       "rank": 18,
       "versionId": "gao_changrong",
       "status": "unusable",
-      "confidence": 0.562,
+      "confidence": 0.554,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.03,
-        "lengthRatio": 1.037,
-        "positionDelta": 0.005
+        "keywordRecall": 0.061,
+        "lengthRatio": 0.951,
+        "positionDelta": 0.022
       },
       "anchor": "她便抿着嘴笑出声来，同时并未放弃搏斗，不过防御时只是装模作样地撕咬，也渐渐不再扭动身体，最后双方都意识到彼此既是对手又是同谋，由此争斗沦为惯常的嬉闹，攻击变作爱抚。",
-      "text": "午后一点半，阿玛兰妲·乌苏娜从浴室出来。奥雷连诺.布恩蒂亚看见她从门口走过，穿着一件衣裙柔软的浴衣，头上包着头巾似的手绢。他几乎踮着脚尖，趁着醉意趔趔趄趄地尾随在她身后。"
+      "text": "“好了，孩子，”她安慰他。”你就告诉我，她是谁。”奥雷里亚诺·布恩迪亚告诉她之后，庇拉尔·特尔内拉发出一阵大笑，一种胸襟豁达的笑声，最后就象鸽子咕咕地叫了。"
     },
     {
       "questionId": "ch19-020",
@@ -3389,10 +2922,10 @@
       "metrics": {
         "keywordRecall": 0.1,
         "lengthRatio": 1.0,
-        "positionDelta": 0.002
+        "positionDelta": 0.003
       },
       "anchor": "向她诉说自己如何热切要求尼格罗曼妲像牝猫般尖叫并在他耳边呜咽“加斯通，加斯通，加斯通”",
-      "text": "接著她举起指尖对奥雷里亚诺抛出一个飞吻，就像去布鲁塞尔的那天下午她对父亲送出的那个吻。"
+      "text": "接着她举起指尖对奥雷里亚诺抛出一个飞吻，就像去布鲁塞尔的那天下午她对父亲送出的那个吻。"
     },
     {
       "questionId": "ch20-002",
@@ -3400,14 +2933,14 @@
       "rank": 2,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.54,
+      "confidence": 0.542,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.556,
         "lengthRatio": 2.731,
-        "positionDelta": 0.005
+        "positionDelta": 0.003
       },
       "anchor": "不论在什么地方都要记住，过去都是假的，回忆没有归路，春天总是一去不返，最疯狂执著的爱情也终究是过眼云烟。",
       "text": "于是他劝朋友们离开马孔多，劝他们忘掉他给他们说过的关于世界和人类感情的一切看法，唾弃贺拉斯（公元前65一8年，罗马诗人及讽刺家)的学说，告诫他们不管走到哪儿，都要永远记住：过去是虚假的，往事是不能返回的，每一个消逝的春天都一去不复返了，最狂热、最坚贞的爱情也只是一种过眼烟云似的感情。"
@@ -3435,18 +2968,18 @@
       "chapterOrder": 20,
       "rank": 2,
       "versionId": "ye_shuyin",
-      "status": "needs_review",
-      "confidence": 0.583,
+      "status": "unusable",
+      "confidence": 0.552,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
-        "keywordRecall": 0.167,
-        "lengthRatio": 0.962,
+        "keywordRecall": 0.111,
+        "lengthRatio": 0.981,
         "positionDelta": 0.096
       },
       "anchor": "不论在什么地方都要记住，过去都是假的，回忆没有归路，春天总是一去不返，最疯狂执著的爱情也终究是过眼云烟。",
-      "text": "他们的情欲是盲目的，是疯狂的，连费兰妲躺在坟墓里的尸骨都惧怕得发抖，他们却持续燃烧著无比狂热的状态。"
+      "text": "他们的情欲是盲目的，是疯狂的，连费尔南达躺在坟墓里的尸骨都惧怕得发抖，他们却持续燃烧着无比狂热的状态。"
     },
     {
       "questionId": "ch20-003",
@@ -3479,7 +3012,7 @@
       "metrics": {
         "keywordRecall": 0.947,
         "lengthRatio": 4.36,
-        "positionDelta": 0.114
+        "positionDelta": 0.115
       },
       "anchor": "家族的第一个人被捆在树上，最后一个人正被蚂蚁吃掉。",
       "text": "这时，奥雷里亚诺动弹不得， 倒不是因为惊呆了，而是因为在这奇妙的瞬间，他领悟了梅尔基亚德斯具有决定意义的密码，他发现羊皮纸上的标题完全是按照人们的时间和空间排列的：家族的第一人被绑在一棵树上，最后一个人正在被蚂蚁吃掉。"
@@ -3508,7 +3041,7 @@
       "rank": 4,
       "versionId": "huang_shen_chen",
       "status": "needs_review",
-      "confidence": 0.336,
+      "confidence": 0.335,
       "warnings": [
         "length_ratio_outlier"
       ],
@@ -3526,14 +3059,14 @@
       "rank": 4,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.377,
+      "confidence": 0.376,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.833,
         "lengthRatio": 5.857,
-        "positionDelta": 0.081
+        "positionDelta": 0.082
       },
       "anchor": "那是条猪尾巴。",
       "text": "等他们将他的身体翻过来，才发现他比普通人多了一样东西，细看之下，原来是一条猪尾巴。"
@@ -3544,14 +3077,14 @@
       "rank": 5,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.67,
+      "confidence": 0.671,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.167,
         "lengthRatio": 1.018,
-        "positionDelta": 0.014
+        "positionDelta": 0.013
       },
       "anchor": "“等到人类坐一等车厢而文学只能挤货运车厢的那一天，”他那时说道，“这个世界也就完蛋了。”这是他留下的最后的话。",
       "text": "这是大家最后一次听到他说的话。他为了他的旅行度过了黯淡的一个礼拜，做周详的准备，结果行期近了，他的精神也崩溃了；"
@@ -3562,17 +3095,17 @@
       "rank": 7,
       "versionId": "gao_changrong",
       "status": "unusable",
-      "confidence": 0.597,
+      "confidence": 0.594,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.107,
-        "lengthRatio": 1.062,
-        "positionDelta": 0.048
+        "lengthRatio": 1.077,
+        "positionDelta": 0.045
       },
       "anchor": "一天晚上，他们互相用桃子糖浆从头到脚涂满全身，像狗一般彼此舔舐，像疯子一样在长廊地板上欢爱，直到被蚂蚁的洪流唤醒，险些被活活吞噬。",
-      "text": "她还瞧见它们象迸发的熔岩似的重新在长廊里川流不息，然而被情欲弄得麻木不仁的阿玛兰妲·乌苏娜，直到蚂蚁出现在她的卧室里，她才动手去消灭它们。"
+      "text": "她还瞧见它们象迸发的熔岩似的重新在长廊里川流不息，然而被情欲弄得麻木不仁的阿玛兰妲·乌尔苏拉，直到蚂蚁出现在她的卧室里，她才动手去消灭它们。"
     },
     {
       "questionId": "ch20-009",
@@ -3580,14 +3113,14 @@
       "rank": 9,
       "versionId": "gao_changrong",
       "status": "needs_review",
-      "confidence": 0.66,
+      "confidence": 0.662,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.172,
         "lengthRatio": 0.833,
-        "positionDelta": 0.011
+        "positionDelta": 0.009
       },
       "anchor": "这是往昔的最后遗存，这往昔日渐衰落却不会彻底消亡，因为它是在自身之中无休无止地败落下去，每过一刻便向彻底灭亡更近一步，却永远无法抵达最后的终结。",
       "text": "城里只有这家药房幸存下来。市镇的破坏总是不见结束，这种破坏是无休无止的，好象每一刹那间都会完全结束，但最后总是没有结束。"
@@ -3615,18 +3148,18 @@
       "chapterOrder": 20,
       "rank": 13,
       "versionId": "gao_changrong",
-      "status": "unusable",
-      "confidence": 0.487,
+      "status": "needs_review",
+      "confidence": 0.31,
       "warnings": [
-        "low_keyword_recall"
+        "length_ratio_outlier"
       ],
       "metrics": {
-        "keywordRecall": 0.0,
-        "lengthRatio": 0.875,
-        "positionDelta": 0.015
+        "keywordRecall": 0.583,
+        "lengthRatio": 3.188,
+        "positionDelta": 0.017
       },
       "anchor": "令费尔南达的骨骸在墓中惊恐地颤抖",
-      "text": "他们只好竭力克制自己的冲动。"
+      "text": "这是一种失去理智、找害身体的情欲，这种情欲使他们始终处于兴奋的状态，甚至使得坟墓里的费尔南达惊得发抖。"
     },
     {
       "questionId": "ch20-013",
@@ -3642,7 +3175,7 @@
       "metrics": {
         "keywordRecall": 0.417,
         "lengthRatio": 3.25,
-        "positionDelta": 0.007
+        "positionDelta": 0.008
       },
       "anchor": "令费尔南达的骨骸在墓中惊恐地颤抖",
       "text": "那是一种缺乏理智的、疯狂的、 会使坟墓里的菲南达的骨殖怕得发抖的激情，这激情使他俩永久地保持着兴奋状态。"
@@ -3653,18 +3186,17 @@
       "rank": 13,
       "versionId": "ye_shuyin",
       "status": "needs_review",
-      "confidence": 0.188,
+      "confidence": 0.325,
       "warnings": [
-        "low_confidence",
         "length_ratio_outlier"
       ],
       "metrics": {
-        "keywordRecall": 0.333,
-        "lengthRatio": 3.125,
+        "keywordRecall": 0.583,
+        "lengthRatio": 3.188,
         "positionDelta": 0.003
       },
       "anchor": "令费尔南达的骨骸在墓中惊恐地颤抖",
-      "text": "他们的情欲是盲目的，是疯狂的，连费兰妲躺在坟墓里的尸骨都惧怕得发抖，他们却持续燃烧著无比狂热的状态。"
+      "text": "他们的情欲是盲目的，是疯狂的，连费尔南达躺在坟墓里的尸骨都惧怕得发抖，他们却持续燃烧着无比狂热的状态。"
     },
     {
       "questionId": "ch20-013",
@@ -3672,14 +3204,14 @@
       "rank": 13,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.439,
+      "confidence": 0.441,
       "warnings": [
         "length_ratio_outlier"
       ],
       "metrics": {
         "keywordRecall": 0.417,
         "lengthRatio": 2.75,
-        "positionDelta": 0.019
+        "positionDelta": 0.017
       },
       "anchor": "令费尔南达的骨骸在墓中惊恐地颤抖",
       "text": "这疯狂的激情，使得她母亲在坟墓中的尸骨都会恐惧得颤抖起来，他们自己则永远保持无比的兴奋。"
@@ -3690,14 +3222,14 @@
       "rank": 16,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.673,
+      "confidence": 0.674,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.2,
         "lengthRatio": 1.043,
-        "positionDelta": 0.028
+        "positionDelta": 0.027
       },
       "anchor": "因为他是一个世纪以来第一个在爱情中孕育的生命。",
       "text": "他敲敲最近没去的药店门，发现那儿竟是一间木匠铺。"
@@ -3708,7 +3240,7 @@
       "rank": 17,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.688,
+      "confidence": 0.687,
       "warnings": [
         "low_keyword_recall"
       ],
@@ -3726,14 +3258,14 @@
       "rank": 18,
       "versionId": "yang_naidong",
       "status": "needs_review",
-      "confidence": 0.828,
+      "confidence": 0.826,
       "warnings": [
         "low_keyword_recall"
       ],
       "metrics": {
         "keywordRecall": 0.214,
         "lengthRatio": 1.013,
-        "positionDelta": 0.032
+        "positionDelta": 0.033
       },
       "anchor": "然而日子一天天过去，他对船上的现实生活渐渐失去兴趣，而马孔多的一切，连晚近的琐碎事件也成为他怀恋的对象，因为随着航船渐行渐远，记忆也染上愈来愈浓烈的悲凉色彩。",
       "text": "然而，日子一天天过去，船上的现实生活对他来说愈来愈不重要，他愈来愈怀念遥远而细微的事，因为船只航行得愈远，他的回忆就愈感伤。从照片上也显然可以看出他怀旧的过程。"
