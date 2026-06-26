@@ -146,11 +146,14 @@
 
 .primary,
 .ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 88rpx;
   border-radius: 999rpx;
   font-size: 30rpx;
   font-weight: 700;
-  line-height: 88rpx;
+  line-height: 1;
 }
 
 .primary {
@@ -303,7 +306,7 @@
   width: 100%;
   height: 72rpx;
   font-size: 24rpx;
-  line-height: 72rpx;
+  line-height: 1;
 }
 
 .wide {

@@ -6,5 +6,7 @@ page {
 }
 
 button {
+  box-sizing: border-box;
   font: inherit;
+  padding: 0;
 }
