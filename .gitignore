@@ -3,3 +3,6 @@ __pycache__/
 data/bilingual/highlight_multilingual_quotes_review.html
 data/bilingual/.zh_ja_epub_build/
 data/bilingual/.zh_es_epub_build/
+data/translation-quiz/build/
+data/translation-quiz/extracted/
+data/translation-quiz/*.local.json
