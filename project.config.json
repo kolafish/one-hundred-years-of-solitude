@@ -1,5 +1,5 @@
 {
-  "appid": "touristappid",
+  "appid": "wx42f2047e17bae8ba",
   "compileType": "miniprogram",
   "miniprogramRoot": "miniprogram/",
   "projectname": "one-hundred-years-of-solitude-quiz",
@@ -8,6 +8,7 @@
     "es6": true,
     "enhance": true,
     "postcss": true,
-    "minified": true
+    "minified": true,
+    "minifyWXML": true
   }
 }
