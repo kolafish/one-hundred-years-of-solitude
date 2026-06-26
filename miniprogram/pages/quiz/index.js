@@ -105,7 +105,24 @@ Page({
       currentIndex: nextIndex,
       currentNumber: nextIndex + 1,
       isLastQuestion: nextIndex === this.data.questions.length - 1,
-      currentQuestion: this.data.questions[nextIndex],
+      currentQuestion: questionWithAnswer(this.data.questions[nextIndex], this.data.answers[nextIndex]),
+      isAdvancing: false
+    });
+  },
+
+  previousQuestion() {
+    if (this.data.currentIndex <= 0) {
+      return;
+    }
+
+    this.clearAdvanceTimer();
+
+    const previousIndex = this.data.currentIndex - 1;
+    this.setData({
+      currentIndex: previousIndex,
+      currentNumber: previousIndex + 1,
+      isLastQuestion: previousIndex === this.data.questions.length - 1,
+      currentQuestion: questionWithAnswer(this.data.questions[previousIndex], this.data.answers[previousIndex]),
       isAdvancing: false
     });
   },
@@ -175,6 +192,13 @@ function markSelected(question, selectedKey) {
       selected: option.key === selectedKey
     }))
   };
+}
+
+function questionWithAnswer(question, answer) {
+  if (!question || !answer) {
+    return question;
+  }
+  return markSelected(question, answer.selectedKey);
 }
 
 function buildResultRows(answers, stats) {

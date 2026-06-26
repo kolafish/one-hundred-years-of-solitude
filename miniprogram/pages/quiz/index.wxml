@@ -31,6 +31,11 @@
     </view>
 
     <view class="actions quiz-actions">
+      <button
+        class="ghost previous {{currentIndex === 0 ? 'disabled' : ''}}"
+        disabled="{{currentIndex === 0}}"
+        bindtap="previousQuestion"
+      >上一题</button>
       <button class="ghost quiz-restart" bindtap="restartSession">重来</button>
     </view>
   </view>

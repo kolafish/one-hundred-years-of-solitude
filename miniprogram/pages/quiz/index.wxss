@@ -148,8 +148,13 @@
   justify-content: flex-start;
 }
 
+.previous,
 .quiz-restart {
   flex: 0 0 180rpx;
+}
+
+.disabled {
+  opacity: 0.45;
 }
 
 .primary,
