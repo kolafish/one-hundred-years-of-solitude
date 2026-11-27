@@ -1,0 +1,19 @@
+<view class="home">
+  <view class="title">《百年孤独》</view>
+
+  <navigator class="entry entry-quiz" url="/pages/quiz/index" hover-class="entry-pressed">
+    <view class="entry-copy">
+      <view class="entry-title">译本盲选</view>
+      <view class="entry-description">匿名读三段译文，选出你最喜欢的版本。</view>
+    </view>
+    <text class="entry-arrow" aria-hidden="true">›</text>
+  </navigator>
+
+  <navigator class="entry entry-game" url="/pages/game/index" hover-class="entry-pressed">
+    <view class="entry-copy">
+      <view class="entry-title">马孔多的羊皮纸</view>
+      <view class="entry-description">回合制解谜小游戏，借用家族能力打开密室。</view>
+    </view>
+    <text class="entry-arrow" aria-hidden="true">›</text>
+  </navigator>
+</view>

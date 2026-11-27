@@ -1,6 +1,8 @@
 {
   "pages": [
-    "pages/quiz/index"
+    "pages/home/index",
+    "pages/quiz/index",
+    "pages/game/index"
   ],
   "window": {
     "navigationBarTitleText": "中年的百年孤独",

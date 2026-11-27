@@ -1,0 +1,63 @@
+.home {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 64rpx 32rpx;
+  background: linear-gradient(180deg, #edf0dc, #f3dfb9 55%, #e7c892);
+}
+
+.title {
+  margin-bottom: 44rpx;
+  font-family: "Songti SC", SimSun, serif;
+  font-size: 66rpx;
+  font-weight: 700;
+  line-height: 1.16;
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  margin-bottom: 22rpx;
+  border: 2rpx solid #d9bd87;
+  border-radius: 22rpx;
+  padding: 30rpx;
+  background: #fff9e5;
+  box-shadow: 0 8rpx 22rpx rgba(95, 72, 38, 0.08);
+  transition: transform 150ms ease;
+}
+
+.entry-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-title {
+  font-size: 37rpx;
+  font-weight: 700;
+}
+
+.entry-description {
+  margin-top: 8rpx;
+  color: #665936;
+  font-size: 28rpx;
+  line-height: 1.55;
+}
+
+.entry-arrow {
+  font-size: 56rpx;
+  line-height: 1;
+}
+
+.entry-quiz .entry-title,
+.entry-quiz .entry-arrow {
+  color: #3f5436;
+}
+
+.entry-game .entry-title,
+.entry-game .entry-arrow {
+  color: #82401d;
+}
+
+.entry-pressed {
+  transform: scale(0.96);
+}

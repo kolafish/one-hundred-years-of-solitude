@@ -1,0 +1,245 @@
+page {
+  background: #f4ebd9;
+  color: #2c1e16;
+}
+
+.game {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 22rpx 24rpx 56rpx;
+}
+
+.toolbar,
+.directions,
+.ending-actions,
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.toolbar {
+  flex-wrap: wrap;
+  margin-bottom: 16rpx;
+}
+
+.turn {
+  margin-right: auto;
+  color: #673f27;
+  font-size: 28rpx;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: 0;
+  border: 1rpx solid #a87b4a;
+  border-radius: 14rpx;
+  padding: 0 14rpx;
+  background: #ead8b8;
+  color: #56351f;
+  font-size: 27rpx;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: transform 150ms ease;
+}
+
+.control::after {
+  border: 0;
+}
+
+.control[disabled] {
+  color: #756557;
+  opacity: 0.65;
+}
+
+.primary {
+  background: #82401d;
+  color: #fff7e8;
+}
+
+.pressed {
+  transform: scale(0.96);
+}
+
+.board-frame {
+  overflow: hidden;
+  border: 2rpx solid #5c3a21;
+  border-radius: 16rpx;
+  background: #e9dcc3;
+}
+
+.board {
+  position: relative;
+  height: 0;
+  padding-bottom: 80%;
+}
+
+.board-canvas,
+.hit-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hit-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.hit-row {
+  display: flex;
+  flex: 1;
+}
+
+.hit-tile {
+  flex: 1;
+}
+
+.board-caption,
+.banner {
+  margin: 14rpx 0;
+  color: #654a35;
+  font-size: 25rpx;
+  line-height: 1.5;
+}
+
+.banner {
+  border-radius: 12rpx;
+  padding: 12rpx 16rpx;
+  background: #3a271c;
+  color: #fff4df;
+}
+
+.directions {
+  justify-content: center;
+  gap: 16rpx;
+  margin: 12rpx 0 24rpx;
+}
+
+.direction {
+  width: 46px;
+  padding: 0;
+  font-size: 38rpx;
+}
+
+.panel {
+  margin-bottom: 20rpx;
+  border: 1rpx solid #d1b48b;
+  border-radius: 18rpx;
+  padding: 20rpx;
+  background: #faf1e0;
+}
+
+.section-title {
+  margin-bottom: 12rpx;
+  font-size: 31rpx;
+  font-weight: 700;
+}
+
+.notice {
+  justify-content: space-between;
+}
+
+.hints text,
+.ending-description {
+  display: block;
+  margin-top: 8rpx;
+  color: #5c4332;
+  font-size: 27rpx;
+  line-height: 1.55;
+}
+
+.ending-actions {
+  margin-top: 16rpx;
+}
+
+.skill {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  margin-top: 10rpx;
+  border: 1rpx solid #d1b48b;
+  border-radius: 12rpx;
+  padding: 12rpx;
+  background: #eee0c6;
+}
+
+.skill-active {
+  border-color: #9e2a2b;
+  background: #fff6e6;
+}
+
+.skill-icon {
+  font-size: 34rpx;
+}
+
+.skill-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.skill-title {
+  font-size: 25rpx;
+  font-weight: 700;
+}
+
+.skill-description {
+  margin-top: 4rpx;
+  color: #5c4332;
+  font-size: 23rpx;
+  line-height: 1.45;
+}
+
+.badge,
+.skill-button {
+  flex-shrink: 0;
+  font-size: 24rpx;
+}
+
+.badge {
+  border-radius: 8rpx;
+  padding: 8rpx 10rpx;
+  background: #dec9a5;
+  color: #5c4332;
+}
+
+.shield {
+  background: #f2d7a3;
+  color: #6a3c16;
+}
+
+.log {
+  border-bottom: 1rpx solid #e0c9a8;
+  padding: 10rpx 0;
+  color: #5c4332;
+  font-size: 25rpx;
+  line-height: 1.6;
+}
+
+.log-highlight,
+.log-character {
+  color: #794315;
+  font-weight: 600;
+}
+
+.log-danger {
+  color: #9e2a2b;
+}
+
+.log-turn {
+  margin-right: 10rpx;
+  border-radius: 6rpx;
+  padding: 2rpx 6rpx;
+  background: #ead8b8;
+  color: #5c4332;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,76 @@
+<view class="game">
+  <view class="toolbar">
+    <text class="turn">回合 {{turn}}</text>
+    <button class="control" hover-class="pressed" bindtap="undo" disabled="{{!canUndo}}">撤销</button>
+    <button class="control" hover-class="pressed" bindtap="reset">重置</button>
+    <button class="control" hover-class="pressed" bindtap="toggleHints">{{showHints ? '收起提示' : '提示'}}</button>
+  </view>
+
+  <view class="board-frame">
+    <view class="board">
+      <canvas id="game-canvas" type="2d" class="board-canvas"></canvas>
+      <view class="hit-grid" bindtap="tapTile">
+        <view class="hit-row" wx:for="{{rows}}" wx:for-item="row" wx:key="*this">
+          <view class="hit-tile" wx:for="{{columns}}" wx:for-item="col" wx:key="*this" data-row="{{row}}" data-col="{{col}}"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{canvasError}}" class="panel notice">
+    <text>棋盘加载失败</text>
+    <button class="control" hover-class="pressed" bindtap="prepareBoard">重新加载</button>
+  </view>
+
+  <view wx:if="{{banner}}" class="banner">{{banner}}</view>
+  <view wx:else class="board-caption">点相邻格子，或用方向键移动。</view>
+
+  <view wx:if="{{ending}}" class="panel ending">
+    <view class="section-title">{{ending.icon}} {{ending.title}}</view>
+    <view class="ending-description">{{ending.description}}</view>
+    <view class="ending-actions">
+      <button class="control" hover-class="pressed" bindtap="undo">撤销一步</button>
+      <button class="control primary" hover-class="pressed" bindtap="reset">再来一次</button>
+    </view>
+  </view>
+
+  <view class="directions" wx:else>
+    <button class="control direction" aria-label="向左移动" data-dx="-1" data-dy="0" hover-class="pressed" bindtap="move">←</button>
+    <button class="control direction" aria-label="向上移动" data-dx="0" data-dy="-1" hover-class="pressed" bindtap="move">↑</button>
+    <button class="control direction" aria-label="向下移动" data-dx="0" data-dy="1" hover-class="pressed" bindtap="move">↓</button>
+    <button class="control direction" aria-label="向右移动" data-dx="1" data-dy="0" hover-class="pressed" bindtap="move">→</button>
+  </view>
+
+  <view wx:if="{{showHints}}" class="panel hints">
+    <view class="section-title">羊皮纸启示</view>
+    <text>1. 靠近何塞，继承「炼金投掷」。</text>
+    <text>2. 到下方河岸找上校，带着「宿命护盾」向右过桥，穿过烈日光束。</text>
+    <text>3. 往上找到丽贝卡，继承「孤注一掷」。</text>
+    <text>4. 站在火药桶正上方，把桶投到右上方紧挨裂纹石墙的木桥上。再用「孤注一掷」点木桥上的桶，打开通往密室的路。</text>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">家族馈赠</view>
+    <view wx:for="{{cards}}" wx:key="id" class="skill {{item.isActive ? 'skill-active' : ''}}">
+      <text class="skill-icon" aria-hidden="true">{{item.icon}}</text>
+      <view class="skill-copy">
+        <view class="skill-title">{{item.name}} · {{item.abilityName}}</view>
+        <view class="skill-description">{{item.desc}}</view>
+      </view>
+      <text class="badge" wx:if="{{!item.unlocked}}">未相遇</text>
+      <text class="badge" wx:elif="{{!item.charges}}">已用尽</text>
+      <text class="badge shield" wx:elif="{{item.isPassive}}">护盾生效</text>
+      <button wx:else class="control primary skill-button" aria-label="{{item.isActive ? '取消' : '施放'}}{{item.abilityName}}" hover-class="pressed" data-skill="{{item.id}}" disabled="{{!!ending}}" bindtap="useSkill">{{item.isActive ? '取消' : '施放'}}</button>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">马孔多编年史</view>
+    <view>
+      <view wx:for="{{logs}}" wx:key="id" class="log log-{{item.type}}">
+        <text class="log-turn">T{{item.turn}}</text>
+        <text>{{item.text}}</text>
+      </view>
+    </view>
+  </view>
+</view>
