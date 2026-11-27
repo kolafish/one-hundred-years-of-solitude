@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const { LEVELS, createGame } = require('../../miniprogram/game/macondo.js');
+const { TILE } = require('../../miniprogram/game/levels.js');
 
 function play(game, steps) {
   const moves = { R: [1, 0], L: [-1, 0], U: [0, -1], D: [0, 1] };
@@ -167,13 +168,17 @@ test('rain supports both bridge variants, deterministic drift, tide reversal and
   assert.equal(game.getState().abilities.AURELIANO.charges, 2);
   assert.equal(game.getState().terrain[4][5], 9);
   game.toggleSkill('PILAR');
-  game.handleCanvasClick(2, 4);
   assert.equal(game.getState().turn, 0);
   assert.equal(game.getState().tideHigh, true);
   assert.equal(game.getState().boxes[0].x, 5);
+  assert.equal(game.getState().abilities.PILAR.charges, 0);
+  const flipped = game.getState();
+  game.toggleSkill('PILAR');
+  assert.deepEqual(game.getState(), flipped);
   game.undoMove();
   assert.equal(game.getState().tideHigh, false);
   assert.equal(game.getState().boxes[0].x, 4);
+  assert.equal(game.getState().abilities.PILAR.charges, 1);
   play(game, 'RR');
   const shore = game.getState();
   play(game, 'R');
@@ -330,4 +335,85 @@ test('a closed optical loop terminates instead of tracing forever', () => {
   const game = createGame(() => {}, [room]);
   assert(game.startLevel(99));
   assert.equal(game.getState().laserTiles.length, 8);
+});
+
+test('a forged goldfish blocks two separate hits and undo restores the corresponding charge', () => {
+  const terrain = Array.from({ length: 3 }, () => Array(5).fill(TILE.FLOOR));
+  terrain[1][4] = TILE.LASER_EMITTER;
+  const room = {
+    ...LEVELS[0], id: 5, cols: 5, rows: 3, slots: 1, terrain,
+    start: { x: 1, y: 1 }, npcs: [], barrels: [], items: [],
+    emitters: [{ x: 4, y: 1, dx: -1, dy: 0 }]
+  };
+  const game = createGame(() => {}, [room], {
+    read: () => ({
+      schemaVersion: 1,
+      unlockedCharacters: ['AURELIANO'],
+      worldFlags: { GOLD_FISH_FORGED: true }
+    })
+  });
+  assert(game.startLevel(5, ['AURELIANO']));
+  assert.equal(game.getState().abilities.AURELIANO.charges, 2);
+  play(game, 'R');
+  assert.equal(game.getState().status, 'PLAYING');
+  assert.equal(game.getState().abilities.AURELIANO.charges, 1);
+  play(game, 'R');
+  assert.equal(game.getState().status, 'PLAYING');
+  assert.equal(game.getState().abilities.AURELIANO.charges, 0);
+  play(game, 'L');
+  assert.equal(game.getState().status, 'DEAD');
+  game.undoMove();
+  game.undoMove();
+  assert.equal(game.getState().status, 'PLAYING');
+  assert.equal(game.getState().abilities.AURELIANO.charges, 1);
+});
+
+test('Pilar flips a gate immediately and the action uses one ordinary turn', () => {
+  const { game } = campaign({ value: {
+    schemaVersion: 1, unlockedLevels: [3], unlockedCharacters: ['PILAR']
+  } });
+  assert(game.startLevel(3, ['PILAR']));
+  const initial = game.getState();
+  assert.equal(initial.gates[0].open, false);
+  game.toggleSkill('PILAR');
+  assert.equal(game.getState().gates[0].open, true);
+  assert.equal(game.getState().turn, 1);
+  game.undoMove();
+  assert.deepEqual(game.getState(), initial);
+});
+
+test('Canvas emitter nozzles point in the four configured beam directions', () => {
+  const emitters = [
+    { x: 2, y: 2, dx: -1, dy: 0 },
+    { x: 4, y: 2, dx: 1, dy: 0 },
+    { x: 2, y: 4, dx: 0, dy: -1 },
+    { x: 4, y: 4, dx: 0, dy: 1 }
+  ];
+  const terrain = Array.from({ length: 7 }, () => Array(7).fill(TILE.FLOOR));
+  for (const { x, y } of emitters) terrain[y][x] = TILE.LASER_EMITTER;
+  const room = {
+    ...LEVELS[0], id: 99, cols: 7, rows: 7, terrain, emitters,
+    start: { x: 0, y: 0 }, npcs: [], barrels: [], items: []
+  };
+  const triangles = [];
+  let points;
+  const context = new Proxy({
+    beginPath() { points = []; },
+    moveTo(x, y) { points.push({ x, y }); },
+    lineTo(x, y) { points.push({ x, y }); },
+    fill() { if (points?.length === 3) triangles.push(points); },
+    createRadialGradient() { return { addColorStop() {} }; },
+    createLinearGradient() { return { addColorStop() {} }; }
+  }, { get: (target, key) => target[key] ?? (() => {}) });
+  const game = createGame(() => {}, [room]);
+  const size = 40;
+  assert(game.startLevel(99));
+  game.setCanvas(context, size);
+  game.drawBoard(0);
+  for (const { x, y, dx, dy } of emitters) {
+    const tipX = (x + 0.5 + dx * 0.43) * size;
+    const tipY = (y + 0.5 + dy * 0.43) * size;
+    assert(triangles.some(([, , tip]) => Math.hypot(tip.x - tipX, tip.y - tipY) < 0.001),
+      `nozzle tip missing for (${dx}, ${dy})`);
+  }
 });

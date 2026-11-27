@@ -4,6 +4,7 @@ const Progress = typeof require === 'function' ? require('./progress.js') : Maco
 const Icons = typeof require === 'function' ? require('./icons.js') : MacondoIcons;
 
 const MacondoPuzzle = (() => {
+  const DEFAULT_BEAM_DIRECTION = { dx: 0, dy: 1 };
   const CHARACTER_DEFS = {
     JOSE: {
       id: 'JOSE',
@@ -72,7 +73,7 @@ const MacondoPuzzle = (() => {
       id: 'PILAR', name: '庇拉尔·特尔内拉', shortName: '庇拉尔',
       abilityName: '纸牌逆转', type: 'ACTIVE', charges: 1,
       iconId: 'char_pilar', color: '#7b4b3d',
-      desc: '点自己的棋子翻转机关。在雨幕中会立即翻转潮相。',
+      desc: '点击施放即可翻转机关。在雨幕中会立即翻转潮相。',
       epigraph: '「在清晰可见确定无疑的未来中生活」 · 范晔译，第十九章',
       quote: '庇拉尔翻过纸牌，机关换了一个方向。'
     },
@@ -266,7 +267,7 @@ const MacondoPuzzle = (() => {
       const beams = [];
       const hits = new Set();
       const emitters = level.emitters || target.terrain.flatMap((row, y) => row.flatMap((tile, x) =>
-        tile === TILE.LASER_EMITTER ? [{ x, y, dx: 0, dy: 1 }] : []));
+        tile === TILE.LASER_EMITTER ? [{ x, y, ...DEFAULT_BEAM_DIRECTION }] : []));
       for (const emitter of emitters) {
         let { x, y, dx, dy } = emitter;
         const visited = new Set();
@@ -456,7 +457,7 @@ const MacondoPuzzle = (() => {
       if (inLaser || seenByGuard) {
         if (state.abilities.AURELIANO.charges > 0) {
           // 触发奥雷里亚诺上校的【宿命护盾】
-          state.abilities.AURELIANO.charges = 0;
+          state.abilities.AURELIANO.charges -= 1;
           spawnExplosion(state.player.x, state.player.y, '#ffd166');
           addLog(inLaser
             ? '灼热的光束穿透了你的胸膛，却神奇地避开了心脏！奥雷里亚诺上校的【宿命护盾】救了你一命。'
@@ -596,6 +597,15 @@ const MacondoPuzzle = (() => {
       const ab = state.abilities[skillId];
       if (!ab || ab.charges <= 0 || CHARACTER_DEFS[skillId].type.startsWith('PASSIVE')) return;
       if (state.turn < state.mistUntil) return;
+      if (skillId === 'PILAR') {
+        clearSkillMode();
+        takeTurn(() => {
+          ab.charges -= 1;
+          state.reversed = !state.reversed;
+          addLog('纸牌翻面，二元机关随之逆转。', 'highlight');
+        }, !level.tide);
+        return;
+      }
       if (activeAbility === skillId) {
         cancelSkillMode();
         return;
@@ -659,7 +669,7 @@ const MacondoPuzzle = (() => {
           state.abilities[activeAbility].charges -= 1;
           effect();
           clearSkillMode();
-        }, !(level.tide && activeAbility === 'PILAR'));
+        });
         return;
       }
 
@@ -800,12 +810,6 @@ const MacondoPuzzle = (() => {
           addLog('她升起两格，在前方重新落地。', 'highlight');
         };
       }
-      if (skill === 'PILAR' && distance === 0) {
-        return () => {
-          state.reversed = !state.reversed;
-          addLog('纸牌翻面，二元机关随之逆转。', 'highlight');
-        };
-      }
       return null;
     }
 
@@ -906,7 +910,8 @@ const MacondoPuzzle = (() => {
           } else if (tile === TILE.GOAL) {
             drawGoalTile(px, py, tileSize, t);
           } else if (tile === TILE.LASER_EMITTER) {
-            drawEmitterTile(px, py, tileSize, t);
+            const direction = at(level.emitters || [], x, y) || DEFAULT_BEAM_DIRECTION;
+            drawEmitterTile(px, py, tileSize, t, direction);
           } else if (tile === TILE.RUBBLE) {
             drawWallTile(px, py, tileSize);
             drawBoardMark(px, py, '墟', '#efc389');
@@ -1193,7 +1198,7 @@ const MacondoPuzzle = (() => {
       Icons.drawButterflyCanvas(ctx, bx, by, s * 0.42, time);
     }
 
-    function drawEmitterTile(px, py, s, time) {
+    function drawEmitterTile(px, py, s, time, { dx, dy }) {
       const cx = px + s * 0.5;
       const cy = py + s * 0.46;
       const pulse = 0.85 + Math.sin(time * 0.009) * 0.15;
@@ -1222,14 +1227,15 @@ const MacondoPuzzle = (() => {
       ctx.arc(cx - s * 0.05, cy - s * 0.05, s * 0.05, 0, Math.PI * 2);
       ctx.fill();
 
-      // Downward brass nozzle
+      // Brass nozzle follows the same direction as the beam.
+      const nozzleY = py + s * 0.5;
       ctx.fillStyle = '#c59b27';
       ctx.strokeStyle = '#2c1e16';
       ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.moveTo(cx - s * 0.14, py + s * 0.72);
-      ctx.lineTo(cx + s * 0.14, py + s * 0.72);
-      ctx.lineTo(cx, py + s * 0.93);
+      ctx.moveTo(cx + s * (dx * 0.22 - dy * 0.14), nozzleY + s * (dy * 0.22 + dx * 0.14));
+      ctx.lineTo(cx + s * (dx * 0.22 + dy * 0.14), nozzleY + s * (dy * 0.22 - dx * 0.14));
+      ctx.lineTo(cx + s * dx * 0.43, nozzleY + s * dy * 0.43);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
