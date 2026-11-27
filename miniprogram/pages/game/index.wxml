@@ -16,7 +16,7 @@
   </view>
 
   <view class="board-frame">
-    <view class="board">
+    <view class="board" style="padding-bottom: {{boardRatio}}%;">
       <canvas id="game-canvas" type="2d" class="board-canvas"></canvas>
       <view class="hit-grid" bindtap="tapTile">
         <view class="hit-row" wx:for="{{rows}}" wx:for-item="row" wx:key="*this">

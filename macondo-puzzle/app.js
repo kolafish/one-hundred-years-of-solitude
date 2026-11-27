@@ -1,14 +1,16 @@
-const { COLS, ROWS, createGame } = MacondoPuzzle;
+const { createGame } = MacondoPuzzle;
 const { tryMove, toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, setCanvas, drawBoard } =
   createGame(renderUI);
 const canvas = document.getElementById('game-canvas');
 let hoverTile = null;
+let board = null;
 
 function resizeCanvas() {
+  if (!board) return;
   const wrapper = document.getElementById('canvas-wrapper');
-  const tileSize = Math.floor(wrapper.clientWidth / COLS);
-  canvas.width = tileSize * COLS;
-  canvas.height = tileSize * ROWS;
+  const tileSize = Math.max(1, Math.floor(wrapper.clientWidth / board.cols));
+  canvas.width = tileSize * board.cols;
+  canvas.height = tileSize * board.rows;
   setCanvas(canvas.getContext('2d'), tileSize);
 }
 
@@ -24,7 +26,12 @@ function hydrateStaticIcons() {
   });
 }
 
-function renderUI({ turn, canUndo, banner, bannerIconId, cards, logs, ending }) {
+function renderUI({ level, turn, canUndo, banner, bannerIconId, cards, logs, ending }) {
+  if (board?.id !== level.id) {
+    board = level;
+    hoverTile = null;
+    resizeCanvas();
+  }
   document.getElementById('turn-count').textContent = turn;
   const actionBanner = document.getElementById('action-banner');
   const bannerIconEl = document.getElementById('action-banner-icon');
@@ -134,16 +141,16 @@ function initEvents() {
   // 画布点击与悬停
   canvas.addEventListener('click', e => {
     const rect = canvas.getBoundingClientRect();
-    const gx = Math.floor(((e.clientX - rect.left) / rect.width) * COLS);
-    const gy = Math.floor(((e.clientY - rect.top) / rect.height) * ROWS);
+    const gx = Math.floor(((e.clientX - rect.left) / rect.width) * board.cols);
+    const gy = Math.floor(((e.clientY - rect.top) / rect.height) * board.rows);
     handleCanvasClick(gx, gy);
   });
 
   canvas.addEventListener('mousemove', e => {
     const rect = canvas.getBoundingClientRect();
-    const gx = Math.floor(((e.clientX - rect.left) / rect.width) * COLS);
-    const gy = Math.floor(((e.clientY - rect.top) / rect.height) * ROWS);
-    if (gx >= 0 && gx < COLS && gy >= 0 && gy < ROWS) {
+    const gx = Math.floor(((e.clientX - rect.left) / rect.width) * board.cols);
+    const gy = Math.floor(((e.clientY - rect.top) / rect.height) * board.rows);
+    if (gx >= 0 && gx < board.cols && gy >= 0 && gy < board.rows) {
       hoverTile = { x: gx, y: gy };
     } else {
       hoverTile = null;
@@ -179,7 +186,6 @@ function initEvents() {
   });
 }
 
-resizeCanvas();
 hydrateStaticIcons();
 initEvents();
 resetLevel();
