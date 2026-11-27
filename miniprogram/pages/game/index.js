@@ -1,6 +1,7 @@
 const { createGame, LEVELS } = require("../../game/macondo.js");
 const MacondoIcons = require("../../game/icons.js");
 const { KEY } = require("../../game/progress.js");
+const SOUND_KEY = "macondo_relic_sound";
 
 Page({
   data: {
@@ -14,6 +15,7 @@ Page({
     showHints: false,
     hintCount: 1,
     showLegend: false,
+    soundEnabled: true,
     tileDescriptions: [],
     canvasError: false,
     campaign: [],
@@ -33,14 +35,28 @@ Page({
   },
 
   onLoad() {
+    try {
+      if (wx.getStorageSync(SOUND_KEY) === "off") this.setData({ soundEnabled: false });
+    } catch {}
     this.game = createGame(({ level, ...view }) => {
-      const update = { level, ...view, tileDescriptions: [], logs: view.logs.slice(0, 30) };
-      if (level.id === this.data.level?.id) {
+      const sameAct = level.id === this.data.level?.id;
+      if (!sameAct) this.inspectedTile = null;
+      const tile = this.inspectedTile;
+      const tileDescriptions = tile ? this.game.inspectTile(tile.x, tile.y)?.descriptions || [] : [];
+      const update = { level, ...view, tileDescriptions, logs: view.logs.slice(0, 30) };
+      if (view.relicCollected !== Boolean(this.relicCollected)) {
+        if (view.relicCollected && this.data.soundEnabled && this.visible) this.playRelicSound();
+        else this.relicSound?.stop();
+        this.relicCollected = view.relicCollected;
+      }
+      if (sameAct) {
         this.setData(update);
         return;
       }
+      const chapter = LEVELS.find(act => act.id === level.id);
       this.setData({
         ...update,
+        hasInteractions: ["mirrors", "repairs", "fuses", "seals"].some(kind => chapter?.[kind]?.length),
         hintCount: 1,
         rows: Array.from({ length: level.rows }, (_, row) => row),
         columns: Array.from({ length: level.cols }, (_, col) => col),
@@ -58,6 +74,7 @@ Page({
   onReady() {
     this.boardReady = true;
     this.prepareBoard();
+    this.prepareRelicSound();
   },
 
   onShow() {
@@ -68,17 +85,40 @@ Page({
   onHide() {
     this.visible = false;
     this.stopDrawing();
+    this.relicSound?.stop();
   },
 
   onUnload() {
     this.visible = false;
     this.stopDrawing();
+    this.relicSound?.destroy();
+    this.relicSound = null;
     this.game = null;
     this.canvas = null;
   },
 
   onResize() {
     this.prepareBoard();
+  },
+
+  prepareRelicSound() {
+    if (this.relicSound || !wx.createInnerAudioContext) return;
+    try {
+      this.relicSound = wx.createInnerAudioContext();
+      this.relicSound.obeyMuteSwitch = true;
+      this.relicSound.src = "/assets/relic-chime.mp3";
+    } catch {}
+  },
+
+  playRelicSound() {
+    this.relicSound?.play();
+  },
+
+  toggleSound() {
+    const soundEnabled = !this.data.soundEnabled;
+    if (!soundEnabled) this.relicSound?.stop();
+    this.setData({ soundEnabled });
+    try { wx.setStorageSync(SOUND_KEY, soundEnabled ? "on" : "off"); } catch {}
   },
 
   prepareBoard() {
@@ -92,18 +132,27 @@ Page({
         return;
       }
 
-      this.stopDrawing();
       const canvas = board.node;
       const pixelRatio = wx.getWindowInfo ? wx.getWindowInfo().pixelRatio : 1;
-      canvas.width = Math.round(board.width * pixelRatio);
-      canvas.height = Math.round(board.height * pixelRatio);
+      const width = Math.round(board.width * pixelRatio);
+      const height = Math.round(board.height * pixelRatio);
+      const tileSize = board.width / this.data.level.cols;
+      if (canvas === this.canvas && width === canvas.width && height === canvas.height && tileSize === this.tileSize) {
+        if (this.data.canvasError) this.setData({ canvasError: false });
+        this.startDrawing();
+        return;
+      }
+      this.stopDrawing();
+      canvas.width = width;
+      canvas.height = height;
       const context = canvas.getContext("2d");
       context.scale(canvas.width / board.width, canvas.height / board.height);
       if (this.canvas !== canvas && typeof canvas.createImage === "function") {
         this.game.loadPlayerTokenImage(canvas.createImage(), "/assets/player-token.png");
       }
       this.canvas = canvas;
-      this.game.setCanvas(context, board.width / this.data.level.cols);
+      this.tileSize = tileSize;
+      this.game.setCanvas(context, tileSize);
       this.setData({ canvasError: false });
       this.startDrawing();
     });
@@ -133,6 +182,7 @@ Page({
       const y = Number(row);
       const tile = this.game.inspectTile(x, y);
       if (this.data.inspecting && tile?.distant) {
+        this.inspectedTile = { x, y };
         this.setData({ tileDescriptions: tile.descriptions });
         return;
       }
@@ -167,6 +217,7 @@ Page({
   },
 
   reset() {
+    this.inspectedTile = null;
     this.game.resetLevel();
   },
 

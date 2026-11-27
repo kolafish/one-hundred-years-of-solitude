@@ -68,6 +68,54 @@ function turnMirror(game) {
   assert(game.interactAt(5, 4));
 }
 
+test('relic effects play once, respect reduced motion, and clear on undo or reset', () => {
+  const terrain = Array.from({ length: 3 }, () => Array(5).fill(TILE.FLOOR));
+  const room = {
+    ...LEVELS[0], cols: 5, rows: 3, terrain, gates: [], boxes: [], barrels: [], npcs: [], practiceBeams: [],
+    start: { x: 1, y: 1 }, items: [{ x: 2, y: 1, kind: 'relic' }]
+  };
+  const { game } = campaign({}, [room]);
+  const rings = [];
+  const sparks = [];
+  let arc;
+  const ctx = new Proxy({
+    arc(...args) { arc = args; },
+    stroke() {
+      if (typeof this.strokeStyle === 'string' && this.strokeStyle.startsWith('rgba(190, 140, 46,')) rings.push(arc);
+    },
+    fill() {
+      if (this.fillStyle === '#f2c365') sparks.push(arc);
+    }
+  }, { get: (target, key) => target[key] ?? (() => {}) });
+
+  game.resetLevel();
+  game.setCanvas(ctx, 40);
+  game.drawBoard(100);
+  assert.equal(rings.length, 0);
+  play(game, 'R');
+  game.drawBoard(200);
+  assert.deepEqual(rings[0].slice(0, 2), [100, 60]);
+  assert.equal(sparks.length, 8);
+  game.drawBoard(400, null, true);
+  game.drawBoard(500, null, true);
+  assert.equal(rings[1][2], rings[2][2]);
+  assert.equal(sparks.length, 8);
+  game.drawBoard(980);
+  assert.equal(rings.length, 3);
+  game.undoMove();
+  assert.equal(game.getState().relicCollected, false);
+  play(game, 'R');
+  game.drawBoard(1000);
+  assert.equal(rings.length, 4);
+  game.undoMove();
+  game.drawBoard(1020);
+  assert.equal(rings.length, 4);
+  play(game, 'R');
+  game.resetLevel();
+  game.drawBoard(1040);
+  assert.equal(rings.length, 4);
+});
+
 function solveSecondSouth(game) {
   turnMirror(game);
   play(game, 'DD');

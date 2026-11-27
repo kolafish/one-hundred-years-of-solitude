@@ -5,9 +5,10 @@
       {{item.id}}幕{{item.record.relicCollected ? '✦' : ''}}
     </button>
   </view>
-  <view class="board-caption">残页 {{relicCount}} / 4</view>
-  <view class="board-caption" wx:if="{{storageFailed}}">进度暂时只保留在此页面。</view>
-  <view class="board-caption" wx:elif="{{relicCollected}}">本局已找到残页。通关结算后收入编年史。</view>
+  <view class="game-meta">
+    <text class="board-caption">残页 {{relicCount}} / 4{{storageFailed ? ' · 进度仅保留在此页' : relicCollected ? ' · 本局已找到残页' : ''}}</text>
+    <button class="control sound-toggle" aria-label="{{soundEnabled ? '关闭残页音效' : '开启残页音效'}}" bindtap="toggleSound">{{soundEnabled ? '音效开' : '音效关'}}</button>
+  </view>
   <view class="board-caption" wx:if="{{hazardLabel}}">{{hazardLabel}}</view>
   <view class="toolbar">
     <text class="turn">回合 {{turn}}</text>
@@ -23,7 +24,7 @@
       <image class="ui-icon-sm" src="{{uiIcons.hint}}" mode="aspectFit" />
       <text>{{showHints ? '收起提示' : '提示'}}</text>
     </button>
-    <button wx:if="{{canWait}}" class="control" bindtap="waitTurn" disabled="{{!!ending}}">等待一回合</button>
+    <button wx:if="{{canWait}}" class="control wait-control" bindtap="waitTurn" disabled="{{!!ending}}">等待一回合</button>
   </view>
 
   <view class="board-frame">
@@ -34,6 +35,10 @@
           <view class="hit-tile" wx:for="{{columns}}" wx:for-item="col" wx:key="*this" data-row="{{row}}" data-col="{{col}}"></view>
         </view>
       </view>
+      <view wx:if="{{banner}}" class="board-banner">
+        <image wx:if="{{bannerIconUri}}" class="ui-icon-sm" src="{{bannerIconUri}}" mode="aspectFit" />
+        <text>{{banner}}</text>
+      </view>
     </view>
   </view>
 
@@ -42,33 +47,39 @@
     <button class="control" hover-class="pressed" bindtap="prepareBoard">重新加载</button>
   </view>
 
-  <view wx:if="{{banner}}" class="banner">
-    <image wx:if="{{bannerIconUri}}" class="ui-icon-sm" src="{{bannerIconUri}}" mode="aspectFit" />
-    <text>{{banner}}</text>
+  <view class="directions" wx:if="{{!ending || ending.settled}}">
+    <button class="control direction" aria-label="向左移动" data-dx="-1" data-dy="0" hover-class="pressed" bindtap="move">←</button>
+    <button class="control direction" aria-label="向上移动" data-dx="0" data-dy="-1" hover-class="pressed" bindtap="move">↑</button>
+    <button class="control direction" aria-label="向下移动" data-dx="0" data-dy="1" hover-class="pressed" bindtap="move">↓</button>
+    <button class="control direction" aria-label="向右移动" data-dx="1" data-dy="0" hover-class="pressed" bindtap="move">→</button>
   </view>
-  <view wx:else class="board-caption">点相邻格移动。</view>
 
-  <view wx:if="{{interactions.length}}" class="act-nav" aria-label="附近可操作机关">
-    <button wx:for="{{interactions}}" wx:key="id" class="control" data-x="{{item.x}}" data-y="{{item.y}}" disabled="{{!item.ready}}" bindtap="useInteraction">
-      {{item.ready ? item.label : '译码封印 · 需要巴比伦'}}
-    </button>
-  </view>
+  <scroll-view wx:if="{{hasInteractions}}" class="board-controls" scroll-x aria-label="附近可操作机关">
+    <view class="board-action-row">
+      <button wx:for="{{interactions}}" wx:key="id" class="control" data-x="{{item.x}}" data-y="{{item.y}}" disabled="{{!item.ready}}" bindtap="useInteraction">
+        {{item.ready ? item.label : '译码封印 · 需要巴比伦'}}
+      </button>
+      <text wx:if="{{!interactions.length}}" class="board-caption">靠近机关后可操作。</text>
+    </view>
+  </scroll-view>
   <scroll-view class="panel tile-inspector" scroll-y>
     <view class="board-help inspector-content">
       <view wx:for="{{tileDescriptions}}" wx:key="id"><text class="help-name">{{item.name}}</text> · {{item.detail}}</view>
-      <text wx:if="{{!tileDescriptions.length}}">点远处格子查看说明。</text>
+      <text wx:if="{{!tileDescriptions.length}}">点相邻格移动，点远处格子查看说明。</text>
     </view>
   </scroll-view>
   <view class="board-legend">
     <button class="control" bindtap="toggleLegend">{{showLegend ? '收起机关图例' : '本幕机关图例'}}</button>
-    <view wx:if="{{showLegend}}" class="panel board-help">
-      <view wx:for="{{legend}}" wx:key="id" class="legend-item">
-        <view class="legend-icon" aria-hidden="true">
-          <image src="/assets/mechanism-legend.png" mode="scaleToFill" style="left: {{item.icon.left}}%; top: {{item.icon.top}}%;" />
+    <scroll-view wx:if="{{showLegend}}" class="panel legend-scroll" scroll-y>
+      <view class="board-help">
+        <view wx:for="{{legend}}" wx:key="id" class="legend-item">
+          <view class="legend-icon" aria-hidden="true">
+            <image src="/assets/mechanism-legend.png" mode="scaleToFill" style="left: {{item.icon.left}}%; top: {{item.icon.top}}%;" />
+          </view>
+          <view><text class="help-name">{{item.name}}</text> · {{item.detail}}</view>
         </view>
-        <view><text class="help-name">{{item.name}}</text> · {{item.detail}}</view>
       </view>
-    </view>
+    </scroll-view>
   </view>
 
   <view wx:if="{{ending && !ending.settled}}" class="panel ending">
@@ -85,13 +96,6 @@
       <button wx:if="{{ending.won}}" class="control primary" hover-class="pressed" bindtap="settle">{{level.id === 5 ? '结算并返回编年史' : '结算并继续'}}</button>
       <button wx:else class="control primary" hover-class="pressed" bindtap="reset">再来一次</button>
     </view>
-  </view>
-
-  <view class="directions" wx:else>
-    <button class="control direction" aria-label="向左移动" data-dx="-1" data-dy="0" hover-class="pressed" bindtap="move">←</button>
-    <button class="control direction" aria-label="向上移动" data-dx="0" data-dy="-1" hover-class="pressed" bindtap="move">↑</button>
-    <button class="control direction" aria-label="向下移动" data-dx="0" data-dy="1" hover-class="pressed" bindtap="move">↓</button>
-    <button class="control direction" aria-label="向右移动" data-dx="1" data-dy="0" hover-class="pressed" bindtap="move">→</button>
   </view>
 
   <view wx:if="{{showHints}}" class="panel hints">
@@ -116,27 +120,29 @@
         <view class="skill-title">{{item.name}} · {{item.abilityName}}</view>
         <view class="skill-description">{{item.desc}}</view>
       </view>
-      <text class="badge" wx:if="{{!item.unlocked}}">未相遇</text>
-      <text class="badge" wx:elif="{{!item.charges}}">已用尽</text>
-      <view class="badge shield" wx:elif="{{item.isPassive}}">
-        <image class="ui-icon-xs" src="{{uiIcons.shield}}" mode="aspectFit" />
-        <text>{{item.passiveLabel}}</text>
+      <view class="skill-state">
+        <text class="badge" wx:if="{{!item.unlocked}}">未相遇</text>
+        <text class="badge" wx:elif="{{!item.charges}}">已用尽</text>
+        <view class="badge shield" wx:elif="{{item.isPassive}}">
+          <image class="ui-icon-xs" src="{{uiIcons.shield}}" mode="aspectFit" />
+          <text>{{item.passiveLabel}}</text>
+        </view>
+        <button wx:else class="control primary skill-button" aria-label="{{item.isActive ? '取消' : '施放'}}{{item.abilityName}}" hover-class="pressed" data-skill="{{item.id}}" disabled="{{!!ending || item.blocked}}" bindtap="useSkill">{{item.blocked ? '迷雾封印' : item.isActive ? '取消' : '施放 ' + item.charges}}</button>
       </view>
-      <button wx:else class="control primary skill-button" aria-label="{{item.isActive ? '取消' : '施放'}}{{item.abilityName}}" hover-class="pressed" data-skill="{{item.id}}" disabled="{{!!ending || item.blocked}}" bindtap="useSkill">{{item.blocked ? '迷雾封印' : item.isActive ? '取消' : '施放 ' + item.charges}}</button>
     </view>
   </view>
 
-  <view class="panel">
+  <view class="panel chronicle-panel">
     <view class="section-title">
       <image class="ui-icon-sm" src="{{uiIcons.quill}}" mode="aspectFit" />
       <text>马孔多编年史</text>
     </view>
-    <view>
+    <scroll-view class="chronicle-log" scroll-y>
       <view wx:for="{{logs}}" wx:key="id" class="log log-{{item.type}}">
         <text class="log-turn">T{{item.turn}}</text>
         <text>{{item.text}}</text>
       </view>
-    </view>
+    </scroll-view>
   </view>
 
   <view wx:if="{{preparation}}" class="loadout-overlay">
