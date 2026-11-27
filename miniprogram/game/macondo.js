@@ -8,6 +8,8 @@ const MacondoPuzzle = (() => {
   const MECHANICS = {
     beam: ['烈日光束', '被光束照到会受击。铜镜可改变光束方向。'],
     emitter: ['光束发射器', '铜制喷嘴所指的方向就是光束发射方向。'],
+    emitterOff: ['已熄灭的发射器', '连锁反应打断了灯座，门廊可以通过。'],
+    translator: ['译码台', '继承巴比伦的能力后，在这里可开启门廊另一端的封印。'],
     wall: ['石墙', '挡住移动和光线。'],
     crack: ['裂纹石墙', '相邻的火药桶爆炸时会破开。'],
     water: ['深水', '步行无法通过。可以搭桥或飞越。'],
@@ -219,6 +221,7 @@ const MacondoPuzzle = (() => {
         mistUntil: 0,
         gold: 0,
         archiveDestroyed: false,
+        emitterOffline: false,
         endingId: null,
         seals: (level.seals || []).map(seal => ({ ...seal, open: false })),
         gates: (level.gates || []).map(gate => ({ ...gate, open: false })),
@@ -302,12 +305,17 @@ const MacondoPuzzle = (() => {
         || Boolean(gate && !gate.open);
     }
 
+    function emitterOffline(x, y, target = state) {
+      return target.emitterOffline && level.beamBreak?.emitter.x === x && level.beamBreak.emitter.y === y;
+    }
+
     function computeLasers(target) {
       const beams = [];
       const hits = new Set();
       const emitters = level.emitters || target.terrain.flatMap((row, y) => row.flatMap((tile, x) =>
         tile === TILE.LASER_EMITTER ? [{ x, y, ...DEFAULT_BEAM_DIRECTION }] : []));
       for (const emitter of emitters) {
+        if (emitterOffline(emitter.x, emitter.y, target)) continue;
         let { x, y, dx, dy } = emitter;
         const visited = new Set();
         while (inBounds(x += dx, y += dy) && !isSolid(x, y, target) && !at(target.curtains, x, y)) {
@@ -328,19 +336,26 @@ const MacondoPuzzle = (() => {
     }
 
     function resolveBeams() {
+      const before = state.logs.length;
+      const chain = Boolean(level.beamBreak);
       let hits = computeLasers(state);
       while (hits.size > 0) {
         for (const hit of hits) {
           if (hit.kind === 'crystal') {
             if (!state.items.includes(hit)) continue;
             state.items = state.items.filter(item => item !== hit);
-            addLog('折射光束击碎了冰晶。', 'highlight');
+            spawnExplosion(hit.x, hit.y, '#8bc3d9');
+            addLog(chain ? '① 折射光束击碎冰晶。' : '折射光束击碎了冰晶。', 'highlight');
           } else if (state.barrels.includes(hit)) {
-            addLog('光束点燃了火药桶。', 'highlight');
-            detonateBarrel(hit.x, hit.y);
+            addLog(chain ? '② 光束点燃冰晶后方的火药桶。' : '光束点燃了火药桶。', 'highlight');
+            detonateBarrel(hit.x, hit.y, chain ? 10 : 0);
           }
         }
         hits = computeLasers(state);
+      }
+      if (chain && state.logs.length > before) {
+        const events = state.logs.splice(0, state.logs.length - before).reverse();
+        state.logs.unshift(...events);
       }
     }
 
@@ -395,13 +410,14 @@ const MacondoPuzzle = (() => {
     }
 
     // 引爆火药桶（摧毁自身及上下左右相邻的裂纹石墙）
-    function detonateBarrel(bx, by) {
+    function detonateBarrel(bx, by, delay = 0) {
       if (!at(state.barrels, bx, by)) return;
       state.barrels = state.barrels.filter(b => !(b.x === bx && b.y === by));
-      spawnExplosion(bx, by, '#e05a2b');
+      spawnExplosion(bx, by, '#e05a2b', delay);
 
       const dirs = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]];
       let destroyedWall = false;
+      let brokeEmitter = false;
       const adjacentBarrels = [];
       dirs.forEach(([dx, dy]) => {
         const nx = bx + dx;
@@ -414,19 +430,25 @@ const MacondoPuzzle = (() => {
             state.terrain[ny][nx] = TILE.FLOOR;
             if (level.archiveWall?.x === nx && level.archiveWall?.y === ny) state.archiveDestroyed = true;
             destroyedWall = true;
-            spawnExplosion(nx, ny, '#c59b27');
+            if (level.beamBreak?.x === nx && level.beamBreak?.y === ny && !state.emitterOffline) {
+              state.emitterOffline = true;
+              brokeEmitter = true;
+            }
+            spawnExplosion(nx, ny, '#c59b27', delay ? delay + 12 : 0);
           }
         }
       });
 
-      if (state.archiveDestroyed && destroyedWall) {
+      if (brokeEmitter) {
+        addLog(delay ? '③ 裂纹墙破开，灯座随之熄灭。密室门廊可以通行。' : '裂纹墙破开，灯座随之熄灭。', 'highlight');
+      } else if (state.archiveDestroyed && destroyedWall) {
         addLog('裂纹墙轰然倒塌，墙后的档案也没能留下。', 'warning');
       } else if (destroyedWall) {
         addLog('轰然巨响中，火药桶炸碎了古老的裂纹石墙，通往密室的道路豁然开朗！', 'highlight');
       } else {
         addLog('火药桶在空地上炸开，硝烟弥漫在马孔多的空气里。', 'normal');
       }
-      for (const barrel of adjacentBarrels) detonateBarrel(barrel.x, barrel.y);
+      for (const barrel of adjacentBarrels) detonateBarrel(barrel.x, barrel.y, delay ? delay + 6 : 0);
     }
 
     // 回合结束后的环境与接触结算
@@ -547,7 +569,10 @@ const MacondoPuzzle = (() => {
         drifting.push({ object, x, y });
       }
       for (const { object, x, y } of drifting) Object.assign(object, { x, y });
-      if (drifting.length) addLog('涨潮把河边的箱桶推了一个格子。', 'highlight');
+      if (drifting.length) {
+        updateGates();
+        addLog('涨潮把河边的箱桶推了一个格子。', 'highlight');
+      }
     }
 
     function hurricaneRing(x, y) {
@@ -807,7 +832,7 @@ const MacondoPuzzle = (() => {
     function getInteractions() {
       if (state.status !== 'PLAYING' || activeAbility) return [];
       const labels = { seal: '译码封印', mirror: '拨转铜镜', repair: '修复木桥', fuse: '触发引火机关' };
-      return ADJACENT.flatMap(([dx, dy]) => {
+      const near = ADJACENT.flatMap(([dx, dy]) => {
         const x = state.player.x + dx;
         const y = state.player.y + dy;
         if (!inBounds(x, y)) return [];
@@ -815,6 +840,12 @@ const MacondoPuzzle = (() => {
         if (!kind) return [];
         return [{ x, y, id: x + '-' + y, label: labels[kind], ready: kind !== 'seal' || state.abilities.BABYLON?.unlocked }];
       });
+      for (const { x, y, control } of level.sealControls || []) {
+        if (control.x === state.player.x && control.y === state.player.y && interactionAt(x, y) === 'seal' && !at(near, x, y)) {
+          near.unshift({ x, y, id: 'decode-' + x + '-' + y, label: labels.seal, ready: state.abilities.BABYLON?.unlocked, marker: control });
+        }
+      }
+      return near;
     }
 
     function interactAt(x, y) {
@@ -861,12 +892,13 @@ const MacondoPuzzle = (() => {
         at(state.guards, x, y) && 'guard',
         at(level.repairs || [], x, y) && state.terrain[y][x] === TILE.WATER && 'repair',
         level.forge?.x === x && level.forge?.y === y && 'forge',
+        (level.sealControls || []).some(({ control }) => control.x === x && control.y === y) && 'translator',
         at(level.fuses || [], x, y) && 'fuse',
         item?.kind,
         at(level.currents || [], x, y) && 'waterFlow',
         at(level.oneWay || [], x, y) && 'oneWay',
         at(state.laserTiles, x, y) && 'beam',
-        TERRAIN_MECHANICS[state.terrain[y][x]]
+        emitterOffline(x, y) ? 'emitterOff' : TERRAIN_MECHANICS[state.terrain[y][x]]
       ].filter(Boolean);
     }
 
@@ -982,7 +1014,7 @@ const MacondoPuzzle = (() => {
       tileSize = size;
     }
 
-    function spawnExplosion(gx, gy, color) {
+    function spawnExplosion(gx, gy, color, delay = 0) {
       const cx = (gx + 0.5) * tileSize;
       const cy = (gy + 0.5) * tileSize;
       for (let i = 0; i < 22; i++) {
@@ -994,6 +1026,7 @@ const MacondoPuzzle = (() => {
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           life: 1.0,
+          delay,
           color,
           size: 3 + Math.random() * 4
         });
@@ -1037,7 +1070,7 @@ const MacondoPuzzle = (() => {
             drawGoalTile(px, py, tileSize, t);
           } else if (tile === TILE.LASER_EMITTER) {
             const direction = at(level.emitters || [], x, y) || DEFAULT_BEAM_DIRECTION;
-            drawEmitterTile(px, py, tileSize, t, direction);
+            drawEmitterTile(px, py, tileSize, t, direction, emitterOffline(x, y));
           } else if (tile === TILE.RUBBLE) {
             drawWallTile(px, py, tileSize);
             drawBoardMark(px, py, '墟', '#efc389');
@@ -1080,6 +1113,13 @@ const MacondoPuzzle = (() => {
       }
       for (const seal of state.seals) {
         drawBoardMark(seal.x * tileSize, seal.y * tileSize, seal.open ? '开' : '印', '#704e72');
+      }
+      for (const { control } of level.sealControls || []) drawBoardMark(control.x * tileSize, control.y * tileSize, '译', '#704e72');
+      for (const fuse of level.fuses || []) drawBoardMark(fuse.x * tileSize, fuse.y * tileSize, '火', '#9e2a2b');
+      if (level.forge) {
+        const { x, y } = level.forge;
+        drawBoardMark(x * tileSize, y * tileSize, '炉', '#7a4c28');
+        if (state.gold >= 2 && !state.localFlags.GOLD_FISH_FORGED) markTarget(x, y, 0.70 + Math.sin(t * 0.008) * 0.22);
       }
       for (const lever of state.levers) drawBoardMark(lever.x * tileSize, lever.y * tileSize, '杆', '#9e2a2b');
       for (const curtain of state.curtains) drawBoardMark(curtain.x * tileSize, curtain.y * tileSize, '纱', '#574360');
@@ -1171,7 +1211,8 @@ const MacondoPuzzle = (() => {
       drawPlayerToken(state.player.x * tileSize, state.player.y * tileSize, tileSize, t);
 
       for (const action of getInteractions()) {
-        if (action.ready) markTarget(action.x, action.y, 0.52 + Math.sin(t * 0.006) * 0.2);
+        const { x, y } = action.marker || action;
+        if (action.ready) markTarget(x, y, 0.52 + Math.sin(t * 0.006) * 0.2);
       }
 
       // 7. Hover indicator
@@ -1325,7 +1366,7 @@ const MacondoPuzzle = (() => {
       Icons.drawButterflyCanvas(ctx, bx, by, s * 0.42, time);
     }
 
-    function drawEmitterTile(px, py, s, time, { dx, dy }) {
+    function drawEmitterTile(px, py, s, time, { dx, dy }, offline) {
       const cx = px + s * 0.5;
       const cy = py + s * 0.46;
       const pulse = 0.85 + Math.sin(time * 0.009) * 0.15;
@@ -1345,7 +1386,7 @@ const MacondoPuzzle = (() => {
       ctx.lineWidth = 2.4;
       ctx.stroke();
 
-      ctx.fillStyle = `rgba(217, 72, 59, ${pulse})`;
+      ctx.fillStyle = offline ? '#73675a' : `rgba(217, 72, 59, ${pulse})`;
       ctx.beginPath();
       ctx.arc(cx, cy, s * 0.16, 0, Math.PI * 2);
       ctx.fill();
@@ -1566,6 +1607,10 @@ const MacondoPuzzle = (() => {
     function updateAndDrawParticles() {
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
+        if (p.delay > 0) {
+          p.delay -= 1;
+          continue;
+        }
         p.x += p.vx;
         p.y += p.vy;
         p.life -= 0.03;

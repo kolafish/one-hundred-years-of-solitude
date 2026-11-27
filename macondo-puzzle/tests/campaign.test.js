@@ -94,9 +94,9 @@ test('victory, undo, settlement and loading the next act preserve only committed
   assert.equal(reopened.startLevel(2, ['JOSE', 'REBECA']), true);
   assert.deepEqual(reopened.preparation(2, ['JOSE', 'REBECA']).picked, ['JOSE']);
   assert.equal(reopened.getState().terrain[5][5], 0);
-  play(reopened, 'RRRRRRRRUU');
+  play(reopened, 'RRRRRRRRU');
   assert.equal(reopened.getState().status, 'WON');
-  assert.equal(reopened.getState().turn, 10);
+  assert.equal(reopened.getState().turn, 9);
 });
 
 test('the mirror route works without the ice flag and repairs survive a confirmed victory', () => {
@@ -110,14 +110,14 @@ test('the mirror route works without the ice flag and repairs survive a confirme
   game.undoMove();
   assert.deepEqual(game.getState(), before);
   game.handleCanvasClick(5, 4);
-  play(game, 'UUURRRRRDD');
+  play(game, 'UUURRRDDDRR');
   assert.equal(game.getState().status, 'WON');
-  assert.equal(game.getState().turn, 15);
+  assert.equal(game.getState().turn, 16);
   game.startLevel(2, ['JOSE']);
   play(game, 'RRRD');
   game.handleCanvasClick(5, 6);
   assert.equal(game.getState().localFlags.BRIDGE_REPAIRED, true);
-  play(game, 'RRRRRUUU');
+  play(game, 'RRRRRUU');
   assert.equal(game.getState().status, 'WON');
   game.commitVictory();
   assert.equal(saved.value.worldFlags.BRIDGE_REPAIRED, true);
@@ -137,7 +137,11 @@ test('the workshop supports both archive routes, forging, and deterministic patr
   assert.deepEqual(game.getState(), before);
   game.toggleSkill('URSULA');
   game.handleCanvasClick(3, 5);
-  play(game, 'RURRDRRDDRRRUU');
+  play(game, 'RURRDRRR');
+  game.toggleSkill('AMARANTA');
+  game.handleCanvasClick(8, 4);
+  assert.equal(game.getState().curtains.length, 1);
+  play(game, 'RDDRUU');
   assert.equal(game.getState().status, 'WON');
   assert.equal(game.getState().relicCollected, true);
   game.commitVictory();
@@ -146,8 +150,7 @@ test('the workshop supports both archive routes, forging, and deterministic patr
 
   game.startLevel(3, []);
   play(game, 'UURR');
-  game.toggleSkill('REBECA');
-  game.handleCanvasClick(5, 3);
+  assert(game.interactAt(4, 3));
   assert.equal(game.getState().archiveDestroyed, true);
   play(game, 'RRRRRRDDR');
   assert.equal(game.getState().status, 'WON');
@@ -189,7 +192,7 @@ test('rain supports both bridge variants, deterministic drift, tide reversal and
   game.waitTurn();
   assert.equal(game.getState().boxes[0].x, 6);
   assert.equal(game.getState().barrels[0].x, 6);
-  play(game, 'RRRRRUURDD');
+  play(game, 'RRDRRRUUURDD');
   assert.equal(game.getState().status, 'WON');
   assert.equal(game.getState().relicCollected, true);
   game.commitVictory();
@@ -198,26 +201,29 @@ test('rain supports both bridge variants, deterministic drift, tide reversal and
   const reopened = campaign(saved).game;
   reopened.startLevel(4);
   assert.equal(reopened.getState().terrain[4][5], 3);
-  play(reopened, 'RRRRRRRR');
+  play(reopened, 'RRRR');
+  assert(reopened.interactAt(6, 3));
+  assert.equal(reopened.getState().terrain[2][7], TILE.FLOOR);
+  play(reopened, 'UURRRDDR');
   assert.equal(reopened.getState().status, 'WON');
-  assert.equal(reopened.getState().turn, 8);
 });
 
 function finishWithMirror(game) {
-  play(game, 'RRRRRRU');
-  game.handleCanvasClick(8, 4);
+  play(game, 'RDRRURR');
+  assert(game.interactAt());
   assert.equal(game.getState().seals[0].open, true);
-  play(game, 'DLL');
   const before = game.getState();
-  game.handleCanvasClick(5, 4);
-  assert.equal(game.getState().items.length, 0);
-  assert.equal(game.getState().barrels.length, 0);
-  assert.equal(game.getState().terrain[5][10], 0);
+  assert(game.interactAt());
+  const blast = game.getState();
+  assert.equal(blast.items.length, 0);
+  assert.equal(blast.barrels.length, 0);
+  assert.equal(blast.terrain[5][10], TILE.FLOOR);
+  assert.equal(blast.emitterOffline, true);
+  assert.deepEqual(blast.logs.slice(0, 3).map(log => log.text[0]), ['①', '②', '③']);
   game.undoMove();
   assert.deepEqual(game.getState(), before);
-  game.handleCanvasClick(5, 4);
-  game.handleCanvasClick(5, 4);
-  play(game, 'RRURRDRR');
+  assert(game.interactAt());
+  play(game, 'RURRDRR');
 }
 
 test('an empty save reaches all five acts with every optional flag off', () => {
@@ -230,20 +236,19 @@ test('an empty save reaches all five acts with every optional flag off', () => {
   assert(game.startLevel(2, []));
   play(game, 'RRRU');
   game.handleCanvasClick(5, 4);
-  play(game, 'UUURRRRRDD');
+  play(game, 'UUURRRDDDRR');
   assert(game.commitVictory());
 
   assert(game.startLevel(3, []));
   play(game, 'UURR');
-  game.toggleSkill('REBECA');
-  game.handleCanvasClick(5, 3);
+  assert(game.interactAt(4, 3));
   play(game, 'RRRRRRDDR');
   assert(game.commitVictory());
 
   assert(game.startLevel(4, []));
   play(game, 'RR');
   game.waitTurn();
-  play(game, 'RRRRRR');
+  play(game, 'RRDRRRUR');
   assert(game.commitVictory());
   assert.deepEqual(Object.values(saved.value.worldFlags), [false, false, false, false]);
 
@@ -251,7 +256,7 @@ test('an empty save reaches all five acts with every optional flag off', () => {
   finishWithMirror(game);
   assert.equal(game.getState().status, 'WON');
   assert.equal(game.getState().endingId, 'ESCAPE');
-  assert.equal(game.getState().turn, 21);
+  assert.equal(game.getState().turn, 16);
   assert(game.commitVictory());
   assert.equal(saved.value.completedLevels[5].ending, 'ESCAPE');
   assert.equal(saved.value.unlockedCharacters.length, 9);
@@ -272,18 +277,27 @@ test('four real relic pickups unlock the true ending via the archive shortcut', 
   assert(game.startLevel(2, []));
   play(game, 'RRRD');
   game.handleCanvasClick(5, 6);
-  play(game, 'RRRRUUUUURDD');
+  play(game, 'RRRRUU');
+  game.toggleSkill('URSULA');
+  game.handleCanvasClick(8, 3);
+  play(game, 'URUUDDD');
   assert(game.commitVictory());
 
   assert(game.startLevel(3, []));
   play(game, 'DDRRRLULU');
   game.toggleSkill('URSULA');
   game.handleCanvasClick(3, 5);
-  play(game, 'RURRDRRDDRRRUU');
+  play(game, 'RURRDRRR');
+  game.toggleSkill('AMARANTA');
+  game.handleCanvasClick(8, 4);
+  assert.equal(game.getState().curtains.length, 1);
+  play(game, 'RDDRUU');
   assert(game.commitVictory());
 
   assert(game.startLevel(4, []));
-  play(game, 'RRRRRRRUURDD');
+  play(game, 'RRRR');
+  game.waitTurn();
+  play(game, 'DRRRUUURDD');
   assert(game.commitVictory());
 
   assert.deepEqual(Object.values(saved.value.worldFlags), [true, true, true, true]);
@@ -292,7 +306,7 @@ test('four real relic pickups unlock the true ending via the archive shortcut', 
   assert(reopened.startLevel(5, ['AURELIANO', 'URSULA', 'JOSE', 'PILAR']));
   assert.equal(reopened.getState().abilities.AURELIANO.charges, 2);
   assert.equal(reopened.getState().abilities.PILAR.unlocked, false);
-  play(reopened, 'RRRRRRDRR');
+  play(reopened, 'RDRRRRRRR');
   reopened.toggleSkill('REBECA');
   reopened.handleCanvasClick(10, 4);
   play(reopened, 'RUR');
@@ -436,9 +450,10 @@ test('the legend and inspector describe nearby mechanisms and keyboard interacti
 });
 
 test('a carried character gains exactly one charge when meeting the map character', () => {
-  const { game } = campaign({ value: {
-    schemaVersion: 1, unlockedLevels: [3], unlockedCharacters: ['REBECA']
-  } });
+  const room = { ...LEVELS[2], npcs: [{ id: 'REBECA', x: 1, y: 4 }] };
+  const game = createGame(() => {}, [room], {
+    read: () => ({ schemaVersion: 1, unlockedCharacters: ['REBECA'] })
+  });
   assert(game.startLevel(3, ['REBECA']));
   assert.equal(game.getState().abilities.REBECA.charges, 1);
   play(game, 'U');
@@ -449,4 +464,51 @@ test('a carried character gains exactly one charge when meeting the map characte
   game.toggleSkill('REBECA');
   game.handleCanvasClick(5, 3);
   assert.equal(game.getState().abilities.REBECA.charges, 1);
+});
+
+test('crossing the mist without the note delays the box skill on the relic route', () => {
+  const run = campaign({ value: { schemaVersion: 1, unlockedLevels: [2] } });
+  const { game } = run;
+  assert(game.startLevel(2));
+  play(game, 'URRR');
+  assert(game.interactAt(5, 4));
+  play(game, 'UUURRRDDDR');
+  assert.deepEqual(game.getState().player, { x: 8, y: 4 });
+  assert.equal(game.getState().memoRead, false);
+  assert(run.view.cards.find(card => card.id === 'URSULA').blocked);
+  game.toggleSkill('URSULA');
+  game.handleCanvasClick(8, 3);
+  assert.equal(game.getState().gates[0].open, false);
+  play(game, 'DU');
+  game.toggleSkill('URSULA');
+  game.handleCanvasClick(8, 3);
+  assert.equal(game.getState().gates[0].open, true);
+  play(game, 'URUUDDD');
+  assert.equal(game.getState().status, 'WON');
+  assert.equal(game.getState().relicCollected, true);
+});
+
+test('the rain chapter grants flight before the river and the finale rewards carrying it', () => {
+  const { game } = campaign({ value: {
+    schemaVersion: 1, unlockedLevels: [4, 5], unlockedCharacters: ['REMEDIOS']
+  } });
+  assert(game.startLevel(4, []));
+  play(game, 'RR');
+  game.toggleSkill('REMEDIOS');
+  game.handleCanvasClick(6, 4);
+  assert.deepEqual(game.getState().player, { x: 6, y: 4 });
+  assert.equal(game.getState().status, 'PLAYING');
+
+  assert(game.startLevel(5, ['REMEDIOS']));
+  play(game, 'R');
+  game.toggleSkill('REMEDIOS');
+  game.handleCanvasClick(4, 5);
+  play(game, 'RR');
+  assert.equal(game.getState().turn, 4);
+  assert(game.getState().abilities.BABYLON.unlocked);
+  assert(game.interactAt());
+  assert(game.interactAt());
+  play(game, 'RURRDRR');
+  assert.equal(game.getState().status, 'WON');
+  assert.equal(game.getState().turn, 13);
 });
