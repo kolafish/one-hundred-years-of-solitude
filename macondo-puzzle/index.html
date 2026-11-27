@@ -123,7 +123,7 @@
       font-size: 0.8rem;
     }
 
-    .board-help, .act-legend {
+    .tile-tooltip, .act-legend {
       padding: 8px 10px;
       border: 1px solid #b79063;
       border-radius: 8px;
@@ -134,13 +134,7 @@
     }
 
     .campaign-bar[hidden] { display: none; }
-    #tile-inspector {
-      height: calc(3lh + 22px);
-      overflow-y: auto;
-      scrollbar-gutter: stable;
-      overflow-anchor: none;
-    }
-    .board-help p + p { margin-top: 4px; }
+    .tile-tooltip p + p { margin-top: 4px; }
     .tile-tooltip {
       position: fixed;
       z-index: 20;
@@ -185,12 +179,6 @@
       outline-offset: 2px;
     }
 
-    .inspector-placeholder { color: #6e5138; }
-    .inspector-touch { display: none; }
-    @media (hover: none) {
-      .inspector-mouse { display: none; }
-      .inspector-touch { display: inline; }
-    }
     .act-legend summary { cursor: pointer; font-weight: 700; }
     #act-legend { margin-top: 8px; }
     #act-legend li {
@@ -307,17 +295,13 @@
 
         <!-- 底部图例与移动端方向键 -->
         <div id="board-actions" class="campaign-bar" aria-label="附近可操作机关" hidden></div>
-        <div id="tile-inspector" class="board-help"></div>
-        <div id="tile-tooltip" class="board-help tile-tooltip" aria-hidden="true" hidden></div>
-        <template id="tile-inspector-placeholder">
-          <p class="inspector-placeholder"><span class="inspector-mouse">将鼠标移到格子上</span><span class="inspector-touch">点远处格子</span>查看说明。</p>
-        </template>
+        <div id="tile-tooltip" class="tile-tooltip" role="tooltip" hidden></div>
         <details class="act-legend">
           <summary>本幕机关图例</summary>
           <ul id="act-legend" role="list"></ul>
         </details>
         <div class="flex flex-col sm:flex-row items-center justify-between gap-2 bg-[#e6d6b8]/60 p-2.5 rounded-lg border border-[#8b5a2b]/40 text-xs text-[#4a3525]">
-          <span>方向键或点邻格移动。</span>
+          <span>方向键或点邻格移动，点远处格子查看说明。</span>
           <!-- 移动端触控十字键 -->
           <div class="flex sm:hidden items-center gap-1.5 mt-1">
             <button data-dir="left" aria-label="向左移动" class="dpad-btn w-10 h-10 rounded-lg bg-[#d8c39e] border border-[#8b5a2b] font-bold active:bg-[#c59b27]">◀</button>

@@ -8,14 +8,12 @@ const canvas = document.getElementById('game-canvas');
 const loadoutDialog = document.getElementById('loadout-dialog');
 const decisionDialog = document.getElementById('decision-dialog');
 const boardActions = document.getElementById('board-actions');
-const tileInspector = document.getElementById('tile-inspector');
 const tileTooltip = document.getElementById('tile-tooltip');
 const chronicleLog = document.getElementById('chronicle-log');
 let hoverTile = null;
 let tooltipDismissed = false;
 let inspectedTile = null;
 let inspecting = true;
-let inspectionKey = null;
 let legendKey = '';
 let board = null;
 let campaign = [];
@@ -49,6 +47,7 @@ function renderUI({ level, turn, canUndo, canWait, hazardLabel, banner, bannerIc
   if (board?.id !== level.id) {
     board = level;
     hoverTile = null;
+    tooltipDismissed = false;
     inspectedTile = null;
     resizeCanvas();
     document.getElementById('act-subtitle').textContent = level.subtitle;
@@ -202,12 +201,19 @@ function legendEntry(entry) {
   return item;
 }
 
-function renderTileTooltip(descriptions, key) {
-  tileTooltip.hidden = !hoverTile || tooltipDismissed || Boolean(activeEnding && !activeEnding.settled)
-    || decisionDialog.open || loadoutDialog.open
-    || !descriptions.some(({ id }) => id !== 'floor' && id !== 'wall');
+function renderTileTooltip() {
+  const tile = (!tooltipDismissed && hoverTile) || inspectedTile;
+  if (!tile || (activeEnding && !activeEnding.settled) || decisionDialog.open || loadoutDialog.open) {
+    tileTooltip.hidden = true;
+    return;
+  }
+  const descriptions = game.inspectTile(tile.x, tile.y)?.descriptions || [];
+  const selected = inspectedTile?.x === tile.x && inspectedTile?.y === tile.y;
+  const relevant = descriptions.some(({ id }) => id !== 'floor' && id !== 'wall');
+  tileTooltip.hidden = !descriptions.length || (!selected && !relevant);
   if (tileTooltip.hidden) return;
 
+  const key = descriptions.map(entry => entry.id).join('|');
   if (tileTooltip.dataset.description !== key) {
     tileTooltip.replaceChildren(...descriptions.map(entry => descriptionNode('p', entry)));
     tileTooltip.dataset.description = key;
@@ -219,8 +225,8 @@ function renderTileTooltip(descriptions, key) {
   const { left, top, width, height } = canvas.getBoundingClientRect();
   const tileWidth = width / board.cols;
   const tileHeight = height / board.rows;
-  const tileLeft = left + hoverTile.x * tileWidth;
-  const tileTop = top + hoverTile.y * tileHeight;
+  const tileLeft = left + tile.x * tileWidth;
+  const tileTop = top + tile.y * tileHeight;
   const tooltipWidth = tileTooltip.offsetWidth;
   const tooltipHeight = tileTooltip.offsetHeight;
   const right = tileLeft + tileWidth + gap;
@@ -247,26 +253,19 @@ function renderTileTooltip(descriptions, key) {
   tileTooltip.style.top = `${Math.max(margin, Math.min(y, clientHeight - tooltipHeight - margin))}px`;
 }
 
-function renderInspection() {
-  const tile = hoverTile || inspectedTile;
-  const descriptions = tile ? game.inspectTile(tile.x, tile.y)?.descriptions || [] : [];
-  const key = descriptions.map(entry => entry.id).join('|');
-  renderTileTooltip(descriptions, key);
-  if (key === inspectionKey) return;
-  inspectionKey = key;
-  if (descriptions.length) {
-    tileInspector.replaceChildren(...descriptions.map(entry => descriptionNode('p', entry)));
-  } else {
-    tileInspector.replaceChildren(document.getElementById('tile-inspector-placeholder').content.cloneNode(true));
-  }
-  tileInspector.scrollTop = 0;
-}
-
 function clearHover() {
   if (!hoverTile) return;
   hoverTile = null;
   tooltipDismissed = false;
-  renderInspection();
+  renderTileTooltip();
+}
+
+function clearInspection() {
+  if (!inspectedTile && !hoverTile) return;
+  inspectedTile = null;
+  hoverTile = null;
+  tooltipDismissed = false;
+  renderTileTooltip();
 }
 
 function renderBoardHelp(interactions, legend) {
@@ -285,7 +284,7 @@ function renderBoardHelp(interactions, legend) {
     legendKey = key;
     document.getElementById('act-legend').replaceChildren(...legend.map(legendEntry));
   }
-  renderInspection();
+  renderTileTooltip();
 }
 
 function renderCampaign(storageFailed, relicCollected, relicCount) {
@@ -340,7 +339,7 @@ function openLoadout(id, selected) {
     return button;
   }));
   if (!loadoutDialog.open) {
-    clearHover();
+    clearInspection();
     loadoutDialog.showModal();
   }
 }
@@ -359,9 +358,12 @@ function finishAttempt() {
 function initEvents() {
   window.addEventListener('resize', () => {
     resizeCanvas();
-    clearHover();
+    clearInspection();
   });
-  window.addEventListener('scroll', clearHover, { passive: true });
+  window.addEventListener('scroll', clearInspection, { passive: true });
+  document.addEventListener('pointerdown', e => {
+    if (inspectedTile && e.target !== canvas && !tileTooltip.contains(e.target)) clearInspection();
+  });
 
   // 键盘控制
   window.addEventListener('keydown', e => {
@@ -384,6 +386,7 @@ function initEvents() {
     else if (key === 'r') { resetLevel(); }
     else if (key === '.') { waitTurn(); }
     else if (key === 'escape') {
+      inspectedTile = null;
       if (!tileTooltip.hidden) tooltipDismissed = true;
       cancelSkillMode();
     }
@@ -402,16 +405,18 @@ function initEvents() {
   function clickBoard(e) {
     const tile = canvasTile(e);
     if (!tile) {
-      clearHover();
+      clearInspection();
       return;
     }
     if (inspecting && game.inspectTile(tile.x, tile.y)?.distant) {
-      inspectedTile = tile;
-      renderInspection();
+      const isCurrent = inspectedTile?.x === tile.x && inspectedTile?.y === tile.y;
+      inspectedTile = isCurrent ? null : tile;
+      tooltipDismissed = isCurrent;
+      renderTileTooltip();
       return;
     }
     inspectedTile = null;
-    renderInspection();
+    renderTileTooltip();
     handleCanvasClick(tile.x, tile.y);
   }
 
@@ -422,7 +427,7 @@ function initEvents() {
     if (hoverTile?.x === tile.x && hoverTile?.y === tile.y) return;
     hoverTile = tile;
     tooltipDismissed = false;
-    renderInspection();
+    renderTileTooltip();
   }
 
   canvas.addEventListener('click', clickBoard);
@@ -463,7 +468,7 @@ function initEvents() {
   document.getElementById('loadout-cancel').addEventListener('click', () => loadoutDialog.close());
 
   document.getElementById('btn-hint').addEventListener('click', () => {
-    clearHover();
+    clearInspection();
     document.getElementById('hint-modal').classList.remove('hidden');
   });
   document.getElementById('btn-close-hint').addEventListener('click', () => {
