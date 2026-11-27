@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png" />
   <!-- Regenerate from the repository root: npx --yes tailwindcss@3.4.17 --content './macondo-puzzle/*.{html,js}' --output ./macondo-puzzle/tailwind.css --minify -->
-  <link rel="stylesheet" href="./tailwind.css" />
+  <link rel="stylesheet" href="./tailwind.css?v=stable-board" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -19,6 +19,8 @@
       --gold-highlight: #c59b27;
       --crimson-laser: #9e2a2b;
     }
+
+    html { scrollbar-gutter: stable; }
 
     body {
       font-family: 'Noto Serif SC', Georgia, 'Songti SC', SimSun, serif;
@@ -47,19 +49,34 @@
     .parchment-card {
       background-color: rgba(230, 214, 184, 0.72);
       border: 1.5px solid #8b5a2b;
-      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .parchment-card:hover:not(:disabled) {
-      transform: translateY(-2px);
       border-color: var(--gold-highlight);
       box-shadow: 0 4px 12px rgba(139, 69, 19, 0.25);
     }
 
     .parchment-card.active-skill {
       background-color: #fdf6e7;
-      border: 2px solid var(--crimson-laser);
+      border-color: var(--crimson-laser);
       box-shadow: 0 0 0 3px rgba(158, 42, 43, 0.25);
+    }
+
+    .skill-card-copy { min-width: 0; }
+
+    .skill-card-status {
+      flex: 0 0 6.75rem;
+      min-height: 42px;
+      display: grid;
+      align-items: center;
+      justify-items: end;
+    }
+
+    .skill-card-status .skill-btn {
+      width: 100%;
+      padding-inline: 6px;
+      white-space: nowrap;
     }
 
     /* 自定义滚动条 */
@@ -123,6 +140,23 @@
       font-size: 0.8rem;
     }
 
+    #turn-count {
+      display: inline-block;
+      width: 4ch;
+      text-align: end;
+    }
+
+    #board-actions {
+      flex-wrap: nowrap;
+      height: 50px;
+      overflow-x: auto;
+    }
+
+    #board-actions > * {
+      flex: none;
+      white-space: nowrap;
+    }
+
     .tile-tooltip, .act-legend {
       padding: 8px 10px;
       border: 1px solid #b79063;
@@ -180,7 +214,13 @@
     }
 
     .act-legend summary { cursor: pointer; font-weight: 700; }
-    #act-legend { margin-top: 8px; }
+    #act-legend {
+      margin-top: 8px;
+      block-size: clamp(15rem, 48vh, 27rem);
+      overflow-y: auto;
+      scrollbar-gutter: stable;
+      overscroll-behavior-y: contain;
+    }
     #act-legend li {
       display: flex;
       align-items: center;
@@ -232,7 +272,7 @@
     .loadout-options small { display: block; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 md:p-6">
+<body class="min-h-screen flex flex-col items-center p-2 sm:p-4 md:p-6">
 
   <!-- 主游戏容器 -->
   <main class="parchment-panel w-full max-w-6xl rounded-xl p-3 sm:p-5 md:p-6 flex flex-col gap-4">
@@ -275,7 +315,7 @@
     </header>
 
     <nav id="campaign-nav" class="campaign-bar" aria-label="马孔多编年史"></nav>
-    <p id="campaign-status" class="campaign-status" aria-live="polite" hidden></p>
+    <p id="campaign-status" class="campaign-status" aria-live="polite"></p>
     <p id="hazard-status" class="campaign-status" aria-live="polite" hidden></p>
 
     <!-- 核心区域：左侧网格画布 + 右侧状态与能力面板 -->
@@ -298,7 +338,7 @@
         <div id="tile-tooltip" class="tile-tooltip" role="tooltip" hidden></div>
         <details class="act-legend">
           <summary>本幕机关图例</summary>
-          <ul id="act-legend" role="list"></ul>
+          <ul id="act-legend" role="list" tabindex="0" aria-label="本幕机关图例条目"></ul>
         </details>
         <div class="flex flex-col sm:flex-row items-center justify-between gap-2 bg-[#e6d6b8]/60 p-2.5 rounded-lg border border-[#8b5a2b]/40 text-xs text-[#4a3525]">
           <span>方向键或点邻格移动，点远处格子查看说明。</span>
@@ -409,6 +449,6 @@
   <script src="../miniprogram/game/levels.js"></script>
   <script src="../miniprogram/game/progress.js"></script>
   <script src="../miniprogram/game/macondo.js"></script>
-  <script src="./app.js?v=tile-popup"></script>
+  <script src="./app.js?v=stable-board"></script>
 </body>
 </html>
