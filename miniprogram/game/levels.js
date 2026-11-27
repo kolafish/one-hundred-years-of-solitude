@@ -7,6 +7,8 @@ const MacondoLevels = (() => {
     BRIDGE: 3,
     CRACKED_WALL: 4, // 必须由火药桶爆炸摧毁的裂纹石墙
     GOAL: 5,         // 梅尔基亚德斯的羊皮纸密室
+    HOT: 7,
+    MIST: 8,
     LASER_EMITTER: 6 // 烈日放大镜发射器（向下发射光束）
   };
 
@@ -21,6 +23,15 @@ const MacondoLevels = (() => {
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  // y=7
   ];
 
+  function map(rows) {
+    const legend = { '#': TILE.WALL, '.': TILE.FLOOR, '~': TILE.WATER, '=': TILE.BRIDGE,
+      '%': TILE.CRACKED_WALL, 'G': TILE.GOAL, 'E': TILE.LASER_EMITTER, 'H': TILE.HOT, '?': TILE.MIST };
+    return rows.map(row => Array.from(row, symbol => {
+      if (!(symbol in legend)) throw new Error('Unknown map tile: ' + symbol);
+      return legend[symbol];
+    }));
+  }
+
   const LEVELS = [{
     id: 1,
     title: '吉卜赛人的烈日与磁铁',
@@ -28,6 +39,9 @@ const MacondoLevels = (() => {
     cols: 10,
     rows: 8,
     slots: 0,
+    replaySlots: 1,
+    parTurns: 20,
+    unlocks: ['JOSE', 'AURELIANO', 'REBECA'],
     terrain,
     start: { x: 1, y: 1 },
     npcs: [
@@ -36,12 +50,53 @@ const MacondoLevels = (() => {
       { id: 'REBECA', x: 5, y: 2 }
     ],
     barrels: [{ x: 5, y: 6 }],
+    items: [
+      { kind: 'ice', x: 2, y: 3 },
+      { kind: 'relic', x: 5, y: 1 }
+    ],
     opening: '多年以后，站在梅尔基亚德斯的羊皮纸密室前，你仍会想起马孔多那个炙热的午后。',
     hints: [
       '向右靠近何塞，继承炼金投掷。',
       '到下方河岸找上校，带着宿命护盾向右过桥，穿过烈日光束。',
       '向上靠近丽贝卡，继承孤注一掷。',
-      '站在桶正上方，把桶投到右上方紧挨裂纹石墙的木桥，再用孤注一掷点木桥上的桶。'
+      '站在桶正上方，把桶投到右上方紧挨裂纹石墙的木桥，再用孤注一掷点木桥上的桶。',
+      '左岸角落藏着冰块，右岸北端有羊皮纸残页。'
+    ]
+  }, {
+    id: 2,
+    title: '失眠症与镜面广场',
+    subtitle: '第二幕 · 拨转铜镜，把灼热的光束引离广场。',
+    cols: 11,
+    rows: 8,
+    slots: 1,
+    parTurns: 13,
+    unlocks: ['URSULA', 'MELQUIADES'],
+    terrain: map([
+      '###########',
+      '#.........#',
+      '#.....#...#',
+      '#.....#?.G#',
+      '#......E..#',
+      '#....H....#',
+      '#....~....#',
+      '###########'
+    ]),
+    start: { x: 1, y: 5 },
+    npcs: [{ id: 'URSULA', x: 8, y: 4 }, { id: 'MELQUIADES', x: 8, y: 2 }],
+    barrels: [],
+    boxes: [{ x: 2, y: 2 }],
+    mirrors: [{ x: 5, y: 4, slash: false }],
+    emitters: [{ x: 7, y: 4, dx: -1, dy: 0 }],
+    repairs: [{ x: 5, y: 6 }],
+    items: [{ kind: 'note', x: 3, y: 5 }, { kind: 'relic', x: 9, y: 1 }],
+    changes: [{ flag: 'ICE_PRESERVED', x: 5, y: 5, tile: TILE.FLOOR }],
+    causalHints: [{ flag: 'ICE_PRESERVED', text: '第一幕带出的冰块可以冷却广场焦土。' }],
+    opening: '失眠症让人忘记名字。乌尔苏拉在广场上留下了备忘字条。',
+    hints: [
+      '走到铜镜左邻格，点铜镜拨转。光束折向南面后，从镜子北边穿过广场。',
+      '经过备忘字条可以抵抗迷雾。踩进未防护的迷雾会封印主动能力两回合。',
+      '也可以在南岸点破损木桥修复。修好的桥会在第四幕保留下来。',
+      '如果第一幕带出了冰块，直接从已冷却的焦土过广场。残页藏在右上角。'
     ]
   }];
 

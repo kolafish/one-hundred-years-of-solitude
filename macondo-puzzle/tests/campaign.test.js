@@ -39,7 +39,7 @@ test('map dimensions, boundary clicks, hazards and reset follow the loaded act',
   };
   wide.terrain[8][12] = 5;
   let view;
-  const game = createGame(update => { view = update; }, [...LEVELS, wide]);
+  const game = createGame(update => { view = update; }, [...LEVELS, wide], { read: () => ({ schemaVersion: 1, unlockedLevels: [99] }) });
   assert.equal(game.startLevel(99), true);
   assert.deepEqual([view.level.cols, view.level.rows], [13, 9]);
   game.handleCanvasClick(13, 8);
@@ -55,4 +55,69 @@ test('map dimensions, boundary clicks, hazards and reset follow the loaded act',
   game.tryMove(1, 0);
   game.undoMove();
   assert.deepEqual(game.getState(), before);
+});
+
+function campaign(saved) {
+  let view;
+  return {
+    game: createGame(update => { view = update; }, LEVELS, {
+      read: () => saved.value,
+      write: value => { saved.value = structuredClone(value); }
+    }),
+    get view() { return view; }
+  };
+}
+
+test('victory, undo, settlement and loading the next act preserve only committed rewards', () => {
+  const saved = {};
+  const { game } = campaign(saved);
+  game.resetLevel();
+  assert.equal(game.startLevel(2), false);
+  play(game, 'RLDDR LDDRRRRUUUU DDDD'.replaceAll(' ', ''));
+  assert.equal(game.getState().localFlags.ICE_PRESERVED, true);
+  assert.equal(game.getState().relicCollected, true);
+  game.toggleSkill('JOSE');
+  game.handleCanvasClick(6, 4);
+  game.toggleSkill('REBECA');
+  game.handleCanvasClick(6, 4);
+  play(game, 'URRR');
+  assert.equal(game.getState().status, 'WON');
+  assert.equal(saved.value, undefined);
+  game.undoMove();
+  assert.equal(game.commitVictory(), false);
+  play(game, 'R');
+  assert.equal(game.commitVictory(), true);
+  assert.equal(game.commitVictory(), false);
+  assert.equal(saved.value.completedLevels[1].relicCollected, true);
+  const reopened = campaign(saved).game;
+  assert.equal(reopened.startLevel(2, ['JOSE', 'REBECA']), true);
+  assert.deepEqual(reopened.preparation(2, ['JOSE', 'REBECA']).picked, ['JOSE']);
+  assert.equal(reopened.getState().terrain[5][5], 0);
+  play(reopened, 'RRRRRRRRUU');
+  assert.equal(reopened.getState().status, 'WON');
+  assert.equal(reopened.getState().turn, 10);
+});
+
+test('the mirror route works without the ice flag and repairs survive a confirmed victory', () => {
+  const saved = { value: { schemaVersion: 1, unlockedLevels: [2], unlockedCharacters: ['JOSE'] } };
+  const { game, view } = campaign(saved);
+  game.startLevel(2);
+  play(game, 'RRRU');
+  const before = game.getState();
+  game.handleCanvasClick(5, 4);
+  assert.equal(game.getState().mirrors[0].slash, true);
+  game.undoMove();
+  assert.deepEqual(game.getState(), before);
+  game.handleCanvasClick(5, 4);
+  play(game, 'UUURRRRRDD');
+  assert.equal(game.getState().status, 'WON');
+  assert.equal(game.getState().turn, 15);
+  game.startLevel(2, ['JOSE']);
+  play(game, 'RRRD');
+  game.handleCanvasClick(5, 6);
+  assert.equal(game.getState().localFlags.BRIDGE_REPAIRED, true);
+  play(game, 'RRRRRUUU');
+  assert.equal(game.getState().status, 'WON');
+  game.commitVictory();
+  assert.equal(saved.value.worldFlags.BRIDGE_REPAIRED, true);
 });

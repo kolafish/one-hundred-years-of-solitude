@@ -83,6 +83,62 @@
       cursor: pointer;
       touch-action: manipulation;
     }
+
+    .campaign-bar, .loadout-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .campaign-button {
+      min-height: 42px;
+      padding: 6px 12px;
+      border: 1px solid #8b5a2b;
+      border-radius: 8px;
+      background: #ead9ba;
+      color: #4a3525;
+      font-size: 0.85rem;
+    }
+
+    .campaign-button[aria-current="step"], .campaign-button[aria-pressed="true"] {
+      border-color: #9e2a2b;
+      background: #f7eacb;
+      font-weight: 700;
+    }
+
+    .campaign-button:disabled { opacity: 0.6; }
+
+    .campaign-status {
+      color: #63432f;
+      font-size: 0.8rem;
+    }
+
+    .loadout-dialog {
+      width: min(560px, calc(100% - 24px));
+      max-height: 85vh;
+      padding: 18px;
+      border-radius: 12px;
+      color: var(--ink-main);
+    }
+
+    .loadout-dialog::backdrop { background: rgb(30 20 13 / 65%); }
+
+    .loadout-options {
+      display: grid;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .loadout-options button {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      align-items: center;
+      gap: 8px;
+      text-align: start;
+    }
+
+    .loadout-options small { display: block; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 md:p-6">
@@ -100,7 +156,7 @@
             马孔多的羊皮纸 <span class="text-sm sm:text-base font-normal text-[#8b4513]">· 百年孤独机关录</span>
           </h1>
         </div>
-        <p class="text-xs sm:text-sm text-[#5c4332] mt-1">
+        <p id="act-subtitle" class="text-xs sm:text-sm text-[#5c4332] mt-1">
           第一幕：布恩迪亚庄园的烈日与火药 —— 借用家族宿命之力，抵达梅尔基亚德斯的羊皮纸密室
         </p>
       </div>
@@ -124,6 +180,9 @@
         </button>
       </div>
     </header>
+
+    <nav id="campaign-nav" class="campaign-bar" aria-label="马孔多编年史"></nav>
+    <p id="campaign-status" class="campaign-status" aria-live="polite" hidden></p>
 
     <!-- 核心区域：左侧网格画布 + 右侧状态与能力面板 -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
@@ -197,13 +256,7 @@
       <h3 class="text-lg sm:text-xl font-bold text-[#2c1e16] border-b border-[#8b5a2b]/40 pb-2 mb-3 flex items-center gap-2">
         <span class="inline-flex w-6 h-6 shrink-0" data-icon="scroll"></span> 梅尔基亚德斯的羊皮纸启示
       </h3>
-      <ol class="list-decimal list-inside space-y-2 text-xs sm:text-sm text-[#3d291a] leading-relaxed">
-        <li><b>继承投掷之力</b>：向右走遇到<b>何塞·阿尔卡蒂奥</b>，获得【投掷】能力（可将身旁的火药桶跨河投出至多 3 格）。</li>
-        <li><b>继承宿命护盾</b>：向下走过河岸，遇到<b>奥雷里亚诺上校</b>，获得被动【宿命护盾】（可抵挡一次致命光束/子弹）。</li>
-        <li><b>穿越烈日死线</b>：沿木桥向右穿过红色聚焦光束，上校的护盾会替你挡下致命一击。</li>
-        <li><b>继承孤注一掷</b>：向上走到右岸遇到<b>丽贝卡</b>，获得【孤注一掷】（可隔河远距离射击指定目标）。</li>
-        <li><b>跨河爆破组合技</b>：走到<b>火药桶</b>正上方，点击【炼金投掷】，把火药桶扔到你右上方连着裂纹石墙的<b>木桥</b>上。随后点击【孤注一掷】引爆火药桶，打开通往<b>羊皮纸密室</b>的路。</li>
-      </ol>
+      <ol id="act-hints" class="list-decimal list-inside space-y-2 text-xs sm:text-sm text-[#3d291a] leading-relaxed"></ol>
       <div class="mt-5 flex justify-end">
         <button id="btn-close-hint" class="min-h-10 px-4 py-2 rounded-lg bg-[#8b4513] hover:bg-[#6e350d] text-[#f4ebd9] text-sm font-semibold transition">
           合上羊皮纸
@@ -227,14 +280,26 @@
         </button>
         <button id="btn-end-restart" class="min-h-10 px-4 py-2 rounded-lg bg-[#8b4513] hover:bg-[#6e350d] text-[#f4ebd9] text-sm font-semibold transition flex items-center gap-1.5">
           <span class="inline-flex w-4 h-4 shrink-0" data-icon="reset"></span>
-          <span>再次踏入马孔多</span>
+          <span id="end-action-label">再次踏入马孔多</span>
         </button>
       </div>
     </div>
   </div>
 
+  <dialog id="loadout-dialog" class="loadout-dialog parchment-panel" aria-labelledby="loadout-title">
+    <h2 id="loadout-title" class="text-lg font-bold"></h2>
+    <p id="loadout-slots" class="campaign-status"></p>
+    <ul id="loadout-effects" class="campaign-status"></ul>
+    <div id="loadout-options" class="loadout-options" aria-label="布恩迪亚家族图鉴"></div>
+    <div class="loadout-actions">
+      <button id="loadout-start" class="campaign-button">开始这一幕</button>
+      <button id="loadout-cancel" class="campaign-button">返回棋盘</button>
+    </div>
+  </dialog>
+
   <script src="../miniprogram/game/icons.js"></script>
   <script src="../miniprogram/game/levels.js"></script>
+  <script src="../miniprogram/game/progress.js"></script>
   <script src="../miniprogram/game/macondo.js"></script>
   <script src="./app.js"></script>
 </body>

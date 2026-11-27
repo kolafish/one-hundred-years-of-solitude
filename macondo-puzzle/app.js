@@ -1,9 +1,16 @@
-const { createGame } = MacondoPuzzle;
-const { tryMove, toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, setCanvas, drawBoard } =
-  createGame(renderUI);
+const { createGame, LEVELS } = MacondoPuzzle;
+const game = createGame(renderUI, LEVELS, {
+  read: () => JSON.parse(localStorage.getItem(MacondoProgress.KEY)),
+  write: progress => localStorage.setItem(MacondoProgress.KEY, JSON.stringify(progress))
+});
+const { tryMove, toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, setCanvas, drawBoard } = game;
 const canvas = document.getElementById('game-canvas');
+const loadoutDialog = document.getElementById('loadout-dialog');
 let hoverTile = null;
 let board = null;
+let campaign = [];
+let activeEnding = null;
+let draft = null;
 
 function resizeCanvas() {
   if (!board) return;
@@ -26,12 +33,21 @@ function hydrateStaticIcons() {
   });
 }
 
-function renderUI({ level, turn, canUndo, banner, bannerIconId, cards, logs, ending }) {
+function renderUI({ level, turn, canUndo, banner, bannerIconId, cards, logs, ending, campaign: acts, storageFailed, relicCollected }) {
   if (board?.id !== level.id) {
     board = level;
     hoverTile = null;
     resizeCanvas();
+    document.getElementById('act-subtitle').textContent = level.subtitle;
+    document.getElementById('act-hints').replaceChildren(...level.hints.map(hint => {
+      const item = document.createElement('li');
+      item.textContent = hint;
+      return item;
+    }));
   }
+  campaign = acts;
+  activeEnding = ending;
+  renderCampaign(storageFailed, relicCollected);
   document.getElementById('turn-count').textContent = turn;
   const actionBanner = document.getElementById('action-banner');
   const bannerIconEl = document.getElementById('action-banner-icon');
@@ -52,7 +68,7 @@ function renderUI({ level, turn, canUndo, banner, bannerIconId, cards, logs, end
   const invContainer = document.getElementById('inventory-list');
   invContainer.innerHTML = '';
 
-  cards.forEach(({ id, name, abilityName, iconId, desc, unlocked, charges, isActive, isPassive }) => {
+  cards.forEach(({ id, name, abilityName, iconId, desc, unlocked, charges, blocked, isActive, isPassive }) => {
 
     const card = document.createElement('div');
     card.className = `parchment-card rounded-lg p-2.5 flex items-center justify-between gap-2 ${
@@ -66,8 +82,8 @@ function renderUI({ level, turn, canUndo, banner, bannerIconId, cards, logs, end
       if (isPassive) {
         badgeHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-[#d97706]/20 text-[#92400e] border border-[#d97706]">${MacondoIcons.getIconSvg('shield', 'w-4 h-4 shrink-0')}<span>庇护生效中</span></span>`;
       } else {
-        badgeHtml = `<button data-skill="${id}" aria-label="${isActive ? '取消' : '施放'}${abilityName}" class="skill-btn min-h-10 px-3 py-1.5 rounded-md text-xs font-bold bg-[#8b4513] hover:bg-[#6e350d] text-[#f4ebd9] shadow-sm active:scale-[0.96] transition">
-          ${isActive ? '取消施放' : '施放能力 (1)'}
+        badgeHtml = `<button data-skill="${id}" ${blocked ? 'disabled' : ''} aria-label="${isActive ? '取消' : '施放'}${abilityName}" class="skill-btn campaign-button">
+          ${blocked ? '迷雾封印' : isActive ? '取消施放' : `施放能力 (${charges})`}
         </button>`;
       }
     } else {
@@ -109,11 +125,64 @@ function renderUI({ level, turn, canUndo, banner, bannerIconId, cards, logs, end
     </div>`;
   }).join('');
 
-  document.getElementById('end-modal').classList.toggle('hidden', !ending);
-  if (ending) {
+  document.getElementById('end-modal').classList.toggle('hidden', !ending || ending.settled);
+  if (ending && !ending.settled) {
     document.getElementById('end-icon').innerHTML = MacondoIcons.getIconSvg(ending.iconId, 'w-14 h-14');
     document.getElementById('end-title').textContent = ending.title;
     document.getElementById('end-desc').textContent = ending.description;
+    document.getElementById('end-action-label').textContent = ending.won ? '结算并继续' : '再次踏入马孔多';
+  }
+}
+
+function renderCampaign(storageFailed, relicCollected) {
+  const nav = document.getElementById('campaign-nav');
+  nav.replaceChildren(...campaign.map(act => {
+    const button = document.createElement('button');
+    button.className = 'campaign-button';
+    button.disabled = !act.unlocked;
+    button.textContent = `${act.id}. ${act.title}${act.record?.relicCollected ? ' · 残页' : ''}${act.record ? ` · ${act.record.rank}` : ''}`;
+    if (act.id === board.id) button.setAttribute('aria-current', 'step');
+    button.addEventListener('click', () => openLoadout(act.id));
+    return button;
+  }));
+  const status = document.getElementById('campaign-status');
+  status.textContent = storageFailed ? '进度暂时只保留在此页面。' : relicCollected ? '本局已找到残页。通关结算后收入编年史。' : '';
+  status.hidden = !status.textContent;
+}
+
+function openLoadout(id, selected) {
+  draft = game.preparation(id, selected);
+  if (!draft) return;
+  document.getElementById('loadout-title').textContent = draft.title;
+  document.getElementById('loadout-slots').textContent = `先祖同行 ${draft.picked.length} / ${draft.slots}`;
+  const act = campaign.find(item => item.id === id);
+  document.getElementById('loadout-effects').replaceChildren(...act.causalHints.map(hint => {
+    const item = document.createElement('li');
+    item.textContent = `${hint.active ? '已生效' : '待达成'} · ${hint.text}`;
+    return item;
+  }));
+  document.getElementById('loadout-options').replaceChildren(...draft.choices.map(character => {
+    const button = document.createElement('button');
+    const picked = draft.picked.includes(character.id);
+    button.className = 'campaign-button';
+    button.disabled = !character.unlocked || (!picked && draft.picked.length >= draft.slots);
+    button.setAttribute('aria-pressed', String(picked));
+    button.innerHTML = `${MacondoIcons.getIconSvg(character.iconId, 'w-7 h-7')}<span>${character.name} · ${character.abilityName}<small>${character.unlocked ? character.desc : '尚未解锁'}</small></span>`;
+    button.addEventListener('click', () => openLoadout(id, picked
+      ? draft.picked.filter(item => item !== character.id) : [...draft.picked, character.id]));
+    return button;
+  }));
+  if (!loadoutDialog.open) loadoutDialog.showModal();
+}
+
+function finishAttempt() {
+  if (!activeEnding?.won) {
+    resetLevel();
+    return;
+  }
+  if (game.commitVictory()) {
+    const next = campaign.find(act => act.id > board.id && act.unlocked);
+    openLoadout(next?.id || board.id);
   }
 }
 
@@ -124,6 +193,7 @@ function initEvents() {
 
   // 键盘控制
   window.addEventListener('keydown', e => {
+    if (loadoutDialog.open) return;
     if (!document.getElementById('hint-modal').classList.contains('hidden')) {
       if (e.key === 'Escape') document.getElementById('hint-modal').classList.add('hidden');
       return;
@@ -176,7 +246,11 @@ function initEvents() {
   document.getElementById('btn-undo').addEventListener('click', undoMove);
   document.getElementById('btn-reset').addEventListener('click', resetLevel);
   document.getElementById('btn-end-undo').addEventListener('click', undoMove);
-  document.getElementById('btn-end-restart').addEventListener('click', resetLevel);
+  document.getElementById('btn-end-restart').addEventListener('click', finishAttempt);
+  document.getElementById('loadout-start').addEventListener('click', () => {
+    if (draft && game.startLevel(draft.id, draft.picked)) loadoutDialog.close();
+  });
+  document.getElementById('loadout-cancel').addEventListener('click', () => loadoutDialog.close());
 
   document.getElementById('btn-hint').addEventListener('click', () => {
     document.getElementById('hint-modal').classList.remove('hidden');
