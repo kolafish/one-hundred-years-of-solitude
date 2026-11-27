@@ -1,8 +1,8 @@
 <view class="game">
   <view class="act-subtitle">{{level.subtitle}}</view>
   <view class="act-nav" aria-label="马孔多编年史">
-    <button wx:for="{{campaign}}" wx:key="id" class="control act-button {{level.id === item.id ? 'act-current' : ''}}" data-id="{{item.id}}" bindtap="selectAct" disabled="{{!item.unlocked}}">
-      {{item.id}}. {{item.title}}{{item.record.relicCollected ? ' · 残页' : ''}}{{item.record ? ' · ' + item.record.rank : ''}}
+    <button wx:for="{{campaign}}" wx:key="id" class="control act-button {{level.id === item.id ? 'act-current' : ''}}" aria-label="{{item.id}}. {{item.title}}{{item.record.relicCollected ? ' · 已找到残页' : ''}}{{item.record ? ' · ' + item.record.rank : ''}}" data-id="{{item.id}}" bindtap="selectAct" disabled="{{!item.unlocked}}">
+      {{item.id}}幕{{item.record.relicCollected ? '✦' : ''}}
     </button>
   </view>
   <view class="board-caption">残页 {{relicCount}} / 4</view>

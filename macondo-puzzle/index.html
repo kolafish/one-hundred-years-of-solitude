@@ -109,6 +109,15 @@
 
     .campaign-button:disabled { opacity: 0.6; }
 
+    .chapter-short { display: none; }
+
+    @media (max-width: 639px) {
+      #campaign-nav { gap: 6px; }
+      #campaign-nav .campaign-button { min-width: 42px; padding-inline: 6px; }
+      .chapter-full { display: none; }
+      .chapter-short { display: inline; white-space: nowrap; }
+    }
+
     .campaign-status {
       color: #63432f;
       font-size: 0.8rem;

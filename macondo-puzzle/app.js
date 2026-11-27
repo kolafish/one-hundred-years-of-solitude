@@ -187,7 +187,15 @@ function renderCampaign(storageFailed, relicCollected, relicCount) {
     const button = document.createElement('button');
     button.className = 'campaign-button';
     button.disabled = !act.unlocked;
-    button.textContent = `${act.id}. ${act.title}${act.record?.relicCollected ? ' · 残页' : ''}${act.record ? ` · ${act.record.rank}` : ''}`;
+    const label = `${act.id}. ${act.title}${act.record?.relicCollected ? ' · 残页' : ''}${act.record ? ` · ${act.record.rank}` : ''}`;
+    button.setAttribute('aria-label', label);
+    const full = document.createElement('span');
+    full.className = 'chapter-full';
+    full.textContent = label;
+    const short = document.createElement('span');
+    short.className = 'chapter-short';
+    short.textContent = `${act.id}幕${act.record?.relicCollected ? '✦' : ''}`;
+    button.append(full, short);
     if (act.record) button.title = `最佳 ${act.record.bestTurns} 回合`;
     if (act.id === board.id) button.setAttribute('aria-current', 'step');
     button.addEventListener('click', () => openLoadout(act.id));

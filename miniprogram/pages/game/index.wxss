@@ -292,6 +292,9 @@ page {
 }
 
 .act-button {
+  min-width: 44px;
+  white-space: nowrap;
+  padding-inline: 8rpx;
   font-size: 25rpx;
 }
 

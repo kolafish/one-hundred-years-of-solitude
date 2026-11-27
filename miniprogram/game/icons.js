@@ -534,6 +534,153 @@ const MacondoIcons = (() => {
     ctx.restore();
   }
 
+  function drawMechanismCanvas(ctx, kind, centerX, centerY, size, { active = false, dx = 1, dy = 0 } = {}) {
+    const { ink, inkSoft, brass, goldLight, crimson, parchment, waterDark, waterLight, wood, iron } = PALETTE;
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.scale(size / 40, size / 40);
+    ctx.lineWidth = 1.45;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    function path(points, fill, stroke = ink) {
+      ctx.beginPath();
+      ctx.moveTo(...points[0]);
+      for (const point of points.slice(1)) ctx.lineTo(...point);
+      if (fill) {
+        ctx.closePath();
+        ctx.fillStyle = fill;
+        ctx.fill();
+      }
+      ctx.strokeStyle = stroke;
+      ctx.stroke();
+    }
+
+    function oval(x, y, rx, ry, fill, stroke = ink) {
+      ctx.beginPath();
+      ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.strokeStyle = stroke;
+      ctx.stroke();
+    }
+
+    function arrow(color, offset = 0) {
+      ctx.save();
+      ctx.translate(0, offset);
+      ctx.rotate(Math.atan2(dy, dx));
+      path([[-12, -3], [2, -3], [2, -8], [13, 0], [2, 8], [2, 3], [-12, 3]], color);
+      ctx.restore();
+    }
+
+    switch (kind) {
+      case 'hot':
+        path([[-14, -6], [-5, -13], [12, -9], [15, 5], [6, 13], [-11, 10]], '#733527');
+        path([[-11, 5], [-4, 1], [-7, -7], [0, -3], [5, -10]], null, '#e79a55');
+        path([[0, -3], [3, 4], [0, 9]], null, '#e79a55');
+        path([[3, 4], [11, 2]], null, '#e79a55');
+        break;
+      case 'mist':
+        oval(-7, -1, 7, 5, '#a397b7', '#65526d');
+        oval(3, -5, 8, 5, '#bcb1cb', '#65526d');
+        oval(8, 3, 8, 5, '#9484a7', '#65526d');
+        path([[-12, 7], [-7, 9], [2, 8], [12, 10]], null, '#574360');
+        break;
+      case 'shallows':
+        if (active) {
+          path([[-13, 5], [-7, 1], [-3, 4], [0, -8], [8, -2], [14, -1], [11, 7], [-11, 9]], waterLight, parchment);
+          path([[-8, 7], [-2, 7], [3, 5], [9, 6]], null, '#e2f0ef');
+        } else {
+          oval(-8, 5, 5, 3, '#c4b28d', waterDark);
+          oval(1, -3, 5, 3, '#dec7a4', waterDark);
+          oval(9, 6, 5, 3, '#ad9875', waterDark);
+        }
+        break;
+      case 'rubble':
+        path([[-13, 8], [-12, -1], [-6, -5], [-3, 1], [-4, 10]], '#9e7a60');
+        path([[-5, -7], [6, -12], [12, -7], [6, -1], [-2, 0]], '#b48f72');
+        path([[2, 10], [2, 3], [11, 0], [15, 6], [11, 11]], '#745747');
+        path([[-10, 3], [-6, 1]], null, goldLight);
+        break;
+      case 'plate':
+        path([[-14, -9], [14, -9], [14, 9], [-14, 9]], '#8d5b36');
+        path([[-10, -6], [10, -6], [10, 6], [-10, 6]], active ? '#8aa57f' : goldLight);
+        oval(0, 0, 3, 2, active ? '#4c6746' : brass);
+        break;
+      case 'gate':
+        path([[-13, 13], [-13, -5], [-8, -11], [8, -11], [13, -5], [13, 13]], null, '#594437');
+        for (const x of active ? [-10, 10] : [-10, -5, 0, 5, 10]) {
+          path([[x, -6], [x, 12]], null, active ? brass : iron);
+        }
+        if (!active) path([[-10, 5], [10, 5]], null, iron);
+        break;
+      case 'seal':
+        oval(0, 0, 12, 12, active ? '#ebddb9' : '#80729c', brass);
+        path([[0, -9], [8, 5], [-8, 5], [0, -9]], null, active ? '#47735b' : goldLight);
+        oval(0, 0, 3, 3, active ? '#84a88d' : goldLight, '#574360');
+        break;
+      case 'lever':
+        path([[-13, 7], [-9, 1], [9, 1], [13, 7], [13, 11], [-13, 11]], '#ab7b45');
+        path([[0, 5], [active ? 8 : -8, -8]], null, iron);
+        oval(active ? 8 : -8, -8, 4, 4, active ? '#6d916c' : crimson);
+        break;
+      case 'curtain':
+        path([[-13, -11], [13, -11], [10, 11], [4, 8], [0, 12], [-5, 8], [-11, 11]], '#665575', brass);
+        for (const x of [-7, 0, 7]) path([[x, -8], [x - 1, 8]], null, '#a391af');
+        break;
+      case 'guard':
+        path([[-10, 2], [-9, -7], [-4, -13], [5, -13], [10, -6], [10, 3]], '#a78654');
+        path([[-7, -2], [7, -2], [6, 7], [0, 10], [-6, 7]], '#5c4637');
+        path([[-7, 1], [7, 1]], null, goldLight);
+        ctx.scale(0.65, 0.65);
+        arrow('#b74a40', 20);
+        break;
+      case 'ice':
+      case 'crystal':
+        path([[-11, -3], [-2, -13], [8, -10], [12, 3], [4, 12], [-8, 9]], kind === 'ice' ? '#9dcad8' : '#729bbf', waterDark);
+        path([[-2, -13], [2, 1], [4, 12]], null, '#f0f7ed');
+        path([[-11, -3], [2, 1], [12, 3]], null, '#f0f7ed');
+        break;
+      case 'note':
+      case 'translator':
+        path([[-9, -13], [5, -13], [11, -7], [11, 12], [-9, 12]], parchment, kind === 'note' ? inkSoft : '#6a4b83');
+        path([[5, -13], [5, -7], [11, -7]], '#c8ae79');
+        path([[-5, -4], [6, -4]], null, '#8b6949');
+        path([[-5, 1], [6, 1]], null, '#8b6949');
+        if (kind === 'translator') oval(5, 7, 4, 4, '#8069a0', '#56395f');
+        else path([[-5, 6], [1, 6]], null, '#8b6949');
+        break;
+      case 'gold':
+        path([[-12, 6], [-9, -3], [-2, -5], [2, 3], [-2, 10]], brass);
+        path([[0, -4], [5, -11], [12, -7], [14, 1], [6, 4]], goldLight);
+        oval(5, 8, 3, 2, brass);
+        break;
+      case 'repair':
+        path([[-15, -7], [-4, -7], [-1, -3], [-5, 0], [-1, 6], [-15, 6]], wood);
+        path([[3, -7], [15, -7], [15, 6], [5, 6], [1, 2], [6, -2]], '#b98750');
+        path([[-14, 0], [-6, 0]], null, goldLight);
+        path([[7, 1], [14, 1]], null, goldLight);
+        break;
+      case 'forge':
+        path([[-14, -7], [13, -7], [8, -1], [3, 0], [3, 6], [10, 7], [10, 11], [-10, 11], [-10, 7], [-3, 6], [-3, 0], [-11, -2]], '#4e5354', brass);
+        path([[-10, -6], [10, -6]], null, '#d6b98a');
+        break;
+      case 'fuse':
+        path([[-11, 11], [-9, 4], [9, 4], [11, 11]], '#97633b');
+        path([[-5, 4], [-8, -2], [-1, -7], [2, -12], [7, -4], [5, 4]], active ? '#e18d3b' : '#978879');
+        if (active) path([[-2, 3], [2, -3], [4, 3]], goldLight);
+        break;
+      case 'oneWay':
+        arrow(active ? waterLight : '#bd594b');
+        break;
+      case 'waterFlow':
+        arrow(goldLight);
+        break;
+    }
+
+    ctx.restore();
+  }
+
   return {
     PALETTE,
     getIconSvg,
@@ -543,6 +690,7 @@ const MacondoIcons = (() => {
     drawScrollCanvas,
     drawLanternCanvas,
     drawBarrelCanvas,
+    drawMechanismCanvas,
     drawCharacterEmblemCanvas
   };
 })();

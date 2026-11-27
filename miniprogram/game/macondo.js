@@ -815,8 +815,8 @@ const MacondoPuzzle = (() => {
       // 模式 0：普通移动（点击相邻格子）
       const dx = gx - state.player.x;
       const dy = gy - state.player.y;
-      if (Math.abs(dx) + Math.abs(dy) !== 1) return;
-      if (!interactAt(gx, gy)) tryMove(dx, dy);
+      if (interactAt(gx, gy)) return;
+      if (Math.abs(dx) + Math.abs(dy) === 1) tryMove(dx, dy);
     }
 
     function interactionAt(x, y) {
@@ -850,7 +850,9 @@ const MacondoPuzzle = (() => {
 
     function interactAt(x, y) {
       const nearby = getInteractions();
-      const action = x === undefined ? nearby.find(candidate => candidate.ready) : at(nearby, x, y);
+      const action = x === undefined ? nearby.find(candidate => candidate.ready)
+        : nearby.find(candidate => (candidate.x === x && candidate.y === y)
+          || (candidate.marker?.x === x && candidate.marker?.y === y));
       if (!action) return false;
       if (!action.ready) {
         addLog('古梵文封印需要巴比伦解译。', 'warning');
@@ -1073,7 +1075,7 @@ const MacondoPuzzle = (() => {
             drawEmitterTile(px, py, tileSize, t, direction, emitterOffline(x, y));
           } else if (tile === TILE.RUBBLE) {
             drawWallTile(px, py, tileSize);
-            drawBoardMark(px, py, '墟', '#efc389');
+            drawMechanism('rubble', x, y);
           } else if (tile === TILE.SHALLOWS) {
             drawWaterTile(px, py, tileSize, t, x, y);
             if (!state.tideHigh) {
@@ -1086,11 +1088,11 @@ const MacondoPuzzle = (() => {
               ctx.setLineDash([]);
               ctx.lineDashOffset = 0;
             }
-            drawBoardMark(px, py, state.tideHigh ? '潮' : '浅', state.tideHigh ? '#fff1c7' : '#2c1e16');
+            drawMechanism('shallows', x, y, { active: state.tideHigh });
           } else if (tile === TILE.HOT || tile === TILE.MIST) {
             ctx.fillStyle = tile === TILE.HOT ? 'rgba(158, 42, 43, 0.45)' : 'rgba(115, 102, 124, 0.43)';
             ctx.fillRect(px + 2, py + 2, tileSize - 4, tileSize - 4);
-            drawBoardMark(px, py, tile === TILE.HOT ? '热' : '雾');
+            drawMechanism(tile === TILE.HOT ? 'hot' : 'mist', x, y);
           }
           if (level.hurricane && ![TILE.WALL, TILE.RUBBLE, TILE.GOAL].includes(tile)) {
             const ring = hurricaneRing(x, y);
@@ -1108,30 +1110,28 @@ const MacondoPuzzle = (() => {
       }
 
       for (const gate of state.gates) {
-        drawBoardMark(gate.plate.x * tileSize, gate.plate.y * tileSize, '踏', '#875325');
-        drawBoardMark(gate.x * tileSize, gate.y * tileSize, gate.open ? '开' : '栅');
+        drawMechanism('plate', gate.plate.x, gate.plate.y, { active: Boolean(at(objects(), gate.plate.x, gate.plate.y)) });
+        drawMechanism('gate', gate.x, gate.y, { active: gate.open });
       }
       for (const seal of state.seals) {
-        drawBoardMark(seal.x * tileSize, seal.y * tileSize, seal.open ? '开' : '印', '#704e72');
+        drawMechanism('seal', seal.x, seal.y, { active: seal.open });
       }
-      for (const { control } of level.sealControls || []) drawBoardMark(control.x * tileSize, control.y * tileSize, '译', '#704e72');
-      for (const fuse of level.fuses || []) drawBoardMark(fuse.x * tileSize, fuse.y * tileSize, '火', '#9e2a2b');
+      for (const { control } of level.sealControls || []) drawMechanism('translator', control.x, control.y);
+      for (const fuse of level.fuses || []) drawMechanism('fuse', fuse.x, fuse.y, { active: Boolean(at(state.barrels, fuse.target.x, fuse.target.y)) });
       if (level.forge) {
         const { x, y } = level.forge;
-        drawBoardMark(x * tileSize, y * tileSize, '炉', '#7a4c28');
+        drawMechanism('forge', x, y);
         if (state.gold >= 2 && !state.localFlags.GOLD_FISH_FORGED) markTarget(x, y, 0.70 + Math.sin(t * 0.008) * 0.22);
       }
-      for (const lever of state.levers) drawBoardMark(lever.x * tileSize, lever.y * tileSize, '杆', '#9e2a2b');
-      for (const curtain of state.curtains) drawBoardMark(curtain.x * tileSize, curtain.y * tileSize, '纱', '#574360');
+      for (const lever of state.levers) drawMechanism('lever', lever.x, lever.y, { active: lever.on });
+      for (const curtain of state.curtains) drawMechanism('curtain', curtain.x, curtain.y);
       for (const lane of level.oneWay || []) {
         const sign = state.reversed ? -1 : 1;
-        const symbol = lane.dx ? (lane.dx * sign > 0 ? '→' : '←') : (lane.dy * sign > 0 ? '↓' : '↑');
-        drawBoardMark(lane.x * tileSize, lane.y * tileSize, symbol, state.reversed ? '#325d78' : '#9e2a2b');
+        drawMechanism('oneWay', lane.x, lane.y, { dx: lane.dx * sign, dy: lane.dy * sign, active: state.reversed });
       }
       for (const current of level.currents || []) {
         if (!at(objects(), current.x, current.y)) {
-          const arrow = current.dx ? (current.dx > 0 ? '→' : '←') : (current.dy > 0 ? '↓' : '↑');
-          drawBoardMark(current.x * tileSize, current.y * tileSize, arrow, '#c59b27');
+          drawMechanism('waterFlow', current.x, current.y, current);
         }
       }
       for (const guard of state.guards) drawGuard(guard);
@@ -1191,12 +1191,12 @@ const MacondoPuzzle = (() => {
         if (item.kind === 'relic') {
           Icons.drawScrollCanvas(ctx, (item.x + 0.5) * tileSize, (item.y + 0.5) * tileSize, tileSize * 0.8);
         } else {
-          drawBoardMark(item.x * tileSize, item.y * tileSize, { ice: '冰', note: '签', gold: '金', crystal: '晶' }[item.kind]);
+          drawMechanism(item.kind, item.x, item.y);
         }
       }
       for (const bridge of level.repairs || []) {
         if (state.terrain[bridge.y][bridge.x] === TILE.WATER) {
-          drawBoardMark(bridge.x * tileSize, bridge.y * tileSize, '修', '#fff0c8');
+          drawMechanism('repair', bridge.x, bridge.y);
         }
       }
 
@@ -1419,15 +1419,11 @@ const MacondoPuzzle = (() => {
           if (inBounds(x, y) && guardSees(guard, x, y)) ctx.fillRect(x * s + 1, y * s + 1, s - 2, s - 2);
         }
       }
-      drawBoardMark(guard.x * s, guard.y * s, '卫', '#9e2a2b');
+      drawMechanism('guard', guard.x, guard.y, guard);
     }
 
-    function drawBoardMark(px, py, label, color = '#2c1e16') {
-      ctx.fillStyle = color;
-      ctx.font = 'bold ' + Math.max(10, Math.floor(tileSize * 0.49)) + 'px serif';
-      ctx.textBaseline = 'middle';
-      ctx.textAlign = 'center';
-      ctx.fillText(label, px + tileSize / 2, py + tileSize / 2);
+    function drawMechanism(kind, x, y, options) {
+      Icons.drawMechanismCanvas(ctx, kind, (x + 0.5) * tileSize, (y + 0.5) * tileSize, tileSize, options);
     }
 
     function markTarget(x, y, pulse) {
