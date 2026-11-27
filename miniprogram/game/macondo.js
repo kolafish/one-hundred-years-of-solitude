@@ -1,4 +1,6 @@
-// 《马孔多的羊皮纸》的关卡、回合逻辑和 Canvas 2D 绘制，由网页和小程序共用。
+// Shared puzzle logic and Canvas 2D renderer for Web and WeChat Miniprogram.
+const Icons = typeof require === 'function' ? require('./icons.js') : MacondoIcons;
+
 const MacondoPuzzle = (() => {
   const COLS = 10;
   const ROWS = 8;
@@ -36,14 +38,14 @@ const MacondoPuzzle = (() => {
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  // y=7
   ];
 
-  // 家族人物元信息
   const CHARACTER_DEFS = {
     JOSE: {
       id: 'JOSE',
       name: '何塞·阿尔卡蒂奥',
+      shortName: '何塞',
       abilityName: '炼金投掷',
       type: 'ACTIVE_THROW',
-      icon: '🧲',
+      iconId: 'char_jose',
       color: '#8b4513',
       desc: '选中身旁火药桶，越过河流投掷至 3 格内任意空地。',
       quote: '“任何东西都有生命，问题在于如何唤醒它们的灵魂。”——你获得了何塞的【炼金投掷】之力！'
@@ -51,9 +53,10 @@ const MacondoPuzzle = (() => {
     AURELIANO: {
       id: 'AURELIANO',
       name: '奥雷里亚诺上校',
+      shortName: '上校',
       abilityName: '宿命护盾',
       type: 'PASSIVE_SHIELD',
-      icon: '🎖️',
+      iconId: 'char_aureliano',
       color: '#b45309',
       desc: '被动生效：抵挡一次致命光束或子弹，穿胸而不伤及要害。',
       quote: '“他躲过了十四次暗杀、七十三次埋伏和一次枪决。”——上校的【宿命护盾】已庇佑你！'
@@ -61,9 +64,10 @@ const MacondoPuzzle = (() => {
     REBECA: {
       id: 'REBECA',
       name: '丽贝卡',
+      shortName: '丽贝卡',
       abilityName: '孤注一掷',
       type: 'ACTIVE_SNIPE',
-      icon: '🔫',
+      iconId: 'char_rebeca',
       color: '#9e2a2b',
       desc: '开枪必中：点击视野内任意目标，隔河精准射爆火药桶。',
       quote: '一声清脆的枪响划破午后的闷热。——你继承了丽贝卡的【孤注一掷】枪法！'
@@ -75,10 +79,10 @@ const MacondoPuzzle = (() => {
     let historyStack = []; // 用于撤销（Undo）
     let particles = [];    // 粒子特效（光束微粒、爆炸火花、蝴蝶）
 
-    // 交互模式：'MOVE' | 'SELECT_THROW_SOURCE' | 'SELECT_THROW_TARGET' | 'SELECT_SNIPE_TARGET'
     let interactionMode = 'MOVE';
     let selectedBarrelPos = null;
     let banner = '';
+    let bannerIconId = '';
     let ctx = null;
     let tileSize = 60;
 
@@ -326,13 +330,14 @@ const MacondoPuzzle = (() => {
           return;
         }
         if (adjBarrels.length === 1) {
-          // 只有一个相邻火药桶时，直接进入选择目标格阶段
           selectedBarrelPos = { ...adjBarrels[0] };
           interactionMode = 'SELECT_THROW_TARGET';
-          banner = '🧲 炼金投掷：点击 3 格内高亮的空地投出火药桶（再次点击取消）';
+          bannerIconId = 'char_jose';
+          banner = '炼金投掷：点击 3 格内高亮的空地投出火药桶（再次点击取消）';
         } else {
           interactionMode = 'SELECT_THROW_SOURCE';
-          banner = '🧲 炼金投掷：请先点击身旁要投掷的火药桶';
+          bannerIconId = 'char_jose';
+          banner = '炼金投掷：请先点击身旁要投掷的火药桶';
         }
       } else if (skillId === 'REBECA') {
         if (interactionMode === 'SELECT_SNIPE_TARGET') {
@@ -340,7 +345,8 @@ const MacondoPuzzle = (() => {
           return;
         }
         interactionMode = 'SELECT_SNIPE_TARGET';
-        banner = '🔫 孤注一掷：点击视野内的火药桶或裂纹石墙开枪射击';
+        bannerIconId = 'char_rebeca';
+        banner = '孤注一掷：点击视野内的火药桶或裂纹石墙开枪射击';
       }
       renderUI();
     }
@@ -349,6 +355,7 @@ const MacondoPuzzle = (() => {
       interactionMode = 'MOVE';
       selectedBarrelPos = null;
       banner = '';
+      bannerIconId = '';
     }
 
     function cancelSkillMode() {
@@ -356,18 +363,19 @@ const MacondoPuzzle = (() => {
       renderUI();
     }
 
-    // 处理画布点击
+    // Handle board click
     function handleCanvasClick(gx, gy) {
       if (state.status !== 'PLAYING') return;
       if (gx < 0 || gx >= COLS || gy < 0 || gy >= ROWS) return;
 
-      // 模式 1：选择投掷的火药桶
+      // Mode 1: select adjacent barrel to throw
       if (interactionMode === 'SELECT_THROW_SOURCE') {
         const b = state.barrels.find(item => item.x === gx && item.y === gy);
         if (b && Math.abs(b.x - state.player.x) + Math.abs(b.y - state.player.y) === 1) {
           selectedBarrelPos = { ...b };
           interactionMode = 'SELECT_THROW_TARGET';
-          banner = '🧲 炼金投掷：点击 3 格内高亮的空地投出火药桶';
+          bannerIconId = 'char_jose';
+          banner = '炼金投掷：点击 3 格内高亮的空地投出火药桶';
           renderUI();
         } else {
           cancelSkillMode();
@@ -479,282 +487,430 @@ const MacondoPuzzle = (() => {
 
     function drawBoard(timestamp, hoverTile) {
       if (!ctx || !state) return;
+      const t = timestamp || 0;
       ctx.clearRect(0, 0, COLS * tileSize, ROWS * tileSize);
 
-      // 1. 绘制基础地形层
+      // 1. Base parchment checkerboard & terrain tiles
       for (let y = 0; y < ROWS; y++) {
         for (let x = 0; x < COLS; x++) {
           const px = x * tileSize;
           const py = y * tileSize;
-          const t = state.terrain[y][x];
+          const tile = state.terrain[y][x];
 
-          // 羊皮纸棋盘格底色
-          ctx.fillStyle = (x + y) % 2 === 0 ? '#efe3ca' : '#e7d7b9';
+          ctx.fillStyle = (x + y) % 2 === 0 ? '#efe3ca' : '#e7d7b8';
           ctx.fillRect(px, py, tileSize, tileSize);
 
-          // 网格细线
-          ctx.strokeStyle = 'rgba(139, 90, 43, 0.22)';
+          // Subtle parchment fiber dots
+          ctx.fillStyle = 'rgba(110, 71, 43, 0.08)';
+          ctx.fillRect(px + tileSize * 0.22, py + tileSize * 0.28, 1.5, 1.5);
+          ctx.fillRect(px + tileSize * 0.74, py + tileSize * 0.68, 1.5, 1.5);
+
+          ctx.strokeStyle = 'rgba(139, 90, 43, 0.18)';
           ctx.lineWidth = 1;
           ctx.strokeRect(px, py, tileSize, tileSize);
 
-          if (t === TILE.WALL) {
+          if (tile === TILE.WALL) {
             drawWallTile(px, py, tileSize);
-          } else if (t === TILE.WATER) {
-            drawWaterTile(px, py, tileSize, timestamp, x, y);
-          } else if (t === TILE.BRIDGE) {
-            drawWaterTile(px, py, tileSize, timestamp, x, y);
+          } else if (tile === TILE.WATER) {
+            drawWaterTile(px, py, tileSize, t, x, y);
+          } else if (tile === TILE.BRIDGE) {
+            drawWaterTile(px, py, tileSize, t, x, y);
             drawBridgeTile(px, py, tileSize);
-          } else if (t === TILE.CRACKED_WALL) {
-            drawCrackedWallTile(px, py, tileSize);
-          } else if (t === TILE.GOAL) {
-            drawGoalTile(px, py, tileSize, timestamp);
-          } else if (t === TILE.LASER_EMITTER) {
-            drawEmitterTile(px, py, tileSize);
+          } else if (tile === TILE.CRACKED_WALL) {
+            drawCrackedWallTile(px, py, tileSize, t);
+          } else if (tile === TILE.GOAL) {
+            drawGoalTile(px, py, tileSize, t);
+          } else if (tile === TILE.LASER_EMITTER) {
+            drawEmitterTile(px, py, tileSize, t);
           }
         }
       }
 
-      // 2. 绘制技能可选范围高亮
+      // 2. Active skill targeting highlights
       if (interactionMode === 'SELECT_THROW_TARGET' && selectedBarrelPos) {
+        const pulse = 0.7 + Math.sin(t * 0.008) * 0.25;
         for (let y = 0; y < ROWS; y++) {
           for (let x = 0; x < COLS; x++) {
             if (isValidThrowTarget(selectedBarrelPos.x, selectedBarrelPos.y, x, y)) {
-              ctx.fillStyle = 'rgba(197, 155, 39, 0.35)';
+              ctx.fillStyle = `rgba(197, 155, 39, ${0.26 * pulse})`;
               ctx.fillRect(x * tileSize + 2, y * tileSize + 2, tileSize - 4, tileSize - 4);
-              ctx.strokeStyle = '#c59b27';
+              ctx.strokeStyle = '#b47d15';
               ctx.lineWidth = 2;
-              ctx.strokeRect(x * tileSize + 3, y * tileSize + 3, tileSize - 6, tileSize - 6);
+              ctx.strokeRect(x * tileSize + 4, y * tileSize + 4, tileSize - 8, tileSize - 8);
             }
           }
         }
       } else if (interactionMode === 'SELECT_SNIPE_TARGET') {
+        const pulse = 0.75 + Math.sin(t * 0.01) * 0.25;
         state.barrels.forEach(b => {
           if (hasLineOfSight(state.player.x, state.player.y, b.x, b.y)) {
             const cx = (b.x + 0.5) * tileSize;
             const cy = (b.y + 0.5) * tileSize;
-            ctx.strokeStyle = '#9e2a2b';
-            ctx.lineWidth = 2.5;
+            const r = tileSize * 0.43;
+            ctx.strokeStyle = `rgba(158, 42, 43, ${pulse})`;
+            ctx.lineWidth = 2.2;
             ctx.beginPath();
-            ctx.arc(cx, cy, tileSize * 0.42, 0, Math.PI * 2);
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.moveTo(cx - r * 1.15, cy);
+            ctx.lineTo(cx - r * 0.72, cy);
+            ctx.moveTo(cx + r * 0.72, cy);
+            ctx.lineTo(cx + r * 1.15, cy);
+            ctx.moveTo(cx, cy - r * 1.15);
+            ctx.lineTo(cx, cy - r * 0.72);
+            ctx.moveTo(cx, cy + r * 0.72);
+            ctx.lineTo(cx, cy + r * 1.15);
             ctx.stroke();
           }
         });
       }
 
-      // 3. 绘制烈日聚焦激光束
-      drawLaserBeams(timestamp);
+      // 3. Sunbeam laser
+      drawLaserBeams(t);
 
-      // 4. 绘制火药桶
+      // 4. Powder barrels
       state.barrels.forEach(b => {
-        drawBarrel(b.x * tileSize, b.y * tileSize, tileSize);
+        drawBarrel(b.x * tileSize, b.y * tileSize, tileSize, t);
       });
 
-      // 5. 绘制尚未遇见的家族人物 (NPC)
+      // 5. Uncollected Buendia characters
       state.npcs.forEach(npc => {
         if (!npc.collected) {
-          drawCharacterToken(npc.x * tileSize, npc.y * tileSize, tileSize, CHARACTER_DEFS[npc.id], timestamp);
+          drawCharacterToken(npc.x * tileSize, npc.y * tileSize, tileSize, CHARACTER_DEFS[npc.id], t);
         }
       });
 
-      // 6. 绘制主角（布恩迪亚后裔）
-      drawPlayerToken(state.player.x * tileSize, state.player.y * tileSize, tileSize, timestamp);
+      // 6. Player token
+      drawPlayerToken(state.player.x * tileSize, state.player.y * tileSize, tileSize, t);
 
-      // 7. 鼠标悬停提示框
+      // 7. Hover indicator
       if (hoverTile && state.status === 'PLAYING') {
         ctx.strokeStyle = 'rgba(44, 30, 22, 0.45)';
         ctx.lineWidth = 2;
-        ctx.strokeRect(hoverTile.x * tileSize + 2, hoverTile.y * tileSize + 2, tileSize - 4, tileSize - 4);
+        Icons.roundedRectPath(ctx, hoverTile.x * tileSize + 2, hoverTile.y * tileSize + 2, tileSize - 4, tileSize - 4, 4);
+        ctx.stroke();
       }
 
-      // 8. 粒子效果
+      // 8. Particle effects
       updateAndDrawParticles();
     }
 
     function drawWallTile(px, py, s) {
-      ctx.fillStyle = '#5c4033';
+      ctx.fillStyle = '#5a3d2e';
       ctx.fillRect(px + 1, py + 1, s - 2, s - 2);
-      ctx.strokeStyle = '#3b261d';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(px + 3, py + 3, s - 6, s - 6);
-      // 砖缝纹理
+
+      // Top bevel highlight & bottom shadow
+      ctx.fillStyle = '#73513e';
+      ctx.fillRect(px + 2, py + 2, s - 4, s * 0.14);
+      ctx.fillStyle = '#3a2419';
+      ctx.fillRect(px + 2, py + s - s * 0.14 - 2, s - 4, s * 0.14);
+
+      ctx.strokeStyle = '#331f15';
+      ctx.lineWidth = 1.6;
+      ctx.strokeRect(px + 2, py + 2, s - 4, s - 4);
+
+      // Staggered masonry joints
+      ctx.strokeStyle = 'rgba(40, 24, 16, 0.65)';
+      ctx.lineWidth = 1.3;
       ctx.beginPath();
-      ctx.moveTo(px + 4, py + s * 0.5);
-      ctx.lineTo(px + s - 4, py + s * 0.5);
-      ctx.moveTo(px + s * 0.5, py + 4);
-      ctx.lineTo(px + s * 0.5, py + s * 0.5);
+      ctx.moveTo(px + 3, py + s * 0.38);
+      ctx.lineTo(px + s - 3, py + s * 0.38);
+      ctx.moveTo(px + 3, py + s * 0.68);
+      ctx.lineTo(px + s - 3, py + s * 0.68);
+      ctx.moveTo(px + s * 0.5, py + 3);
+      ctx.lineTo(px + s * 0.5, py + s * 0.38);
+      ctx.moveTo(px + s * 0.28, py + s * 0.38);
+      ctx.lineTo(px + s * 0.28, py + s * 0.68);
+      ctx.moveTo(px + s * 0.72, py + s * 0.38);
+      ctx.lineTo(px + s * 0.72, py + s * 0.68);
       ctx.stroke();
     }
 
     function drawWaterTile(px, py, s, time, gx, gy) {
-      ctx.fillStyle = '#3b6e8c';
+      ctx.fillStyle = '#2f5b76';
       ctx.fillRect(px, py, s, s);
-      // 动态水波纹
-      const wave = Math.sin(time * 0.003 + gx + gy) * 3;
-      ctx.strokeStyle = 'rgba(214, 238, 248, 0.45)';
-      ctx.lineWidth = 1.5;
+      ctx.fillStyle = 'rgba(108, 166, 193, 0.22)';
+      ctx.fillRect(px, py, s, s * 0.45);
+
+      // Shoreline edges when adjacent to land
+      const leftLand = gx > 0 && state.terrain[gy][gx - 1] !== TILE.WATER && state.terrain[gy][gx - 1] !== TILE.BRIDGE;
+      const rightLand = gx < COLS - 1 && state.terrain[gy][gx + 1] !== TILE.WATER && state.terrain[gy][gx + 1] !== TILE.BRIDGE;
+      ctx.fillStyle = 'rgba(239, 227, 202, 0.24)';
+      if (leftLand) ctx.fillRect(px, py, s * 0.09, s);
+      if (rightLand) ctx.fillRect(px + s * 0.91, py, s * 0.09, s);
+
+      // Animated ripples
+      const wave = Math.sin(time * 0.003 + gx * 1.1 + gy * 0.8) * (s * 0.045);
+      ctx.strokeStyle = 'rgba(214, 238, 248, 0.46)';
+      ctx.lineWidth = 1.4;
       ctx.beginPath();
-      ctx.moveTo(px + s * 0.2, py + s * 0.35 + wave);
-      ctx.quadraticCurveTo(px + s * 0.5, py + s * 0.25 + wave, px + s * 0.8, py + s * 0.35 + wave);
-      ctx.moveTo(px + s * 0.25, py + s * 0.7 - wave);
-      ctx.quadraticCurveTo(px + s * 0.55, py + s * 0.6 - wave, px + s * 0.85, py + s * 0.7 - wave);
+      ctx.moveTo(px + s * 0.16, py + s * 0.32 + wave);
+      ctx.quadraticCurveTo(px + s * 0.5, py + s * 0.22 + wave, px + s * 0.84, py + s * 0.32 + wave);
+      ctx.moveTo(px + s * 0.2, py + s * 0.7 - wave);
+      ctx.quadraticCurveTo(px + s * 0.52, py + s * 0.6 - wave, px + s * 0.86, py + s * 0.7 - wave);
       ctx.stroke();
     }
 
     function drawBridgeTile(px, py, s) {
+      // Water shadow under bridge
+      ctx.fillStyle = 'rgba(20, 35, 48, 0.35)';
+      ctx.fillRect(px + 2, py + s * 0.22, s - 4, s * 0.72);
+
+      // Timber planks
       ctx.fillStyle = '#9c6635';
-      ctx.fillRect(px + 3, py + s * 0.15, s - 6, s * 0.7);
-      ctx.strokeStyle = '#4a2e16';
-      ctx.lineWidth = 1.5;
-      ctx.strokeRect(px + 3, py + s * 0.15, s - 6, s * 0.7);
+      ctx.fillRect(px + 2, py + s * 0.16, s - 4, s * 0.68);
+
+      // Side wooden rails
+      ctx.fillStyle = '#6f421d';
+      ctx.fillRect(px + 2, py + s * 0.14, s - 4, s * 0.1);
+      ctx.fillRect(px + 2, py + s * 0.76, s - 4, s * 0.1);
+
+      ctx.strokeStyle = '#3b2311';
+      ctx.lineWidth = 1.4;
+      ctx.strokeRect(px + 2, py + s * 0.14, s - 4, s * 0.72);
+
+      // Plank seams and iron rivets
       for (let i = 1; i <= 3; i++) {
+        const lx = px + (s * i) / 4;
         ctx.beginPath();
-        ctx.moveTo(px + (s * i) / 4, py + s * 0.15);
-        ctx.lineTo(px + (s * i) / 4, py + s * 0.85);
+        ctx.moveTo(lx, py + s * 0.22);
+        ctx.lineTo(lx, py + s * 0.78);
         ctx.stroke();
+
+        ctx.fillStyle = '#2c1e16';
+        ctx.beginPath();
+        ctx.arc(lx - s * 0.1, py + s * 0.28, 1.3, 0, Math.PI * 2);
+        ctx.arc(lx - s * 0.1, py + s * 0.72, 1.3, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
 
-    function drawCrackedWallTile(px, py, s) {
-      ctx.fillStyle = '#7d624d';
+    function drawCrackedWallTile(px, py, s, time) {
+      ctx.fillStyle = '#755945';
       ctx.fillRect(px + 2, py + 2, s - 4, s - 4);
       ctx.strokeStyle = '#2c1e16';
       ctx.lineWidth = 2;
       ctx.strokeRect(px + 3, py + 3, s - 6, s - 6);
-      // 醒目裂纹
+
+      // Amber fissure glow hinting destructibility
+      const glow = 0.45 + Math.sin(time * 0.005) * 0.2;
+      ctx.strokeStyle = `rgba(217, 119, 6, ${glow})`;
+      ctx.lineWidth = 3.2;
       ctx.beginPath();
-      ctx.moveTo(px + s * 0.2, py + s * 0.2);
+      ctx.moveTo(px + s * 0.22, py + s * 0.18);
       ctx.lineTo(px + s * 0.5, py + s * 0.48);
-      ctx.lineTo(px + s * 0.35, py + s * 0.78);
+      ctx.lineTo(px + s * 0.34, py + s * 0.8);
       ctx.moveTo(px + s * 0.5, py + s * 0.48);
-      ctx.lineTo(px + s * 0.8, py + s * 0.65);
+      ctx.lineTo(px + s * 0.8, py + s * 0.68);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#24160e';
+      ctx.lineWidth = 1.8;
       ctx.stroke();
     }
 
     function drawGoalTile(px, py, s, time) {
-      const pulse = 0.85 + Math.sin(time * 0.004) * 0.15;
-      ctx.fillStyle = `rgba(197, 155, 39, ${0.28 * pulse})`;
-      ctx.fillRect(px + 2, py + 2, s - 4, s - 4);
-      ctx.strokeStyle = '#c59b27';
-      ctx.lineWidth = 2.5;
-      ctx.strokeRect(px + 4, py + 4, s - 8, s - 8);
+      const cx = px + s * 0.5;
+      const cy = py + s * 0.5;
+      const pulse = 0.82 + Math.sin(time * 0.004) * 0.18;
 
-      ctx.font = `${Math.floor(s * 0.52)}px serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('📜', px + s * 0.5, py + s * 0.52);
+      ctx.fillStyle = `rgba(197, 155, 39, ${0.22 * pulse})`;
+      ctx.fillRect(px + 2, py + 2, s - 4, s - 4);
+
+      // Double gold frame
+      ctx.strokeStyle = '#c59b27';
+      ctx.lineWidth = 2;
+      Icons.roundedRectPath(ctx, px + 4, py + 4, s - 8, s - 8, 5);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(139, 69, 19, 0.45)';
+      ctx.lineWidth = 1;
+      Icons.roundedRectPath(ctx, px + 7, py + 7, s - 14, s - 14, 3);
+      ctx.stroke();
+
+      // Scroll relic + fluttering yellow butterfly
+      Icons.drawScrollCanvas(ctx, cx - s * 0.04, cy + s * 0.04, s * 0.82);
+      const bx = cx + s * 0.2 + Math.cos(time * 0.003) * (s * 0.06);
+      const by = cy - s * 0.2 + Math.sin(time * 0.004) * (s * 0.05);
+      Icons.drawButterflyCanvas(ctx, bx, by, s * 0.42, time);
     }
 
-    function drawEmitterTile(px, py, s) {
+    function drawEmitterTile(px, py, s, time) {
+      const cx = px + s * 0.5;
+      const cy = py + s * 0.46;
+      const pulse = 0.85 + Math.sin(time * 0.009) * 0.15;
+
       ctx.fillStyle = '#3b261d';
       ctx.fillRect(px + 2, py + 2, s - 4, s - 4);
-      // 放大镜与烈日核心
-      ctx.fillStyle = '#9e2a2b';
+      ctx.strokeStyle = '#c59b27';
+      ctx.lineWidth = 1.6;
+      ctx.strokeRect(px + 4, py + 4, s - 8, s - 8);
+
+      // Brass magnifying ring and glowing sun core
+      ctx.fillStyle = '#5c211c';
       ctx.beginPath();
-      ctx.arc(px + s * 0.5, py + s * 0.5, s * 0.28, 0, Math.PI * 2);
+      ctx.arc(cx, cy, s * 0.27, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = '#f4a261';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#c59b27';
+      ctx.lineWidth = 2.4;
       ctx.stroke();
-      // 向下箭头指示发射方向
-      ctx.fillStyle = '#ffd166';
+
+      ctx.fillStyle = `rgba(217, 72, 59, ${pulse})`;
       ctx.beginPath();
-      ctx.moveTo(px + s * 0.35, py + s * 0.72);
-      ctx.lineTo(px + s * 0.65, py + s * 0.72);
-      ctx.lineTo(px + s * 0.5, py + s * 0.92);
+      ctx.arc(cx, cy, s * 0.16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(243, 212, 120, 0.8)';
+      ctx.beginPath();
+      ctx.arc(cx - s * 0.05, cy - s * 0.05, s * 0.05, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Downward brass nozzle
+      ctx.fillStyle = '#c59b27';
+      ctx.strokeStyle = '#2c1e16';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(cx - s * 0.14, py + s * 0.72);
+      ctx.lineTo(cx + s * 0.14, py + s * 0.72);
+      ctx.lineTo(cx, py + s * 0.93);
       ctx.closePath();
       ctx.fill();
+      ctx.stroke();
     }
 
     function drawLaserBeams(time) {
       if (state.laserTiles.length === 0) return;
       const flicker = 0.75 + Math.sin(time * 0.015) * 0.2;
-      state.laserTiles.forEach(tile => {
+      state.laserTiles.forEach((tile, idx) => {
         const cx = (tile.x + 0.5) * tileSize;
         const py = tile.y * tileSize;
 
-        // 外层红晕
-        ctx.fillStyle = `rgba(158, 42, 43, ${0.28 * flicker})`;
+        // Outer crimson halo
+        ctx.fillStyle = `rgba(158, 42, 43, ${0.26 * flicker})`;
         ctx.fillRect(cx - tileSize * 0.16, py, tileSize * 0.32, tileSize);
 
-        // 核心光束
-        ctx.fillStyle = `rgba(230, 57, 70, ${0.9 * flicker})`;
+        // Inner sunbeam core
+        ctx.fillStyle = `rgba(230, 57, 70, ${0.88 * flicker})`;
         ctx.fillRect(cx - tileSize * 0.05, py, tileSize * 0.1, tileSize);
+
+        ctx.fillStyle = `rgba(255, 224, 130, ${0.75 * flicker})`;
+        ctx.fillRect(cx - tileSize * 0.018, py, tileSize * 0.036, tileSize);
+
+        // Traveling solar mote
+        const moteOffset = ((time * 0.04 + idx * 17) % tileSize);
+        ctx.fillStyle = 'rgba(255, 240, 180, 0.85)';
+        ctx.beginPath();
+        ctx.arc(cx, py + moteOffset, Math.max(1.5, tileSize * 0.03), 0, Math.PI * 2);
+        ctx.fill();
       });
     }
 
-    function drawBarrel(px, py, s) {
+    function drawBarrel(px, py, s, time) {
       const cx = px + s * 0.5;
-      const cy = py + s * 0.5;
-      const r = s * 0.34;
+      const cy = py + s * 0.54;
 
-      ctx.fillStyle = '#7f2714';
+      // Soft ground shadow
+      ctx.fillStyle = 'rgba(44, 30, 22, 0.25)';
       ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.arc(cx, cy + s * 0.22, s * 0.26, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = '#2c1e16';
-      ctx.lineWidth = 2;
-      ctx.stroke();
 
-      ctx.font = `${Math.floor(s * 0.44)}px serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('🧨', cx, cy + 1);
+      Icons.drawBarrelCanvas(ctx, cx, cy, s, time);
     }
 
     function drawCharacterToken(px, py, s, def, time) {
-      const bob = Math.sin(time * 0.004) * 2.5;
+      const bob = Math.sin(time * 0.004) * 2.2;
       const cx = px + s * 0.5;
-      const cy = py + s * 0.48 + bob;
+      const cy = py + s * 0.44 + bob;
 
-      // 光环底座
-      ctx.fillStyle = 'rgba(244, 235, 217, 0.92)';
+      // Medallion shadow
+      ctx.fillStyle = 'rgba(44, 30, 22, 0.22)';
       ctx.beginPath();
-      ctx.arc(cx, cy, s * 0.36, 0, Math.PI * 2);
+      ctx.arc(cx, py + s * 0.72, s * 0.26, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Engraved parchment seal base
+      ctx.fillStyle = '#f6ebd4';
+      ctx.beginPath();
+      ctx.arc(cx, cy, s * 0.34, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = def.color;
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 2.4;
       ctx.stroke();
 
-      ctx.font = `${Math.floor(s * 0.44)}px serif`;
+      ctx.strokeStyle = 'rgba(197, 155, 39, 0.75)';
+      ctx.lineWidth = 1.1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, s * 0.29, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Custom copperplate emblem
+      Icons.drawCharacterEmblemCanvas(ctx, def.id, cx, cy, s * 0.88);
+
+      // Crisp name tag
+      const label = def.shortName || def.name.slice(0, 3);
+      const tagW = s * 0.72;
+      const tagH = Math.max(12, s * 0.22);
+      const tagX = cx - tagW * 0.5;
+      const tagY = py + s * 0.76;
+      ctx.fillStyle = 'rgba(44, 30, 22, 0.86)';
+      Icons.roundedRectPath(ctx, tagX, tagY, tagW, tagH, 4);
+      ctx.fill();
+
+      ctx.fillStyle = '#f4ebd9';
+      ctx.font = `bold ${Math.max(9, Math.floor(s * 0.16))}px "Noto Serif SC", serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(def.icon, cx, cy);
-
-      // 底部名字标签
-      ctx.fillStyle = '#2c1e16';
-      ctx.font = `bold ${Math.max(9, Math.floor(s * 0.17))}px "Noto Serif SC", serif`;
-      ctx.fillText(def.name.slice(0, 4), cx, py + s * 0.9);
+      ctx.fillText(label, cx, tagY + tagH * 0.54);
     }
 
     function drawPlayerToken(px, py, s, time) {
       const cx = px + s * 0.5;
       const cy = py + s * 0.5;
 
-      // 若拥有上校的【宿命护盾】，绘制金色保护光环
+      // Orbiting fate shield ring when Colonel Aureliano's shield is active
       if (state.abilities.AURELIANO.charges > 0) {
-        const pulse = 0.38 + Math.sin(time * 0.006) * 0.04;
+        const pulse = 0.4 + Math.sin(time * 0.006) * 0.03;
+        const rot = time * 0.0012;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(rot);
         ctx.strokeStyle = '#d97706';
-        ctx.lineWidth = 3;
-        ctx.setLineDash([5, 3]);
+        ctx.lineWidth = 2.4;
+        ctx.setLineDash([5, 4]);
         ctx.beginPath();
-        ctx.arc(cx, cy, s * pulse, 0, Math.PI * 2);
+        ctx.arc(0, 0, s * pulse, 0, Math.PI * 2);
         ctx.stroke();
         ctx.setLineDash([]);
+
+        // Four gold shield nodes
+        ctx.fillStyle = '#f3d478';
+        ctx.strokeStyle = '#2c1e16';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 4; i++) {
+          const a = (Math.PI * i) / 2;
+          ctx.beginPath();
+          ctx.arc(Math.cos(a) * s * pulse, Math.sin(a) * s * pulse, Math.max(2.2, s * 0.045), 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+        ctx.restore();
       }
 
-      // 主角徽记
-      ctx.fillStyle = '#2c1e16';
+      // Warm lantern aura
+      const aura = 0.18 + Math.sin(time * 0.008) * 0.06;
+      ctx.fillStyle = `rgba(243, 212, 120, ${aura})`;
       ctx.beginPath();
-      ctx.arc(cx, cy, s * 0.32, 0, Math.PI * 2);
+      ctx.arc(cx, cy, s * 0.42, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Player medallion
+      ctx.fillStyle = '#241710';
+      ctx.beginPath();
+      ctx.arc(cx, cy, s * 0.33, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#c59b27';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.2;
       ctx.stroke();
 
-      ctx.font = `${Math.floor(s * 0.42)}px serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('🕯️', cx, cy);
+      Icons.drawLanternCanvas(ctx, cx, cy, s * 0.94, time);
     }
 
     function updateAndDrawParticles() {
@@ -777,25 +933,38 @@ const MacondoPuzzle = (() => {
     }
 
     function renderUI() {
-      const cards = Object.values(CHARACTER_DEFS).map(({ id, name, abilityName, icon, desc, type }) => {
+      const cards = Object.values(CHARACTER_DEFS).map(({ id, name, abilityName, iconId, desc, type }) => {
         const { unlocked, charges } = state.abilities[id];
         const isActive =
           (id === 'JOSE' && (interactionMode === 'SELECT_THROW_SOURCE' || interactionMode === 'SELECT_THROW_TARGET')) ||
           (id === 'REBECA' && interactionMode === 'SELECT_SNIPE_TARGET');
 
-        return { id, name, abilityName, icon, desc, unlocked, charges, isActive, isPassive: type === 'PASSIVE_SHIELD' };
+        return {
+          id,
+          name,
+          abilityName,
+          iconId,
+          iconUri: Icons.getIconDataUri(iconId),
+          desc,
+          unlocked,
+          charges,
+          isActive,
+          isPassive: type === 'PASSIVE_SHIELD'
+        };
       });
 
       let ending = null;
       if (state.status === 'WON') {
         ending = {
-          icon: '🦋',
+          iconId: 'butterfly',
+          iconUri: Icons.getIconDataUri('butterfly'),
           title: '羊皮纸的预言已然应验',
           description: `你在第 ${state.turn} 回合集齐了家族三代人的执念与勇气，成功抵达梅尔基亚德斯的羊皮纸密室。`
         };
       } else if (state.status === 'DEAD') {
         ending = {
-          icon: '🥀',
+          iconId: 'wither',
+          iconUri: Icons.getIconDataUri('wither'),
           title: '马孔多的一阵飓风抹去了足迹',
           description: '在没有上校宿命护盾的庇佑下，直面烈日聚焦光束意味着粉身碎骨。你可以撤销上一步，或重新开启轮回。'
         };
@@ -805,6 +974,8 @@ const MacondoPuzzle = (() => {
         turn: state.turn,
         canUndo: historyStack.length > 0,
         banner,
+        bannerIconId,
+        bannerIconUri: bannerIconId ? Icons.getIconDataUri(bannerIconId) : '',
         cards,
         logs: state.logs,
         ending

@@ -17,22 +17,35 @@ function gameLoop(timestamp) {
   requestAnimationFrame(gameLoop);
 }
 
-function renderUI({ turn, canUndo, banner, cards, logs, ending }) {
+function hydrateStaticIcons() {
+  document.querySelectorAll('[data-icon]').forEach(el => {
+    const iconId = el.dataset.icon;
+    el.innerHTML = MacondoIcons.getIconSvg(iconId, 'w-full h-full');
+  });
+}
+
+function renderUI({ turn, canUndo, banner, bannerIconId, cards, logs, ending }) {
   document.getElementById('turn-count').textContent = turn;
   const actionBanner = document.getElementById('action-banner');
-  actionBanner.textContent = banner;
+  const bannerIconEl = document.getElementById('action-banner-icon');
+  const bannerTextEl = document.getElementById('action-banner-text');
+  bannerTextEl.textContent = banner;
+  bannerIconEl.innerHTML = bannerIconId ? MacondoIcons.getIconSvg(bannerIconId, 'w-full h-full') : '';
+  bannerIconEl.classList.toggle('inline-flex', Boolean(bannerIconId));
+  bannerIconEl.classList.toggle('hidden', !bannerIconId);
+  actionBanner.classList.toggle('flex', Boolean(banner));
   actionBanner.classList.toggle('hidden', !banner);
 
-  // 撤销按钮可用性
+  // Undo button availability
   const undoBtn = document.getElementById('btn-undo');
   undoBtn.disabled = !canUndo;
   undoBtn.style.opacity = canUndo ? '1' : '0.45';
 
-  // 渲染三张人物能力卡片
+  // Render character capability cards
   const invContainer = document.getElementById('inventory-list');
   invContainer.innerHTML = '';
 
-  cards.forEach(({ id, name, abilityName, icon, desc, unlocked, charges, isActive, isPassive }) => {
+  cards.forEach(({ id, name, abilityName, iconId, desc, unlocked, charges, isActive, isPassive }) => {
 
     const card = document.createElement('div');
     card.className = `parchment-card rounded-lg p-2.5 flex items-center justify-between gap-2 ${
@@ -44,7 +57,7 @@ function renderUI({ turn, canUndo, banner, cards, logs, ending }) {
       badgeHtml = `<span class="px-2 py-1 rounded text-[11px] bg-[#cbb894] text-[#5c4332]">未相遇</span>`;
     } else if (charges > 0) {
       if (isPassive) {
-        badgeHtml = `<span class="px-2.5 py-1 rounded-md text-xs font-bold bg-[#d97706]/20 text-[#92400e] border border-[#d97706]">🛡️ 庇护生效中</span>`;
+        badgeHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-[#d97706]/20 text-[#92400e] border border-[#d97706]">${MacondoIcons.getIconSvg('shield', 'w-4 h-4 shrink-0')}<span>庇护生效中</span></span>`;
       } else {
         badgeHtml = `<button data-skill="${id}" aria-label="${isActive ? '取消' : '施放'}${abilityName}" class="skill-btn min-h-10 px-3 py-1.5 rounded-md text-xs font-bold bg-[#8b4513] hover:bg-[#6e350d] text-[#f4ebd9] shadow-sm active:scale-[0.96] transition">
           ${isActive ? '取消施放' : '施放能力 (1)'}
@@ -56,7 +69,7 @@ function renderUI({ turn, canUndo, banner, cards, logs, ending }) {
 
     card.innerHTML = `
       <div class="flex items-start gap-2.5">
-        <div class="text-2xl leading-none mt-0.5">${icon}</div>
+        <div class="w-9 h-9 shrink-0 mt-0.5">${MacondoIcons.getIconSvg(iconId, 'w-full h-full')}</div>
         <div>
           <div class="text-xs sm:text-sm font-bold text-[#2c1e16]">
             ${name} <span class="text-[#8b4513] font-semibold">· ${abilityName}</span>
@@ -69,12 +82,12 @@ function renderUI({ turn, canUndo, banner, cards, logs, ending }) {
     invContainer.appendChild(card);
   });
 
-  // 绑定技能按钮事件
+  // Bind skill button events
   document.querySelectorAll('.skill-btn').forEach(btn => {
     btn.addEventListener('click', () => toggleSkill(btn.dataset.skill));
   });
 
-  // 渲染编年史日志
+  // Render chronicle log
   const logContainer = document.getElementById('chronicle-log');
   logContainer.innerHTML = logs.map(entry => {
     let colorClass = 'text-[#3d291a]';
@@ -91,7 +104,7 @@ function renderUI({ turn, canUndo, banner, cards, logs, ending }) {
 
   document.getElementById('end-modal').classList.toggle('hidden', !ending);
   if (ending) {
-    document.getElementById('end-icon').textContent = ending.icon;
+    document.getElementById('end-icon').innerHTML = MacondoIcons.getIconSvg(ending.iconId, 'w-14 h-14');
     document.getElementById('end-title').textContent = ending.title;
     document.getElementById('end-desc').textContent = ending.description;
   }
@@ -167,6 +180,7 @@ function initEvents() {
 }
 
 resizeCanvas();
+hydrateStaticIcons();
 initEvents();
 resetLevel();
 requestAnimationFrame(gameLoop);

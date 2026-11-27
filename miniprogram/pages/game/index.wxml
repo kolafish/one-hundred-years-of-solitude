@@ -1,9 +1,18 @@
 <view class="game">
   <view class="toolbar">
     <text class="turn">回合 {{turn}}</text>
-    <button class="control" hover-class="pressed" bindtap="undo" disabled="{{!canUndo}}">撤销</button>
-    <button class="control" hover-class="pressed" bindtap="reset">重置</button>
-    <button class="control" hover-class="pressed" bindtap="toggleHints">{{showHints ? '收起提示' : '提示'}}</button>
+    <button class="control" hover-class="pressed" bindtap="undo" disabled="{{!canUndo}}">
+      <image class="ui-icon-sm" src="{{uiIcons.undo}}" mode="aspectFit" />
+      <text>撤销</text>
+    </button>
+    <button class="control" hover-class="pressed" bindtap="reset">
+      <image class="ui-icon-sm" src="{{uiIcons.reset}}" mode="aspectFit" />
+      <text>重置</text>
+    </button>
+    <button class="control" hover-class="pressed" bindtap="toggleHints">
+      <image class="ui-icon-sm" src="{{uiIcons.hint}}" mode="aspectFit" />
+      <text>{{showHints ? '收起提示' : '提示'}}</text>
+    </button>
   </view>
 
   <view class="board-frame">
@@ -22,11 +31,17 @@
     <button class="control" hover-class="pressed" bindtap="prepareBoard">重新加载</button>
   </view>
 
-  <view wx:if="{{banner}}" class="banner">{{banner}}</view>
+  <view wx:if="{{banner}}" class="banner">
+    <image wx:if="{{bannerIconUri}}" class="ui-icon-sm" src="{{bannerIconUri}}" mode="aspectFit" />
+    <text>{{banner}}</text>
+  </view>
   <view wx:else class="board-caption">点相邻格子，或用方向键移动。</view>
 
   <view wx:if="{{ending}}" class="panel ending">
-    <view class="section-title">{{ending.icon}} {{ending.title}}</view>
+    <view class="section-title">
+      <image wx:if="{{ending.iconUri}}" class="ui-icon-md" src="{{ending.iconUri}}" mode="aspectFit" />
+      <text>{{ending.title}}</text>
+    </view>
     <view class="ending-description">{{ending.description}}</view>
     <view class="ending-actions">
       <button class="control" hover-class="pressed" bindtap="undo">撤销一步</button>
@@ -42,7 +57,10 @@
   </view>
 
   <view wx:if="{{showHints}}" class="panel hints">
-    <view class="section-title">羊皮纸启示</view>
+    <view class="section-title">
+      <image class="ui-icon-sm" src="{{uiIcons.scroll}}" mode="aspectFit" />
+      <text>羊皮纸启示</text>
+    </view>
     <text>1. 靠近何塞，继承「炼金投掷」。</text>
     <text>2. 到下方河岸找上校，带着「宿命护盾」向右过桥，穿过烈日光束。</text>
     <text>3. 往上找到丽贝卡，继承「孤注一掷」。</text>
@@ -50,22 +68,31 @@
   </view>
 
   <view class="panel">
-    <view class="section-title">家族馈赠</view>
+    <view class="section-title">
+      <image class="ui-icon-sm" src="{{uiIcons.crest}}" mode="aspectFit" />
+      <text>家族馈赠</text>
+    </view>
     <view wx:for="{{cards}}" wx:key="id" class="skill {{item.isActive ? 'skill-active' : ''}}">
-      <text class="skill-icon" aria-hidden="true">{{item.icon}}</text>
+      <image class="skill-icon-img" src="{{item.iconUri}}" mode="aspectFit" />
       <view class="skill-copy">
         <view class="skill-title">{{item.name}} · {{item.abilityName}}</view>
         <view class="skill-description">{{item.desc}}</view>
       </view>
       <text class="badge" wx:if="{{!item.unlocked}}">未相遇</text>
       <text class="badge" wx:elif="{{!item.charges}}">已用尽</text>
-      <text class="badge shield" wx:elif="{{item.isPassive}}">护盾生效</text>
+      <view class="badge shield" wx:elif="{{item.isPassive}}">
+        <image class="ui-icon-xs" src="{{uiIcons.shield}}" mode="aspectFit" />
+        <text>护盾生效</text>
+      </view>
       <button wx:else class="control primary skill-button" aria-label="{{item.isActive ? '取消' : '施放'}}{{item.abilityName}}" hover-class="pressed" data-skill="{{item.id}}" disabled="{{!!ending}}" bindtap="useSkill">{{item.isActive ? '取消' : '施放'}}</button>
     </view>
   </view>
 
   <view class="panel">
-    <view class="section-title">马孔多编年史</view>
+    <view class="section-title">
+      <image class="ui-icon-sm" src="{{uiIcons.quill}}" mode="aspectFit" />
+      <text>马孔多编年史</text>
+    </view>
     <view>
       <view wx:for="{{logs}}" wx:key="id" class="log log-{{item.type}}">
         <text class="log-turn">T{{item.turn}}</text>

@@ -37,6 +37,7 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8rpx;
   min-height: 44px;
   margin: 0;
   border: 1rpx solid #a87b4a;
@@ -48,6 +49,30 @@ page {
   font-weight: 600;
   line-height: 1.2;
   transition: transform 150ms ease;
+}
+
+.ui-icon-xs {
+  width: 26rpx;
+  height: 26rpx;
+  flex-shrink: 0;
+}
+
+.ui-icon-sm {
+  width: 32rpx;
+  height: 32rpx;
+  flex-shrink: 0;
+}
+
+.ui-icon-md {
+  width: 44rpx;
+  height: 44rpx;
+  flex-shrink: 0;
+}
+
+.skill-icon-img {
+  width: 64rpx;
+  height: 64rpx;
+  flex-shrink: 0;
 }
 
 .control::after {
@@ -113,6 +138,9 @@ page {
 }
 
 .banner {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
   border-radius: 12rpx;
   padding: 12rpx 16rpx;
   background: #3a271c;
@@ -140,6 +168,9 @@ page {
 }
 
 .section-title {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
   margin-bottom: 12rpx;
   font-size: 31rpx;
   font-weight: 700;
@@ -213,6 +244,9 @@ page {
 }
 
 .shield {
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
   background: #f2d7a3;
   color: #6a3c16;
 }

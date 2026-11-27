@@ -1,15 +1,26 @@
 const { COLS, ROWS, createGame } = require("../../game/macondo.js");
+const MacondoIcons = require("../../game/icons.js");
 
 Page({
   data: {
     turn: 0,
     canUndo: false,
     banner: "",
+    bannerIconUri: "",
     ending: null,
     cards: [],
     logs: [],
     showHints: false,
     canvasError: false,
+    uiIcons: {
+      undo: MacondoIcons.getIconDataUri("undo"),
+      reset: MacondoIcons.getIconDataUri("reset"),
+      hint: MacondoIcons.getIconDataUri("hint"),
+      crest: MacondoIcons.getIconDataUri("crest"),
+      quill: MacondoIcons.getIconDataUri("quill"),
+      shield: MacondoIcons.getIconDataUri("shield"),
+      scroll: MacondoIcons.getIconDataUri("scroll")
+    },
     rows: Array.from({ length: ROWS }, (_, row) => row),
     columns: Array.from({ length: COLS }, (_, col) => col)
   },

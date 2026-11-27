@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>马孔多的羊皮纸：百年孤独解谜</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png" />
   <!-- Regenerate from the repository root: npx --yes tailwindcss@3.4.17 --content './macondo-puzzle/*.{html,js}' --output ./macondo-puzzle/tailwind.css --minify -->
   <link rel="stylesheet" href="./tailwind.css" />
@@ -93,8 +94,8 @@
     <header class="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-[#8b5a2b]/40 pb-3 gap-2">
       <div>
         <a href="../" class="inline-flex items-center min-h-10 text-xs sm:text-sm font-semibold text-[#6e472b] underline underline-offset-2">← 返回首页</a>
-        <div class="flex items-center gap-2">
-          <span class="text-xl sm:text-2xl">🦋</span>
+        <div class="flex items-center gap-2.5">
+          <span class="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 shrink-0" data-icon="butterfly"></span>
           <h1 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-wide text-balance text-[#2c1e16]">
             马孔多的羊皮纸 <span class="text-sm sm:text-base font-normal text-[#8b4513]">· 百年孤独机关录</span>
           </h1>
@@ -109,14 +110,17 @@
         <div class="px-3 py-1.5 rounded-lg bg-[#e6d6b8] border border-[#8b5a2b] text-xs sm:text-sm font-semibold">
           回合：<span id="turn-count" class="text-[#9e2a2b] font-bold tabular-nums">0</span>
         </div>
-        <button id="btn-undo" class="min-h-10 px-3 py-1.5 rounded-lg bg-[#e6d6b8] hover:bg-[#d8c39e] active:scale-[0.96] border border-[#8b5a2b] text-xs sm:text-sm font-semibold transition flex items-center gap-1" title="撤销上一步 (Z)">
-          ↩️ 撤销一步
+        <button id="btn-undo" class="min-h-10 px-3 py-1.5 rounded-lg bg-[#e6d6b8] hover:bg-[#d8c39e] active:scale-[0.96] border border-[#8b5a2b] text-xs sm:text-sm font-semibold transition flex items-center gap-1.5" title="撤销上一步 (Z)">
+          <span class="inline-flex w-4 h-4 shrink-0" data-icon="undo"></span>
+          <span>撤销一步</span>
         </button>
-        <button id="btn-reset" class="min-h-10 px-3 py-1.5 rounded-lg bg-[#e6d6b8] hover:bg-[#d8c39e] active:scale-[0.96] border border-[#8b5a2b] text-xs sm:text-sm font-semibold transition flex items-center gap-1" title="重置关卡 (R)">
-          🔄 重置轮回
+        <button id="btn-reset" class="min-h-10 px-3 py-1.5 rounded-lg bg-[#e6d6b8] hover:bg-[#d8c39e] active:scale-[0.96] border border-[#8b5a2b] text-xs sm:text-sm font-semibold transition flex items-center gap-1.5" title="重置关卡 (R)">
+          <span class="inline-flex w-4 h-4 shrink-0" data-icon="reset"></span>
+          <span>重置轮回</span>
         </button>
-        <button id="btn-hint" class="min-h-10 px-3 py-1.5 rounded-lg bg-[#c59b27]/25 hover:bg-[#c59b27]/40 active:scale-[0.96] border border-[#c59b27] text-[#5c3a00] text-xs sm:text-sm font-bold transition flex items-center gap-1">
-          📜 羊皮纸启示
+        <button id="btn-hint" class="min-h-10 px-3 py-1.5 rounded-lg bg-[#c59b27]/25 hover:bg-[#c59b27]/40 active:scale-[0.96] border border-[#c59b27] text-[#5c3a00] text-xs sm:text-sm font-bold transition flex items-center gap-1.5">
+          <span class="inline-flex w-4 h-4 shrink-0" data-icon="hint"></span>
+          <span>羊皮纸启示</span>
         </button>
       </div>
     </header>
@@ -130,17 +134,18 @@
           <canvas id="game-canvas"></canvas>
 
           <!-- 行动模式提示浮条 -->
-          <div id="action-banner" class="hidden pointer-events-none absolute top-2 left-1/2 -translate-x-1/2 w-max max-w-[calc(100%-1rem)] px-4 py-1.5 rounded-lg bg-[#2c1e16]/90 text-[#f4ebd9] text-center text-xs sm:text-sm font-semibold shadow-lg border border-[#c59b27] z-10">
-            提示文本
+          <div id="action-banner" class="hidden pointer-events-none absolute top-2 left-1/2 -translate-x-1/2 w-max max-w-[calc(100%-1rem)] px-3.5 py-1.5 rounded-lg bg-[#2c1e16]/92 text-[#f4ebd9] text-center text-xs sm:text-sm font-semibold shadow-lg border border-[#c59b27] z-10 items-center gap-2">
+            <span id="action-banner-icon" class="w-5 h-5 shrink-0"></span>
+            <span id="action-banner-text">提示文本</span>
           </div>
         </div>
 
         <!-- 底部图例与移动端方向键 -->
         <div class="flex flex-col sm:flex-row items-center justify-between gap-2 bg-[#e6d6b8]/60 p-2.5 rounded-lg border border-[#8b5a2b]/40 text-xs text-[#4a3525]">
-          <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span>🧭 <b>移动</b>：方向键 / WASD / 点击相邻格</span>
-            <span>🔥 <b>烈日聚焦光束</b>：致命（需护盾）</span>
-            <span>🌊 <b>马孔多河</b>：阻挡步行，子弹与投掷可越过</span>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <span class="inline-flex items-center gap-1"><span class="inline-flex w-4 h-4 shrink-0" data-icon="compass"></span><b>移动</b>：方向键 / WASD / 点击相邻格</span>
+            <span class="inline-flex items-center gap-1"><span class="inline-flex w-4 h-4 shrink-0" data-icon="sunbeam"></span><b>烈日聚焦光束</b>：致命（需护盾）</span>
+            <span class="inline-flex items-center gap-1"><span class="inline-flex w-4 h-4 shrink-0" data-icon="river"></span><b>马孔多河</b>：阻挡步行，子弹与投掷可越过</span>
           </div>
           <!-- 移动端触控十字键 -->
           <div class="flex sm:hidden items-center gap-1.5 mt-1">
@@ -159,7 +164,7 @@
         <div class="bg-[#e6d6b8]/50 rounded-xl p-3 border border-[#8b5a2b]/50">
           <div class="flex items-center justify-between mb-2">
             <h2 class="text-sm sm:text-base font-bold text-[#2c1e16] flex items-center gap-1.5">
-              <span>🗝️</span> 家族馈赠（能力与道具）
+              <span class="inline-flex w-5 h-5 shrink-0" data-icon="crest"></span> 家族馈赠（能力与道具）
             </h2>
             <span class="text-xs text-[#6e472b]">靠近人物即可继承执念</span>
           </div>
@@ -173,7 +178,7 @@
         <div class="bg-[#e6d6b8]/50 rounded-xl p-3 border border-[#8b5a2b]/50 flex flex-col h-52 sm:h-60">
           <div class="flex items-center justify-between mb-1.5">
             <h2 class="text-sm sm:text-base font-bold text-[#2c1e16] flex items-center gap-1.5">
-              <span>✒️</span> 马孔多编年史
+              <span class="inline-flex w-5 h-5 shrink-0" data-icon="quill"></span> 马孔多编年史
             </h2>
             <span class="text-[11px] text-[#8b4513] italic">“家族的第一个人被捆在树上……”</span>
           </div>
@@ -190,7 +195,7 @@
   <div id="hint-modal" class="hidden fixed inset-0 bg-black/65 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="parchment-panel max-w-lg w-full max-h-full overflow-y-auto rounded-xl p-5 sm:p-6 relative">
       <h3 class="text-lg sm:text-xl font-bold text-[#2c1e16] border-b border-[#8b5a2b]/40 pb-2 mb-3 flex items-center gap-2">
-        <span>📜</span> 梅尔基亚德斯的羊皮纸启示
+        <span class="inline-flex w-6 h-6 shrink-0" data-icon="scroll"></span> 梅尔基亚德斯的羊皮纸启示
       </h3>
       <ol class="list-decimal list-inside space-y-2 text-xs sm:text-sm text-[#3d291a] leading-relaxed">
         <li><b>继承投掷之力</b>：向右走遇到<b>何塞·阿尔卡蒂奥</b>，获得【投掷】能力（可将身旁的火药桶跨河投出至多 3 格）。</li>
@@ -210,22 +215,25 @@
   <!-- 结局弹窗（通关或陨落） -->
   <div id="end-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="parchment-panel max-w-md w-full max-h-full overflow-y-auto rounded-xl p-6 text-center space-y-4">
-      <div id="end-icon" class="text-4xl sm:text-5xl">📜</div>
+      <div id="end-icon" class="flex justify-center"></div>
       <h3 id="end-title" class="text-xl sm:text-2xl font-bold text-[#2c1e16]">破译羊皮纸</h3>
       <p id="end-desc" class="text-xs sm:text-sm text-[#4a3525] leading-relaxed italic">
         叙述文本
       </p>
       <div class="pt-2 flex justify-center gap-3">
-        <button id="btn-end-undo" class="min-h-10 px-4 py-2 rounded-lg bg-[#e6d6b8] hover:bg-[#d8c39e] border border-[#8b5a2b] text-sm font-semibold transition">
-          ↩️ 撤销上一步
+        <button id="btn-end-undo" class="min-h-10 px-4 py-2 rounded-lg bg-[#e6d6b8] hover:bg-[#d8c39e] border border-[#8b5a2b] text-sm font-semibold transition flex items-center gap-1.5">
+          <span class="inline-flex w-4 h-4 shrink-0" data-icon="undo"></span>
+          <span>撤销上一步</span>
         </button>
-        <button id="btn-end-restart" class="min-h-10 px-4 py-2 rounded-lg bg-[#8b4513] hover:bg-[#6e350d] text-[#f4ebd9] text-sm font-semibold transition">
-          🔄 再次踏入马孔多
+        <button id="btn-end-restart" class="min-h-10 px-4 py-2 rounded-lg bg-[#8b4513] hover:bg-[#6e350d] text-[#f4ebd9] text-sm font-semibold transition flex items-center gap-1.5">
+          <span class="inline-flex w-4 h-4 shrink-0" data-icon="reset"></span>
+          <span>再次踏入马孔多</span>
         </button>
       </div>
     </div>
   </div>
 
+  <script src="../miniprogram/game/icons.js"></script>
   <script src="../miniprogram/game/macondo.js"></script>
   <script src="./app.js"></script>
 </body>
