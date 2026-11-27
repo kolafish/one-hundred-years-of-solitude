@@ -1,43 +1,8 @@
 // Shared puzzle logic and Canvas 2D renderer for Web and WeChat Miniprogram.
+const { TILE, LEVELS } = typeof require === 'function' ? require('./levels.js') : MacondoLevels;
 const Icons = typeof require === 'function' ? require('./icons.js') : MacondoIcons;
 
 const MacondoPuzzle = (() => {
-  const COLS = 10;
-  const ROWS = 8;
-
-  // 地形类型
-  const TILE = {
-    FLOOR: 0,
-    WALL: 1,
-    WATER: 2,
-    BRIDGE: 3,
-    CRACKED_WALL: 4, // 必须由火药桶爆炸摧毁的裂纹石墙
-    GOAL: 5,         // 梅尔基亚德斯的羊皮纸密室
-    LASER_EMITTER: 6 // 烈日放大镜发射器（向下发射光束）
-  };
-
-  // 第一关地图蓝图 (10列 x 8行)
-  // 设计验证：
-  // - 玩家起点 (1,1)
-  // - 何塞 (2,1) -> 授予 [THROW] 投掷能力
-  // - 上校 (2,6) -> 授予 [SHIELD] 宿命护盾（被动中弹不死）
-  // - 外河 x=3 (y=1..4, 6)，木桥在 (3,5)
-  // - 烈日发射器在 (4,1)，光束垂直向下覆盖 (4,2)~(4,6)，封锁去往右半区的必经之路
-  // - 丽贝卡 (5,2) -> 授予 [SNIPE] 开枪必中
-  // - 火药桶 (5,6) -> 玩家站在 (5,5) 使用投掷，把火药桶扔到 (6,4) 的木桥上
-  // - 内河 x=6 (y=1..3, 5..6)，内河木桥在 (6,4)
-  // - 裂纹石墙 (7,4) 挡在羊皮纸密室 (8,4) 前；丽贝卡引爆木桥上的火药桶后可炸开石墙
-  const LEVEL_1_TERRAIN = [
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // y=0
-    [1, 0, 0, 2, 6, 0, 2, 1, 1, 1], // y=1: (4,1) 烈日发射器
-    [1, 0, 1, 2, 0, 0, 2, 1, 1, 1], // y=2: (5,2) 丽贝卡
-    [1, 0, 0, 2, 0, 0, 2, 0, 1, 1], // y=3
-    [1, 0, 1, 2, 0, 0, 3, 4, 5, 1], // y=4: (6,4)内桥, (7,4)裂纹墙, (8,4)终点
-    [1, 0, 0, 3, 0, 0, 2, 1, 1, 1], // y=5: (3,5)外桥, (4,5)穿过光束
-    [1, 0, 0, 2, 0, 0, 2, 1, 1, 1], // y=6: (2,6) 上校, (5,6)火药桶
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  // y=7
-  ];
-
   const CHARACTER_DEFS = {
     JOSE: {
       id: 'JOSE',
@@ -74,7 +39,8 @@ const MacondoPuzzle = (() => {
     }
   };
 
-  function createGame(onUpdate) {
+  function createGame(onUpdate, levels = LEVELS) {
+    let level = levels[0];
     let state = null;
     let historyStack = []; // 用于撤销（Undo）
     let particles = [];    // 粒子特效（光束微粒、爆炸火花、蝴蝶）
@@ -91,16 +57,10 @@ const MacondoPuzzle = (() => {
       return {
         turn: 0,
         status: 'PLAYING', // 'PLAYING' | 'WON' | 'DEAD'
-        player: { x: 1, y: 1 },
-        terrain: LEVEL_1_TERRAIN.map(row => [...row]),
-        npcs: [
-          { id: 'JOSE', x: 2, y: 1, collected: false },
-          { id: 'AURELIANO', x: 2, y: 6, collected: false },
-          { id: 'REBECA', x: 5, y: 2, collected: false }
-        ],
-        barrels: [
-          { x: 5, y: 6 }
-        ],
+        player: { ...level.start },
+        terrain: level.terrain.map(row => [...row]),
+        npcs: level.npcs.map(npc => ({ ...npc, collected: false })),
+        barrels: level.barrels.map(barrel => ({ ...barrel })),
         abilities: {
           JOSE: { unlocked: false, charges: 0 },
           AURELIANO: { unlocked: false, charges: 0 },
@@ -112,7 +72,7 @@ const MacondoPuzzle = (() => {
             id: 0,
             turn: 0,
             type: 'story',
-            text: '多年以后，站在梅尔基亚德斯的羊皮纸密室前，你仍会想起马孔多那个炙热的午后。'
+            text: level.opening
           }
         ]
       };
@@ -128,6 +88,13 @@ const MacondoPuzzle = (() => {
       if (historyStack.length > 50) historyStack.shift();
     }
 
+    function takeTurn(change) {
+      pushHistory();
+      state.turn += 1;
+      change();
+      resolveTurn();
+    }
+
     // ==========================================
     // 3. 核心解谜逻辑与回合结算 (Dweep 引擎)
     // ==========================================
@@ -135,11 +102,11 @@ const MacondoPuzzle = (() => {
     // 重新计算所有发射器的激光路径
     function computeLasers(targetState) {
       const beams = [];
-      for (let y = 0; y < ROWS; y++) {
-        for (let x = 0; x < COLS; x++) {
+      for (let y = 0; y < level.rows; y++) {
+        for (let x = 0; x < level.cols; x++) {
           if (targetState.terrain[y][x] === TILE.LASER_EMITTER) {
             // 向下发射光束
-            for (let ny = y + 1; ny < ROWS; ny++) {
+            for (let ny = y + 1; ny < level.rows; ny++) {
               const t = targetState.terrain[ny][x];
               // 墙壁、裂纹石墙会阻挡光束；河流与木桥不阻挡
               if (t === TILE.WALL || t === TILE.CRACKED_WALL || t === TILE.LASER_EMITTER) {
@@ -160,7 +127,7 @@ const MacondoPuzzle = (() => {
 
     // 检查网格是否可行走
     function isWalkable(x, y) {
-      if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return false;
+      if (x < 0 || x >= level.cols || y < 0 || y >= level.rows) return false;
       const t = state.terrain[y][x];
       if (t === TILE.WALL || t === TILE.WATER || t === TILE.CRACKED_WALL || t === TILE.LASER_EMITTER) {
         return false;
@@ -174,7 +141,7 @@ const MacondoPuzzle = (() => {
 
     // 检查投掷目标格是否合法（距离<=3，且为空地或木桥，无NPC/玩家/桶）
     function isValidThrowTarget(bx, by, tx, ty) {
-      if (tx < 0 || tx >= COLS || ty < 0 || ty >= ROWS) return false;
+      if (tx < 0 || tx >= level.cols || ty < 0 || ty >= level.rows) return false;
       const dist = Math.abs(bx - tx) + Math.abs(by - ty);
       if (dist === 0 || dist > 3) return false;
       const t = state.terrain[ty][tx];
@@ -231,7 +198,7 @@ const MacondoPuzzle = (() => {
       dirs.forEach(([dx, dy]) => {
         const nx = bx + dx;
         const ny = by + dy;
-        if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS) {
+        if (nx >= 0 && nx < level.cols && ny >= 0 && ny < level.rows) {
           if (state.terrain[ny][nx] === TILE.CRACKED_WALL) {
             state.terrain[ny][nx] = TILE.FLOOR;
             destroyedWall = true;
@@ -302,11 +269,9 @@ const MacondoPuzzle = (() => {
       const ny = state.player.y + dy;
       if (!isWalkable(nx, ny)) return;
 
-      pushHistory();
-      state.player.x = nx;
-      state.player.y = ny;
-      state.turn += 1;
-      resolveTurn();
+      takeTurn(() => {
+        state.player = { x: nx, y: ny };
+      });
     }
 
     // 切换技能激活状态
@@ -366,7 +331,7 @@ const MacondoPuzzle = (() => {
     // Handle board click
     function handleCanvasClick(gx, gy) {
       if (state.status !== 'PLAYING') return;
-      if (gx < 0 || gx >= COLS || gy < 0 || gy >= ROWS) return;
+      if (gx < 0 || gx >= level.cols || gy < 0 || gy >= level.rows) return;
 
       // Mode 1: select adjacent barrel to throw
       if (interactionMode === 'SELECT_THROW_SOURCE') {
@@ -386,16 +351,14 @@ const MacondoPuzzle = (() => {
       // 模式 2：选择投掷落点
       if (interactionMode === 'SELECT_THROW_TARGET' && selectedBarrelPos) {
         if (isValidThrowTarget(selectedBarrelPos.x, selectedBarrelPos.y, gx, gy)) {
-          pushHistory();
-          // 移动火药桶
-          const barrel = state.barrels.find(b => b.x === selectedBarrelPos.x && b.y === selectedBarrelPos.y);
-          barrel.x = gx;
-          barrel.y = gy;
-          state.abilities.JOSE.charges = 0;
-          state.turn += 1;
-          addLog('你效仿何塞·阿尔卡蒂奥的怪力，将火药桶凌空抛了出去！', 'character');
-          clearSkillMode();
-          resolveTurn();
+          takeTurn(() => {
+            const barrel = state.barrels.find(b => b.x === selectedBarrelPos.x && b.y === selectedBarrelPos.y);
+            barrel.x = gx;
+            barrel.y = gy;
+            state.abilities.JOSE.charges = 0;
+            addLog('你效仿何塞·阿尔卡蒂奥的怪力，将火药桶凌空抛了出去！', 'character');
+            clearSkillMode();
+          });
         } else {
           addLog('那里无法承受火药桶的重量，请选择 3 格内的空地或木桥。', 'warning');
           renderUI();
@@ -414,13 +377,12 @@ const MacondoPuzzle = (() => {
         const targetCracked = state.terrain[gy][gx] === TILE.CRACKED_WALL;
 
         if (targetBarrel) {
-          pushHistory();
-          state.abilities.REBECA.charges = 0;
-          state.turn += 1;
-          addLog('砰！丽贝卡的子弹跨越水面，精准击中了远处的火药桶！', 'character');
-          clearSkillMode();
-          detonateBarrel(gx, gy);
-          resolveTurn();
+          takeTurn(() => {
+            state.abilities.REBECA.charges = 0;
+            addLog('砰！丽贝卡的子弹跨越水面，精准击中了远处的火药桶！', 'character');
+            clearSkillMode();
+            detonateBarrel(gx, gy);
+          });
         } else if (targetCracked) {
           // 射击坚固裂纹石墙给予提示（需火药桶爆炸才能彻底炸开）
           addLog('子弹在石墙上擦出火花，但这堵石墙太厚了，需要引爆旁边的【火药桶】才能炸毁！', 'warning');
@@ -444,8 +406,17 @@ const MacondoPuzzle = (() => {
     function undoMove() {
       if (historyStack.length === 0) return;
       state = historyStack.pop();
+      particles = [];
       clearSkillMode();
       renderUI();
+    }
+
+    function startLevel(levelId) {
+      const next = levels.find(candidate => candidate.id === levelId);
+      if (!next) return false;
+      level = next;
+      resetLevel();
+      return true;
     }
 
     // 重置关卡
@@ -488,11 +459,11 @@ const MacondoPuzzle = (() => {
     function drawBoard(timestamp, hoverTile) {
       if (!ctx || !state) return;
       const t = timestamp || 0;
-      ctx.clearRect(0, 0, COLS * tileSize, ROWS * tileSize);
+      ctx.clearRect(0, 0, level.cols * tileSize, level.rows * tileSize);
 
       // 1. Base parchment checkerboard & terrain tiles
-      for (let y = 0; y < ROWS; y++) {
-        for (let x = 0; x < COLS; x++) {
+      for (let y = 0; y < level.rows; y++) {
+        for (let x = 0; x < level.cols; x++) {
           const px = x * tileSize;
           const py = y * tileSize;
           const tile = state.terrain[y][x];
@@ -529,8 +500,8 @@ const MacondoPuzzle = (() => {
       // 2. Active skill targeting highlights
       if (interactionMode === 'SELECT_THROW_TARGET' && selectedBarrelPos) {
         const pulse = 0.7 + Math.sin(t * 0.008) * 0.25;
-        for (let y = 0; y < ROWS; y++) {
-          for (let x = 0; x < COLS; x++) {
+        for (let y = 0; y < level.rows; y++) {
+          for (let x = 0; x < level.cols; x++) {
             if (isValidThrowTarget(selectedBarrelPos.x, selectedBarrelPos.y, x, y)) {
               ctx.fillStyle = `rgba(197, 155, 39, ${0.26 * pulse})`;
               ctx.fillRect(x * tileSize + 2, y * tileSize + 2, tileSize - 4, tileSize - 4);
@@ -633,7 +604,7 @@ const MacondoPuzzle = (() => {
 
       // Shoreline edges when adjacent to land
       const leftLand = gx > 0 && state.terrain[gy][gx - 1] !== TILE.WATER && state.terrain[gy][gx - 1] !== TILE.BRIDGE;
-      const rightLand = gx < COLS - 1 && state.terrain[gy][gx + 1] !== TILE.WATER && state.terrain[gy][gx + 1] !== TILE.BRIDGE;
+      const rightLand = gx < level.cols - 1 && state.terrain[gy][gx + 1] !== TILE.WATER && state.terrain[gy][gx + 1] !== TILE.BRIDGE;
       ctx.fillStyle = 'rgba(239, 227, 202, 0.24)';
       if (leftLand) ctx.fillRect(px, py, s * 0.09, s);
       if (rightLand) ctx.fillRect(px + s * 0.91, py, s * 0.09, s);
@@ -971,6 +942,7 @@ const MacondoPuzzle = (() => {
       }
 
       onUpdate({
+        level: { id: level.id, title: level.title, subtitle: level.subtitle, cols: level.cols, rows: level.rows, hints: level.hints },
         turn: state.turn,
         canUndo: historyStack.length > 0,
         banner,
@@ -982,10 +954,10 @@ const MacondoPuzzle = (() => {
       });
     }
 
-    return { tryMove, toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, setCanvas, drawBoard };
+    return { startLevel, tryMove, toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, setCanvas, drawBoard, getState: () => cloneState(state) };
   }
 
-  return { COLS, ROWS, createGame };
+  return { LEVELS, createGame };
 })();
 
 if (typeof module === 'object' && module.exports) {

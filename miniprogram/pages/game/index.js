@@ -1,4 +1,4 @@
-const { COLS, ROWS, createGame } = require("../../game/macondo.js");
+const { createGame } = require("../../game/macondo.js");
 const MacondoIcons = require("../../game/icons.js");
 
 Page({
@@ -21,18 +21,32 @@ Page({
       shield: MacondoIcons.getIconDataUri("shield"),
       scroll: MacondoIcons.getIconDataUri("scroll")
     },
-    rows: Array.from({ length: ROWS }, (_, row) => row),
-    columns: Array.from({ length: COLS }, (_, col) => col)
+    rows: [],
+    columns: [],
+    boardRatio: 80
   },
 
   onLoad() {
-    this.game = createGame((view) => {
-      this.setData({ ...view, logs: view.logs.slice(0, 30) });
+    this.game = createGame(({ level, ...view }) => {
+      const update = { level, ...view, logs: view.logs.slice(0, 30) };
+      if (level.id === this.data.level?.id) {
+        this.setData(update);
+        return;
+      }
+      this.setData({
+        ...update,
+        rows: Array.from({ length: level.rows }, (_, row) => row),
+        columns: Array.from({ length: level.cols }, (_, col) => col),
+        boardRatio: (level.rows / level.cols) * 100
+      }, () => {
+        if (this.boardReady) this.prepareBoard();
+      });
     });
     this.game.resetLevel();
   },
 
   onReady() {
+    this.boardReady = true;
     this.prepareBoard();
   },
 
@@ -58,8 +72,9 @@ Page({
   },
 
   prepareBoard() {
+    const levelId = this.data.level.id;
     this.createSelectorQuery().select("#game-canvas").fields({ node: true, size: true }).exec((result) => {
-      if (!this.game) return;
+      if (!this.game || this.data.level.id !== levelId) return;
       const board = result && result[0];
       if (!board || !board.node || !board.width || !board.height) {
         this.setData({ canvasError: true });
@@ -74,7 +89,7 @@ Page({
       const context = canvas.getContext("2d");
       context.scale(canvas.width / board.width, canvas.height / board.height);
       this.canvas = canvas;
-      this.game.setCanvas(context, board.width / COLS);
+      this.game.setCanvas(context, board.width / this.data.level.cols);
       this.setData({ canvasError: false });
       this.startDrawing();
     });
