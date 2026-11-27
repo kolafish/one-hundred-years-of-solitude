@@ -12,6 +12,7 @@ const tileInspector = document.getElementById('tile-inspector');
 const tileTooltip = document.getElementById('tile-tooltip');
 const chronicleLog = document.getElementById('chronicle-log');
 let hoverTile = null;
+let tooltipDismissed = false;
 let inspectedTile = null;
 let inspecting = true;
 let inspectionKey = null;
@@ -202,7 +203,7 @@ function legendEntry(entry) {
 }
 
 function renderTileTooltip(descriptions, key) {
-  tileTooltip.hidden = !hoverTile || Boolean(activeEnding && !activeEnding.settled)
+  tileTooltip.hidden = !hoverTile || tooltipDismissed || Boolean(activeEnding && !activeEnding.settled)
     || decisionDialog.open || loadoutDialog.open
     || !descriptions.some(({ id }) => id !== 'floor' && id !== 'wall');
   if (tileTooltip.hidden) return;
@@ -224,18 +225,24 @@ function renderTileTooltip(descriptions, key) {
   const tooltipHeight = tileTooltip.offsetHeight;
   const right = tileLeft + tileWidth + gap;
   const leftSide = tileLeft - tooltipWidth - gap;
+  const above = tileTop - tooltipHeight - gap;
+  const below = tileTop + tileHeight + gap;
+  const rightFits = right + tooltipWidth <= clientWidth - margin;
+  const leftFits = leftSide >= margin;
+  const fitsRightOnBoard = right + tooltipWidth <= left + width;
+  const fitsLeftOnBoard = leftSide >= left;
   let x = right;
   let y = tileTop + (tileHeight - tooltipHeight) / 2;
-
-  if (right + tooltipWidth > clientWidth - margin) {
-    if (leftSide >= margin) {
-      x = leftSide;
-    } else {
-      x = tileLeft + (tileWidth - tooltipWidth) / 2;
-      const below = tileTop + tileHeight + gap;
-      y = below + tooltipHeight <= clientHeight - margin ? below : tileTop - tooltipHeight - gap;
-    }
+  let side = 'right';
+  if (leftFits && (!rightFits || (!fitsRightOnBoard && fitsLeftOnBoard))) {
+    side = 'left';
+    x = leftSide;
+  } else if (!rightFits) {
+    side = below + tooltipHeight <= clientHeight - margin || above < margin ? 'below' : 'above';
+    x = tileLeft + (tileWidth - tooltipWidth) / 2;
+    y = side === 'below' ? below : above;
   }
+  tileTooltip.dataset.side = side;
   tileTooltip.style.left = `${Math.max(margin, Math.min(x, clientWidth - tooltipWidth - margin))}px`;
   tileTooltip.style.top = `${Math.max(margin, Math.min(y, clientHeight - tooltipHeight - margin))}px`;
 }
@@ -258,6 +265,7 @@ function renderInspection() {
 function clearHover() {
   if (!hoverTile) return;
   hoverTile = null;
+  tooltipDismissed = false;
   renderInspection();
 }
 
@@ -375,20 +383,28 @@ function initEvents() {
     else if (key === 'z') { undoMove(); }
     else if (key === 'r') { resetLevel(); }
     else if (key === '.') { waitTurn(); }
-    else if (key === 'escape') { cancelSkillMode(); }
+    else if (key === 'escape') {
+      if (!tileTooltip.hidden) tooltipDismissed = true;
+      cancelSkillMode();
+    }
   });
 
   // 画布点击与悬停
   function canvasTile(e) {
     const rect = canvas.getBoundingClientRect();
-    return {
+    const tile = {
       x: Math.floor(((e.clientX - rect.left) / rect.width) * board.cols),
       y: Math.floor(((e.clientY - rect.top) / rect.height) * board.rows)
     };
+    return tile.x >= 0 && tile.y >= 0 && tile.x < board.cols && tile.y < board.rows ? tile : null;
   }
 
-  canvas.addEventListener('click', e => {
+  function clickBoard(e) {
     const tile = canvasTile(e);
+    if (!tile) {
+      clearHover();
+      return;
+    }
     if (inspecting && game.inspectTile(tile.x, tile.y)?.distant) {
       inspectedTile = tile;
       renderInspection();
@@ -397,17 +413,32 @@ function initEvents() {
     inspectedTile = null;
     renderInspection();
     handleCanvasClick(tile.x, tile.y);
-  });
+  }
 
-  canvas.addEventListener('pointermove', e => {
+  function hoverBoard(e) {
     if (e.pointerType === 'touch') return;
     const tile = canvasTile(e);
+    if (!tile) return clearHover();
     if (hoverTile?.x === tile.x && hoverTile?.y === tile.y) return;
     hoverTile = tile;
+    tooltipDismissed = false;
     renderInspection();
+  }
+
+  canvas.addEventListener('click', clickBoard);
+  canvas.addEventListener('pointermove', hoverBoard);
+  canvas.addEventListener('pointerleave', e => {
+    if (!tileTooltip.contains(e.relatedTarget)) clearHover();
   });
 
-  canvas.addEventListener('pointerleave', clearHover);
+  tileTooltip.addEventListener('pointerleave', e => {
+    if (e.relatedTarget === canvas) hoverBoard(e);
+    else clearHover();
+  });
+  tileTooltip.addEventListener('click', e => {
+    clearHover();
+    clickBoard(e);
+  });
 
   // 移动端虚拟十字键
   document.querySelectorAll('.dpad-btn').forEach(btn => {
