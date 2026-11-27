@@ -343,7 +343,13 @@ page {
   line-height: 1.55;
 }
 
-.board-help view + view {
+.tile-inspector {
+  box-sizing: border-box;
+  height: 148rpx;
+  padding: 0;
+}
+
+.inspector-content > view + view {
   margin-top: 6rpx;
 }
 
@@ -354,4 +360,29 @@ page {
 
 .board-legend .board-help {
   margin-top: 10rpx;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.legend-item + .legend-item {
+  margin-top: 8rpx;
+}
+
+.legend-icon {
+  position: relative;
+  overflow: hidden;
+  width: 62rpx;
+  height: 62rpx;
+  flex: none;
+  border-radius: 8rpx;
+}
+
+.legend-icon image {
+  position: absolute;
+  width: 600%;
+  height: 500%;
 }
