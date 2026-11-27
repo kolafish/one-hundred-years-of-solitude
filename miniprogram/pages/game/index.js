@@ -78,6 +78,7 @@ Page({
   },
 
   prepareBoard() {
+    if (!this.data.level) return;
     const levelId = this.data.level.id;
     this.createSelectorQuery().select("#game-canvas").fields({ node: true, size: true }).exec((result) => {
       if (!this.game || this.data.level.id !== levelId) return;

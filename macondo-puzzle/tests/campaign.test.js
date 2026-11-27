@@ -197,3 +197,137 @@ test('rain supports both bridge variants, deterministic drift, tide reversal and
   assert.equal(reopened.getState().status, 'WON');
   assert.equal(reopened.getState().turn, 8);
 });
+
+function finishWithMirror(game) {
+  play(game, 'RRRRRRU');
+  game.handleCanvasClick(8, 4);
+  assert.equal(game.getState().seals[0].open, true);
+  play(game, 'DLL');
+  const before = game.getState();
+  game.handleCanvasClick(5, 4);
+  assert.equal(game.getState().items.length, 0);
+  assert.equal(game.getState().barrels.length, 0);
+  assert.equal(game.getState().terrain[5][10], 0);
+  game.undoMove();
+  assert.deepEqual(game.getState(), before);
+  game.handleCanvasClick(5, 4);
+  game.handleCanvasClick(5, 4);
+  play(game, 'RRURRDRR');
+}
+
+test('an empty save reaches all five acts with every optional flag off', () => {
+  const saved = {};
+  const { game } = campaign(saved);
+  game.resetLevel();
+  solveFirstAct(game);
+  assert(game.commitVictory());
+
+  assert(game.startLevel(2, []));
+  play(game, 'RRRU');
+  game.handleCanvasClick(5, 4);
+  play(game, 'UUURRRRRDD');
+  assert(game.commitVictory());
+
+  assert(game.startLevel(3, []));
+  play(game, 'UURR');
+  game.toggleSkill('REBECA');
+  game.handleCanvasClick(5, 3);
+  play(game, 'RRRRRRDDR');
+  assert(game.commitVictory());
+
+  assert(game.startLevel(4, []));
+  play(game, 'RR');
+  game.waitTurn();
+  play(game, 'RRRRRR');
+  assert(game.commitVictory());
+  assert.deepEqual(Object.values(saved.value.worldFlags), [false, false, false, false]);
+
+  assert(game.startLevel(5, []));
+  finishWithMirror(game);
+  assert.equal(game.getState().status, 'WON');
+  assert.equal(game.getState().endingId, 'ESCAPE');
+  assert.equal(game.getState().turn, 21);
+  assert(game.commitVictory());
+  assert.equal(saved.value.completedLevels[5].ending, 'ESCAPE');
+  assert.equal(saved.value.unlockedCharacters.length, 9);
+});
+
+test('four real relic pickups unlock the true ending via the archive shortcut', () => {
+  const saved = {};
+  const { game } = campaign(saved);
+  game.resetLevel();
+  play(game, 'RLDDRLDDRRRRUUUUDDDD');
+  game.toggleSkill('JOSE');
+  game.handleCanvasClick(6, 4);
+  game.toggleSkill('REBECA');
+  game.handleCanvasClick(6, 4);
+  play(game, 'URRR');
+  assert(game.commitVictory());
+
+  assert(game.startLevel(2, []));
+  play(game, 'RRRD');
+  game.handleCanvasClick(5, 6);
+  play(game, 'RRRRUUUUURDD');
+  assert(game.commitVictory());
+
+  assert(game.startLevel(3, []));
+  play(game, 'DDRRRLULU');
+  game.toggleSkill('URSULA');
+  game.handleCanvasClick(3, 5);
+  play(game, 'RURRDRRDDRRRUU');
+  assert(game.commitVictory());
+
+  assert(game.startLevel(4, []));
+  play(game, 'RRRRRRRUURDD');
+  assert(game.commitVictory());
+
+  assert.deepEqual(Object.values(saved.value.worldFlags), [true, true, true, true]);
+  assert.deepEqual([1, 2, 3, 4].map(id => saved.value.completedLevels[id].relicCollected), [true, true, true, true]);
+  const reopened = campaign(saved).game;
+  assert(reopened.startLevel(5, ['AURELIANO', 'URSULA', 'JOSE', 'PILAR']));
+  assert.equal(reopened.getState().abilities.AURELIANO.charges, 2);
+  assert.equal(reopened.getState().abilities.PILAR.unlocked, false);
+  play(reopened, 'RRRRRRDRR');
+  reopened.toggleSkill('REBECA');
+  reopened.handleCanvasClick(10, 4);
+  play(reopened, 'RUR');
+  assert.equal(reopened.getState().status, 'WON');
+  assert.equal(reopened.getState().endingId, 'TRUTH');
+  assert(reopened.commitVictory());
+  assert.equal(saved.value.completedLevels[5].ending, 'TRUTH');
+});
+
+test('the hurricane warning, collapse and defeat can be replayed exactly after undo', () => {
+  const saved = { value: { schemaVersion: 1, unlockedLevels: [5] } };
+  const run = campaign(saved);
+  run.game.startLevel(5);
+  assert.match(run.view.hazardLabel, /第 15 回合预警/);
+  for (let turn = 1; turn <= 17; turn++) run.game.waitTurn();
+  assert.equal(run.game.getState().status, 'PLAYING');
+  const previous = run.game.getState();
+  run.game.waitTurn();
+  assert.equal(run.game.getState().status, 'DEAD');
+  assert.equal(run.game.getState().terrain[5][1], 10);
+  assert.match(run.view.ending.description, /飓风/);
+  const collapsed = run.game.getState();
+  run.game.undoMove();
+  assert.deepEqual(run.game.getState(), previous);
+  run.game.waitTurn();
+  assert.deepEqual(run.game.getState(), collapsed);
+});
+
+test('a closed optical loop terminates instead of tracing forever', () => {
+  const room = {
+    ...LEVELS[0], id: 99, cols: 5, rows: 5, npcs: [], barrels: [], items: [],
+    start: { x: 0, y: 0 },
+    terrain: Array.from({ length: 5 }, () => Array(5).fill(0)),
+    emitters: [{ x: 2, y: 1, dx: 1, dy: 0 }],
+    mirrors: [
+      { x: 1, y: 1, slash: true }, { x: 3, y: 1, slash: false },
+      { x: 3, y: 3, slash: true }, { x: 1, y: 3, slash: false }
+    ]
+  };
+  const game = createGame(() => {}, [room]);
+  assert(game.startLevel(99));
+  assert.equal(game.getState().laserTiles.length, 8);
+});

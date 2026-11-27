@@ -15,6 +15,7 @@ const MacondoPuzzle = (() => {
       iconId: 'char_jose',
       color: '#8b4513',
       desc: '选中身旁火药桶，越过河流投掷至 3 格内任意空地。',
+      epigraph: '「磁铁迷狂、天文演算、炼金幻梦」 · 范晔译，第一章',
       quote: '“任何东西都有生命，问题在于如何唤醒它们的灵魂。”——你获得了何塞的【炼金投掷】之力！'
     },
     AURELIANO: {
@@ -27,6 +28,7 @@ const MacondoPuzzle = (() => {
       iconId: 'char_aureliano',
       color: '#b45309',
       desc: '被动生效：抵挡一次致命光束或子弹，穿胸而不伤及要害。',
+      epigraph: '「父亲带他去见识冰块的那个遥远的下午」 · 范晔译，第一章',
       quote: '“他躲过了十四次暗杀、七十三次埋伏和一次枪决。”——上校的【宿命护盾】已庇佑你！'
     },
     REBECA: {
@@ -39,6 +41,7 @@ const MacondoPuzzle = (() => {
       iconId: 'char_rebeca',
       color: '#9e2a2b',
       desc: '开枪必中：点击视野内任意目标，隔河精准射爆火药桶。',
+      epigraph: '「丽贝卡又开始吃土」 · 范晔译，第五章',
       quote: '一声清脆的枪响划破午后的闷热。——你继承了丽贝卡的【孤注一掷】枪法！'
     },
     URSULA: {
@@ -46,6 +49,7 @@ const MacondoPuzzle = (() => {
       abilityName: '持家秩序', type: 'ACTIVE', charges: 2,
       iconId: 'char_ursula', color: '#704c2f',
       desc: '点相邻重物向前推一格，或在相邻河格架木板桥。',
+      epigraph: '「通向伟大发明的道路」 · 范晔译，第二章',
       quote: '乌尔苏拉把家里和河岸的道路重新理出了秩序。'
     },
     MELQUIADES: {
@@ -53,6 +57,7 @@ const MacondoPuzzle = (() => {
       abilityName: '羊皮纸换位', type: 'ACTIVE', charges: 1,
       iconId: 'char_melquiades', color: '#73502d',
       desc: '与视野内四格以内的可移动物体交换位置。',
+      epigraph: '「科学消除了距离」 · 范晔译，第一章',
       quote: '梅尔基亚德斯翻开羊皮纸，两处位置在字迹间悄然对调。'
     },
     AMARANTA: {
@@ -60,13 +65,15 @@ const MacondoPuzzle = (() => {
       abilityName: '黑纱蔽日', type: 'ACTIVE', charges: 1,
       iconId: 'char_amaranta', color: '#65526d',
       desc: '在视野内空地展开黑纱，遮蔽光束与守卫视线三回合。',
+      epigraph: '「裹在伤手上的黑纱」 · 范晔译，第六章',
       quote: '阿玛兰妲展开黑纱，把守卫的视线留在帷幕之外。'
     },
     PILAR: {
       id: 'PILAR', name: '庇拉尔·特尔内拉', shortName: '庇拉尔',
       abilityName: '纸牌逆转', type: 'ACTIVE', charges: 1,
       iconId: 'char_pilar', color: '#7b4b3d',
-      desc: '翻转机关状态，点棋盘即可施放。',
+      desc: '点自己的棋子翻转机关。在雨幕中会立即翻转潮相。',
+      epigraph: '「在清晰可见确定无疑的未来中生活」 · 范晔译，第十九章',
       quote: '庇拉尔翻过纸牌，机关换了一个方向。'
     },
     REMEDIOS: {
@@ -74,7 +81,16 @@ const MacondoPuzzle = (() => {
       abilityName: '床单飞升', type: 'ACTIVE', charges: 1,
       iconId: 'char_remedios', color: '#8b7044',
       desc: '选择十字方向两格外的落点，越过河水、墙体和沿途光束。',
+      epigraph: '「身边鼓荡放光的床单和她一起冉冉上升」 · 范晔译，第十二章',
       quote: '床单在大雨的尽头张开，托着她越过了河岸。'
+    },
+    BABYLON: {
+      id: 'BABYLON', name: '奥雷里亚诺·巴比伦', shortName: '巴比伦',
+      abilityName: '梵文译码', type: 'PASSIVE_RUNE', charges: 1,
+      iconId: 'char_babylon', color: '#704e72',
+      desc: '在古梵文封印旁解译铭文，打开通往密室的门。',
+      epigraph: '「奥雷里亚诺·巴比伦全部译出羊皮卷」 · 范晔译，第二十章',
+      quote: '巴比伦认出了门上古老的字迹。'
     }
   };
 
@@ -104,6 +120,10 @@ const MacondoPuzzle = (() => {
       }
     }
 
+    function relicCount() {
+      return [1, 2, 3, 4].filter(id => progress.completedLevels[id]?.relicCollected).length;
+    }
+
     function preparation(levelId, selected = progress.lastSelectedLoadout) {
       const act = levels.find(candidate => candidate.id === levelId);
       if (!act || !progress.unlockedLevels.includes(levelId)) return null;
@@ -125,7 +145,9 @@ const MacondoPuzzle = (() => {
       const record = Progress.normalize({
         schemaVersion: 1,
         unlockedLevels: next ? [next.id] : [level.id],
-        completedLevels: { [level.id]: { bestTurns: state.turn, rank, relicCollected: state.relicCollected } },
+        completedLevels: {
+          [level.id]: { bestTurns: state.turn, rank, relicCollected: state.relicCollected, ending: state.endingId }
+        },
         unlockedCharacters: level.unlocks,
         worldFlags: state.localFlags,
         lastSelectedLoadout: loadout
@@ -157,6 +179,8 @@ const MacondoPuzzle = (() => {
         mistUntil: 0,
         gold: 0,
         archiveDestroyed: false,
+        endingId: null,
+        seals: (level.seals || []).map(seal => ({ ...seal, open: false })),
         gates: (level.gates || []).map(gate => ({ ...gate, open: false })),
         levers: (level.levers || []).map(lever => ({ ...lever, on: false })),
         guards: (level.guards || []).map(({ path }) => ({
@@ -233,13 +257,14 @@ const MacondoPuzzle = (() => {
     }
 
     function isSolid(x, y, target = state) {
-      const gate = at(target.gates, x, y);
-      return [TILE.WALL, TILE.CRACKED_WALL, TILE.LASER_EMITTER].includes(target.terrain[y][x])
+      const gate = at(target.gates, x, y) || at(target.seals, x, y);
+      return [TILE.WALL, TILE.CRACKED_WALL, TILE.LASER_EMITTER, TILE.RUBBLE].includes(target.terrain[y][x])
         || Boolean(gate && !gate.open);
     }
 
     function computeLasers(target) {
       const beams = [];
+      const hits = new Set();
       const emitters = level.emitters || target.terrain.flatMap((row, y) => row.flatMap((tile, x) =>
         tile === TILE.LASER_EMITTER ? [{ x, y, dx: 0, dy: 1 }] : []));
       for (const emitter of emitters) {
@@ -253,16 +278,36 @@ const MacondoPuzzle = (() => {
           const mirror = at(target.mirrors, x, y);
           if (mirror) [dx, dy] = mirror.slash ? [-dy, -dx] : [dy, dx];
           beams.push({ x, y, incoming, outgoing: { dx, dy } });
-          if (at(target.barrels, x, y) || at(target.boxes, x, y)) break;
+          const combustible = at(target.barrels, x, y) || at(target.items.filter(item => item.kind === 'crystal'), x, y);
+          if (combustible) hits.add(combustible);
+          if (combustible || at(target.boxes, x, y)) break;
         }
       }
       target.laserTiles = beams;
+      return hits;
+    }
+
+    function resolveBeams() {
+      let hits = computeLasers(state);
+      while (hits.size > 0) {
+        for (const hit of hits) {
+          if (hit.kind === 'crystal') {
+            if (!state.items.includes(hit)) continue;
+            state.items = state.items.filter(item => item !== hit);
+            addLog('折射光束击碎了冰晶。', 'highlight');
+          } else if (state.barrels.includes(hit)) {
+            addLog('光束点燃了火药桶。', 'highlight');
+            detonateBarrel(hit.x, hit.y);
+          }
+        }
+        hits = computeLasers(state);
+      }
     }
 
     function isWalkable(x, y, movingObject) {
-      return inBounds(x, y) && !isSolid(x, y)
-        && ![TILE.WATER, TILE.HOT].includes(state.terrain[y][x])
+      return inBounds(x, y) && isOpenGround(x, y)
         && !at(objects(), x, y)
+        && !state.items.some(item => item.kind === 'crystal' && item.x === x && item.y === y)
         && (!movingObject || !(state.player.x === x && state.player.y === y)
           && !at(state.npcs.filter(npc => !npc.collected), x, y));
     }
@@ -288,7 +333,8 @@ const MacondoPuzzle = (() => {
       while (true) {
         if (cx === x1 && cy === y1) return true;
         if (!(cx === x0 && cy === y0)) {
-          if (isSolid(cx, cy) || at(state.curtains, cx, cy)) {
+          if (isSolid(cx, cy) || at(state.curtains, cx, cy)
+            || state.items.some(item => item.kind === 'crystal' && item.x === cx && item.y === cy)) {
             return false;
           }
         }
@@ -310,15 +356,20 @@ const MacondoPuzzle = (() => {
 
     // 引爆火药桶（摧毁自身及上下左右相邻的裂纹石墙）
     function detonateBarrel(bx, by) {
+      if (!at(state.barrels, bx, by)) return;
       state.barrels = state.barrels.filter(b => !(b.x === bx && b.y === by));
       spawnExplosion(bx, by, '#e05a2b');
 
       const dirs = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]];
       let destroyedWall = false;
+      const adjacentBarrels = [];
       dirs.forEach(([dx, dy]) => {
         const nx = bx + dx;
         const ny = by + dy;
         if (nx >= 0 && nx < level.cols && ny >= 0 && ny < level.rows) {
+          const barrel = at(state.barrels, nx, ny);
+          if (barrel) adjacentBarrels.push(barrel);
+          state.items = state.items.filter(item => !(item.kind === 'crystal' && item.x === nx && item.y === ny));
           if (state.terrain[ny][nx] === TILE.CRACKED_WALL) {
             state.terrain[ny][nx] = TILE.FLOOR;
             if (level.archiveWall?.x === nx && level.archiveWall?.y === ny) state.archiveDestroyed = true;
@@ -335,6 +386,7 @@ const MacondoPuzzle = (() => {
       } else {
         addLog('火药桶在空地上炸开，硝烟弥漫在马孔多的空气里。', 'normal');
       }
+      for (const barrel of adjacentBarrels) detonateBarrel(barrel.x, barrel.y);
     }
 
     // 回合结束后的环境与接触结算
@@ -346,6 +398,7 @@ const MacondoPuzzle = (() => {
         if (item.kind === 'relic') {
           state.relicCollected = true;
           addLog('你找到了这一幕的羊皮纸残页。', 'highlight');
+          if (level.id === 2) grantAbility('MELQUIADES');
         } else if (item.kind === 'ice') {
           state.localFlags.ICE_PRESERVED = true;
           addLog('你把冷冽的冰块裹好，准备带出庄园。', 'highlight');
@@ -369,9 +422,7 @@ const MacondoPuzzle = (() => {
           if (dist <= 1) {
             npc.collected = true;
             const def = CHARACTER_DEFS[npc.id];
-            if (!state.abilities[npc.id].unlocked) {
-              state.abilities[npc.id] = { unlocked: true, charges: def.charges };
-            }
+            grantAbility(npc.id);
             addLog(def.quote, 'character');
             spawnExplosion(npc.x, npc.y, '#c59b27');
           }
@@ -381,17 +432,21 @@ const MacondoPuzzle = (() => {
       if (level.forge && state.gold >= 2 && !state.localFlags.GOLD_FISH_FORGED
         && Math.abs(x - level.forge.x) + Math.abs(y - level.forge.y) <= 1) {
         state.localFlags.GOLD_FISH_FORGED = true;
+        grantAbility('PILAR');
         addLog('上校用两枚金屑锻成小金鱼。后两幕携带上校时可多挡一次攻击。', 'highlight');
       }
 
       updateGates();
       if (advancesTime) advanceGuards();
       updateTide();
+      updateHurricane();
       state.curtains = state.curtains.filter(curtain => curtain.expires > state.turn);
-      computeLasers(state);
-      if (state.tideHigh && state.terrain[y][x] === TILE.SHALLOWS) {
+      resolveBeams();
+      const underfoot = state.terrain[y][x];
+      if ((state.tideHigh && underfoot === TILE.SHALLOWS) || underfoot === TILE.RUBBLE) {
         state.status = 'DEAD';
-        state.deathReason = '涨潮淹没了脚下的浅滩。可以撤销一步，回到岸边等待退潮。';
+        state.deathReason = underfoot === TILE.RUBBLE ? '飓风卷过了脚下的地面。可以撤销一步，退回安全处。'
+          : '涨潮淹没了脚下的浅滩。可以撤销一步，回到岸边等待退潮。';
         addLog(state.deathReason, 'danger');
         renderUI();
         return;
@@ -418,6 +473,9 @@ const MacondoPuzzle = (() => {
       // 4. 检查是否抵达羊皮纸密室 (GOAL)
       if (state.terrain[state.player.y][state.player.x] === TILE.GOAL) {
         state.status = 'WON';
+        if (level.hurricane) {
+          state.endingId = relicCount() === 4 ? 'TRUTH' : 'ESCAPE';
+        }
         if (level.archiveWall && !state.archiveDestroyed) {
           state.localFlags.ARCHIVE_INTACT = true;
           addLog('档案完整保留下来。', 'highlight');
@@ -448,6 +506,27 @@ const MacondoPuzzle = (() => {
       if (drifting.length) addLog('涨潮把河边的箱桶推了一个格子。', 'highlight');
     }
 
+    function hurricaneRing(x, y) {
+      return Math.min(x, y, level.cols - 1 - x, level.rows - 1 - y) - 1;
+    }
+
+    function updateHurricane() {
+      if (!level.hurricane) return;
+      const { warningTurn, collapseTurn, ringInterval } = level.hurricane;
+      const elapsed = state.turn - collapseTurn;
+      if (state.turn === warningTurn) addLog('飓风开始围拢，虚线标出了下一圈将坍塌的格子。', 'warning');
+      if (elapsed < 0 || elapsed % ringInterval !== 0) return;
+      const ring = elapsed / ringInterval;
+      for (let y = 0; y < level.rows; y++) {
+        for (let x = 0; x < level.cols; x++) {
+          if (hurricaneRing(x, y) === ring && ![TILE.WALL, TILE.GOAL].includes(state.terrain[y][x])) {
+            state.terrain[y][x] = TILE.RUBBLE;
+          }
+        }
+      }
+      if (ring < Math.floor(Math.min(level.cols, level.rows) / 2)) addLog('一圈地面被飓风卷走。', 'warning');
+    }
+
     function waitTurn() {
       if (state.status !== 'PLAYING' || !canWait()) return;
       clearSkillMode();
@@ -463,6 +542,12 @@ const MacondoPuzzle = (() => {
         const weighted = Boolean(at(objects(), gate.plate.x, gate.plate.y));
         const activated = state.levers.some(lever => lever.id === gate.id && lever.on);
         gate.open = (weighted || activated) !== state.reversed;
+      }
+    }
+
+    function grantAbility(id) {
+      if (!state.abilities[id].unlocked) {
+        state.abilities[id] = { unlocked: true, charges: CHARACTER_DEFS[id].charges };
       }
     }
 
@@ -489,7 +574,7 @@ const MacondoPuzzle = (() => {
 
     // 玩家移动一步
     function tryMove(dx, dy) {
-      if (state.status !== 'PLAYING') return;
+      if (state.status !== 'PLAYING' || Math.abs(dx) + Math.abs(dy) !== 1) return;
       if (interactionMode !== 'MOVE') {
         cancelSkillMode();
       }
@@ -509,7 +594,7 @@ const MacondoPuzzle = (() => {
     function toggleSkill(skillId) {
       if (state.status !== 'PLAYING') return;
       const ab = state.abilities[skillId];
-      if (!ab || ab.charges <= 0 || CHARACTER_DEFS[skillId].type === 'PASSIVE_SHIELD') return;
+      if (!ab || ab.charges <= 0 || CHARACTER_DEFS[skillId].type.startsWith('PASSIVE')) return;
       if (state.turn < state.mistUntil) return;
       if (activeAbility === skillId) {
         cancelSkillMode();
@@ -654,7 +739,18 @@ const MacondoPuzzle = (() => {
       const dy = gy - state.player.y;
       if (Math.abs(dx) + Math.abs(dy) !== 1) return;
       const mirror = at(state.mirrors, gx, gy);
-      if (mirror) {
+      const seal = at(state.seals, gx, gy);
+      if (seal && !seal.open) {
+        if (state.abilities.BABYLON?.unlocked) {
+          takeTurn(() => {
+            seal.open = true;
+            addLog('巴比伦译出了铭文，古梵文封印开启。', 'highlight');
+          });
+        } else {
+          addLog('古梵文封印需要巴比伦解译。', 'warning');
+          renderUI();
+        }
+      } else if (mirror) {
         takeTurn(() => {
           mirror.slash = !mirror.slash;
           addLog('你拨转了铜镜。', 'highlight');
@@ -811,6 +907,9 @@ const MacondoPuzzle = (() => {
             drawGoalTile(px, py, tileSize, t);
           } else if (tile === TILE.LASER_EMITTER) {
             drawEmitterTile(px, py, tileSize, t);
+          } else if (tile === TILE.RUBBLE) {
+            drawWallTile(px, py, tileSize);
+            drawBoardMark(px, py, '墟', '#efc389');
           } else if (tile === TILE.SHALLOWS) {
             drawWaterTile(px, py, tileSize, t, x, y);
             if (!state.tideHigh) {
@@ -829,12 +928,27 @@ const MacondoPuzzle = (() => {
             ctx.fillRect(px + 2, py + 2, tileSize - 4, tileSize - 4);
             drawBoardMark(px, py, tile === TILE.HOT ? '热' : '雾');
           }
+          if (level.hurricane && ![TILE.WALL, TILE.RUBBLE, TILE.GOAL].includes(tile)) {
+            const ring = hurricaneRing(x, y);
+            const { warningTurn, collapseTurn, ringInterval } = level.hurricane;
+            if (ring >= 0 && state.turn >= warningTurn + ring * ringInterval
+              && state.turn < collapseTurn + ring * ringInterval) {
+              ctx.strokeStyle = '#9e2a2b';
+              ctx.lineWidth = 2;
+              ctx.setLineDash([3, 3]);
+              ctx.strokeRect(px + 2, py + 2, tileSize - 4, tileSize - 4);
+              ctx.setLineDash([]);
+            }
+          }
         }
       }
 
       for (const gate of state.gates) {
         drawBoardMark(gate.plate.x * tileSize, gate.plate.y * tileSize, '踏', '#875325');
         drawBoardMark(gate.x * tileSize, gate.y * tileSize, gate.open ? '开' : '栅');
+      }
+      for (const seal of state.seals) {
+        drawBoardMark(seal.x * tileSize, seal.y * tileSize, seal.open ? '开' : '印', '#704e72');
       }
       for (const lever of state.levers) drawBoardMark(lever.x * tileSize, lever.y * tileSize, '杆', '#9e2a2b');
       for (const curtain of state.curtains) drawBoardMark(curtain.x * tileSize, curtain.y * tileSize, '纱', '#574360');
@@ -1331,6 +1445,14 @@ const MacondoPuzzle = (() => {
       }
     }
 
+    function hurricaneLabel() {
+      const { warningTurn, collapseTurn, ringInterval } = level.hurricane;
+      if (state.turn < warningTurn) return `风圈第 ${warningTurn} 回合预警，第 ${collapseTurn} 回合开始坍塌。`;
+      const nextRing = state.turn < collapseTurn ? collapseTurn
+        : collapseTurn + (Math.floor((state.turn - collapseTurn) / ringInterval) + 1) * ringInterval;
+      return `飓风正在合围 · 下一圈第 ${nextRing} 回合坍塌`;
+    }
+
     function renderUI() {
       const present = new Set([...loadout, ...level.npcs.map(npc => npc.id)]);
       const cards = Object.values(CHARACTER_DEFS).filter(character => present.has(character.id)).map(({ id, name, abilityName, iconId, desc, type }) => {
@@ -1347,7 +1469,8 @@ const MacondoPuzzle = (() => {
           charges,
           blocked: state.turn < state.mistUntil,
           isActive,
-          isPassive: type === 'PASSIVE_SHIELD'
+          isPassive: type.startsWith('PASSIVE'),
+          passiveLabel: type === 'PASSIVE_RUNE' ? '可译封印' : `护盾 ${charges} 次`
         };
       });
 
@@ -1358,8 +1481,10 @@ const MacondoPuzzle = (() => {
           settled: state.settled,
           iconId: 'butterfly',
           iconUri: Icons.getIconDataUri('butterfly'),
-          title: '羊皮纸的预言已然应验',
-          description: `你在第 ${state.turn} 回合集齐了家族三代人的执念与勇气，成功抵达梅尔基亚德斯的羊皮纸密室。`
+          title: state.endingId === 'TRUTH' ? '百年真相完全破译' : state.endingId === 'ESCAPE' ? '飓风掠境前的仓促撤离' : '羊皮纸的预言已然应验',
+          description: state.endingId === 'TRUTH' ? '四枚残页与终局手稿拼在一起。巴比伦终于读完了家族的百年故事。'
+            : state.endingId === 'ESCAPE' ? '你带着尚未读全的手稿离开密室。回到编年史可以补齐残页，再来读完最后一行。'
+              : `你在第 ${state.turn} 回合完成了「${level.title}」。`
         };
       } else if (state.status === 'DEAD') {
         ending = {
@@ -1378,11 +1503,13 @@ const MacondoPuzzle = (() => {
           causalHints: (act.causalHints || []).map(hint => ({ ...hint, active: progress.worldFlags[hint.flag] }))
         })),
         storageFailed,
+        relicCount: relicCount(),
         relicCollected: state.relicCollected,
         turn: state.turn,
         canUndo: historyStack.length > 0,
         canWait: canWait(),
-        tideLabel: level.tide ? (state.tideHigh ? '涨潮中 · 下一回合退潮' : '退潮中 · 下一回合涨潮') : '',
+        hazardLabel: level.tide ? (state.tideHigh ? '涨潮中 · 下一回合退潮' : '退潮中 · 下一回合涨潮')
+          : level.hurricane ? hurricaneLabel() : '',
         banner,
         bannerIconId,
         bannerIconUri: bannerIconId ? Icons.getIconDataUri(bannerIconId) : '',
