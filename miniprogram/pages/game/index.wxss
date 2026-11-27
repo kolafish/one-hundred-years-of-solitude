@@ -11,7 +11,6 @@ page {
   padding: 22rpx 24rpx 56rpx;
 }
 
-.directions,
 .ending-actions,
 .notice,
 .game-meta {
@@ -193,19 +192,7 @@ page {
 .board-action-row .control { flex: none; width: auto; white-space: nowrap; }
 .board-action-row .board-caption { margin: 0; }
 
-.directions {
-  justify-content: center;
-  gap: 16rpx;
-  margin: 12rpx 0 24rpx;
-}
-
-.directions .direction {
-  flex: none;
-  width: 46px;
-  max-width: 46px;
-  padding: 0;
-  font-size: 38rpx;
-}
+.board-gesture-hint { text-align: center; }
 
 .panel {
   margin-bottom: 20rpx;

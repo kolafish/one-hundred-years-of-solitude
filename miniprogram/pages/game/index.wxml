@@ -30,7 +30,7 @@
   <view class="board-frame">
     <view class="board" style="padding-bottom: {{boardRatio}}%;">
       <canvas id="game-canvas" type="2d" class="board-canvas"></canvas>
-      <view class="hit-grid" bindtap="tapTile">
+      <view class="hit-grid" bindtap="tapTile" bindtouchstart="startBoardTouch" catchtouchmove="trackBoardTouch" bindtouchend="endBoardTouch" bindtouchcancel="cancelBoardTouch">
         <view class="hit-row" wx:for="{{rows}}" wx:for-item="row" wx:key="*this">
           <view class="hit-tile" wx:for="{{columns}}" wx:for-item="col" wx:key="*this" data-row="{{row}}" data-col="{{col}}"></view>
         </view>
@@ -47,12 +47,7 @@
     <button class="control" hover-class="pressed" bindtap="prepareBoard">重新加载</button>
   </view>
 
-  <view class="directions" wx:if="{{!ending || ending.settled}}">
-    <button class="control direction" aria-label="向左移动" data-dx="-1" data-dy="0" hover-class="pressed" bindtap="move">←</button>
-    <button class="control direction" aria-label="向上移动" data-dx="0" data-dy="-1" hover-class="pressed" bindtap="move">↑</button>
-    <button class="control direction" aria-label="向下移动" data-dx="0" data-dy="1" hover-class="pressed" bindtap="move">↓</button>
-    <button class="control direction" aria-label="向右移动" data-dx="1" data-dy="0" hover-class="pressed" bindtap="move">→</button>
-  </view>
+  <view class="board-caption board-gesture-hint">在棋盘上滑动，每次走一格。</view>
 
   <scroll-view wx:if="{{hasInteractions}}" class="board-controls" scroll-x aria-label="附近可操作机关">
     <view class="board-action-row">

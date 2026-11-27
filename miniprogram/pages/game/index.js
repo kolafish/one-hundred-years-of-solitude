@@ -2,6 +2,7 @@ const { createGame, LEVELS } = require("../../game/macondo.js");
 const MacondoIcons = require("../../game/icons.js");
 const { KEY } = require("../../game/progress.js");
 const SOUND_KEY = "macondo_relic_sound";
+const SWIPE_DISTANCE = 24;
 
 Page({
   data: {
@@ -84,6 +85,7 @@ Page({
 
   onHide() {
     this.visible = false;
+    this.cancelBoardTouch();
     this.stopDrawing();
     this.relicSound?.stop();
   },
@@ -175,7 +177,52 @@ Page({
     this.frameId = null;
   },
 
+  startBoardTouch({ touches }) {
+    this.cancelBoardTouch();
+    if (touches.length !== 1 || this.data.preparation) return;
+    this.boardTouch = touches[0];
+    this.ignoreBoardTap = false;
+  },
+
+  trackBoardTouch({ touches }) {
+    const start = this.boardTouch;
+    if (!start) return;
+    const touch = touches[0];
+    if (touches.length !== 1 || touch.identifier !== start.identifier) {
+      this.cancelBoardTouch();
+      return;
+    }
+    const dx = touch.clientX - start.clientX;
+    const dy = touch.clientY - start.clientY;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) >= SWIPE_DISTANCE) this.ignoreBoardTap = true;
+  },
+
+  endBoardTouch({ touches, changedTouches }) {
+    const start = this.boardTouch;
+    this.boardTouch = null;
+    if (!start) return;
+    const touch = changedTouches[0];
+    if (touches.length || touch?.identifier !== start.identifier) {
+      this.ignoreBoardTap = true;
+      return;
+    }
+    const dx = touch.clientX - start.clientX;
+    const dy = touch.clientY - start.clientY;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_DISTANCE) return;
+    this.ignoreBoardTap = true;
+    if (!this.data.inspecting || this.data.preparation) return;
+
+    if (Math.abs(dx) >= Math.abs(dy)) this.game.tryMove(Math.sign(dx), 0);
+    else this.game.tryMove(0, Math.sign(dy));
+  },
+
+  cancelBoardTouch() {
+    this.boardTouch = null;
+    this.ignoreBoardTap = true;
+  },
+
   tapTile(event) {
+    if (this.ignoreBoardTap && event.changedTouches?.length) return;
     const { col, row } = event.target.dataset;
     if (col !== undefined && row !== undefined) {
       const x = Number(col);
@@ -199,11 +246,6 @@ Page({
     this.setData({ showLegend: !this.data.showLegend });
   },
 
-  move(event) {
-    const { dx, dy } = event.currentTarget.dataset;
-    this.game.tryMove(Number(dx), Number(dy));
-  },
-
   waitTurn() {
     this.game.waitTurn();
   },
@@ -217,6 +259,7 @@ Page({
   },
 
   reset() {
+    this.cancelBoardTouch();
     this.inspectedTile = null;
     this.game.resetLevel();
   },
@@ -266,6 +309,7 @@ Page({
   beginAct() {
     const { id, picked } = this.data.preparation;
     const inspectedTile = this.inspectedTile;
+    this.cancelBoardTouch();
     this.inspectedTile = null;
     if (this.game.startLevel(id, picked)) this.setData({ preparation: null, showHints: false, showLegend: false });
     else this.inspectedTile = inspectedTile;
