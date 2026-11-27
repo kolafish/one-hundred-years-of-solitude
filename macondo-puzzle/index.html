@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>马孔多的羊皮纸：百年孤独解谜</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png" />
+  <!-- Regenerate from the repository root: npx --yes tailwindcss@3.4.17 --content ./macondo-puzzle/index.html --output ./macondo-puzzle/tailwind.css --minify -->
+  <link rel="stylesheet" href="./tailwind.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --parchment-bg: #f4ebd9;
+      --parchment-dark: #e6d6b8;
+      --ink-main: #2c1e16;
+      --ink-muted: #5c4332;
+      --sepia-accent: #8b4513;
+      --gold-highlight: #c59b27;
+      --crimson-laser: #9e2a2b;
+    }
+
+    body {
+      font-family: 'Noto Serif SC', Georgia, 'Songti SC', SimSun, serif;
+      -webkit-font-smoothing: antialiased;
+      background-color: #241912;
+      background-image: radial-gradient(circle at 50% 30%, #3a271c 0%, #1c130d 100%);
+      color: var(--ink-main);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 羊皮纸质感容器 */
+    .parchment-panel {
+      background-color: var(--parchment-bg);
+      background-image:
+        radial-gradient(rgba(139, 69, 19, 0.08) 1px, transparent 0),
+        linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(197,155,39,0.08) 100%);
+      background-size: 20px 20px, 100% 100%;
+      border: 2px solid #6e472b;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), inset 0 0 24px rgba(139, 69, 19, 0.18);
+    }
+
+    .parchment-card {
+      background-color: rgba(230, 214, 184, 0.72);
+      border: 1.5px solid #8b5a2b;
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .parchment-card:hover:not(:disabled) {
+      transform: translateY(-2px);
+      border-color: var(--gold-highlight);
+      box-shadow: 0 4px 12px rgba(139, 69, 19, 0.25);
+    }
+
+    .parchment-card.active-skill {
+      background-color: #fdf6e7;
+      border: 2px solid var(--crimson-laser);
+      box-shadow: 0 0 0 3px rgba(158, 42, 43, 0.25);
+    }
+
+    /* 自定义滚动条 */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(139, 69, 19, 0.1);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #8b5a2b;
+      border-radius: 4px;
+    }
+
+    canvas {
+      display: block;
+      margin-inline: auto;
+      border-radius: 8px;
+      box-shadow: inset 0 0 18px rgba(44, 30, 22, 0.35), 0 6px 18px rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 md:p-6">
+
+  <!-- 主游戏容器 -->
+  <main class="parchment-panel w-full max-w-6xl rounded-xl p-3 sm:p-5 md:p-6 flex flex-col gap-4">
+
+    <!-- 顶部标题栏 -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-[#8b5a2b]/40 pb-3 gap-2">
+      <div>
+        <a href="../" class="inline-flex items-center min-h-10 text-xs sm:text-sm font-semibold text-[#6e472b] underline underline-offset-2">← 返回首页</a>
+        <div class="flex items-center gap-2">
+          <span class="text-xl sm:text-2xl">🦋</span>
+          <h1 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-wide text-balance text-[#2c1e16]">
+            马孔多的羊皮纸 <span class="text-sm sm:text-base font-normal text-[#8b4513]">· 百年孤独机关录</span>
+          </h1>
+        </div>
+        <p class="text-xs sm:text-sm text-[#5c4332] mt-1">
+          第一幕：布恩迪亚庄园的烈日与火药 —— 借用家族宿命之力，抵达梅尔基亚德斯的羊皮纸密室
+        </p>
+      </div>
+
+      <!-- 顶部操作按钮组 -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="px-3 py-1.5 rounded-lg bg-[#e6d6b8] border border-[#8b5a2b] text-xs sm:text-sm font-semibold">
+          回合：<span id="turn-count" class="text-[#9e2a2b] font-bold tabular-nums">0</span>
+        </div>
+        <button id="btn-undo" class="min-h-10 px-3 py-1.5 rounded-lg bg-[#e6d6b8] hover:bg-[#d8c39e] active:scale-[0.96] border border-[#8b5a2b] text-xs sm:text-sm font-semibold transition flex items-center gap-1" title="撤销上一步 (Z)">
+          ↩️ 撤销一步
+        </button>
+        <button id="btn-reset" class="min-h-10 px-3 py-1.5 rounded-lg bg-[#e6d6b8] hover:bg-[#d8c39e] active:scale-[0.96] border border-[#8b5a2b] text-xs sm:text-sm font-semibold transition flex items-center gap-1" title="重置关卡 (R)">
+          🔄 重置轮回
+        </button>
+        <button id="btn-hint" class="min-h-10 px-3 py-1.5 rounded-lg bg-[#c59b27]/25 hover:bg-[#c59b27]/40 active:scale-[0.96] border border-[#c59b27] text-[#5c3a00] text-xs sm:text-sm font-bold transition flex items-center gap-1">
+          📜 羊皮纸启示
+        </button>
+      </div>
+    </header>
+
+    <!-- 核心区域：左侧网格画布 + 右侧状态与能力面板 -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+
+      <!-- 左侧：画布与操作提示 -->
+      <div class="lg:col-span-7 min-w-0 flex flex-col gap-2">
+        <div id="canvas-wrapper" class="w-full relative rounded-lg overflow-hidden border-2 border-[#5c3a21] bg-[#e9dcc3]">
+          <canvas id="game-canvas"></canvas>
+
+          <!-- 行动模式提示浮条 -->
+          <div id="action-banner" class="hidden pointer-events-none absolute top-2 left-1/2 -translate-x-1/2 w-max max-w-[calc(100%-1rem)] px-4 py-1.5 rounded-lg bg-[#2c1e16]/90 text-[#f4ebd9] text-center text-xs sm:text-sm font-semibold shadow-lg border border-[#c59b27] z-10">
+            提示文本
+          </div>
+        </div>
+
+        <!-- 底部图例与移动端方向键 -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-2 bg-[#e6d6b8]/60 p-2.5 rounded-lg border border-[#8b5a2b]/40 text-xs text-[#4a3525]">
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span>🧭 <b>移动</b>：方向键 / WASD / 点击相邻格</span>
+            <span>🔥 <b>烈日聚焦光束</b>：致命（需护盾）</span>
+            <span>🌊 <b>马孔多河</b>：阻挡步行，子弹与投掷可越过</span>
+          </div>
+          <!-- 移动端触控十字键 -->
+          <div class="flex sm:hidden items-center gap-1.5 mt-1">
+            <button data-dir="left" aria-label="向左移动" class="dpad-btn w-10 h-10 rounded-lg bg-[#d8c39e] border border-[#8b5a2b] font-bold active:bg-[#c59b27]">◀</button>
+            <button data-dir="up" aria-label="向上移动" class="dpad-btn w-10 h-10 rounded-lg bg-[#d8c39e] border border-[#8b5a2b] font-bold active:bg-[#c59b27]">▲</button>
+            <button data-dir="down" aria-label="向下移动" class="dpad-btn w-10 h-10 rounded-lg bg-[#d8c39e] border border-[#8b5a2b] font-bold active:bg-[#c59b27]">▼</button>
+            <button data-dir="right" aria-label="向右移动" class="dpad-btn w-10 h-10 rounded-lg bg-[#d8c39e] border border-[#8b5a2b] font-bold active:bg-[#c59b27]">▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧：人物能力行囊 & 羊皮纸编年史 -->
+      <div class="lg:col-span-5 flex flex-col gap-3">
+
+        <!-- 家族执念与道具栏 -->
+        <div class="bg-[#e6d6b8]/50 rounded-xl p-3 border border-[#8b5a2b]/50">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-sm sm:text-base font-bold text-[#2c1e16] flex items-center gap-1.5">
+              <span>🗝️</span> 家族馈赠（能力与道具）
+            </h2>
+            <span class="text-xs text-[#6e472b]">靠近人物即可继承执念</span>
+          </div>
+
+          <div id="inventory-list" class="flex flex-col gap-2">
+            <!-- 动态渲染三张人物能力卡 -->
+          </div>
+        </div>
+
+        <!-- 羊皮纸编年史（叙事日志） -->
+        <div class="bg-[#e6d6b8]/50 rounded-xl p-3 border border-[#8b5a2b]/50 flex flex-col h-52 sm:h-60">
+          <div class="flex items-center justify-between mb-1.5">
+            <h2 class="text-sm sm:text-base font-bold text-[#2c1e16] flex items-center gap-1.5">
+              <span>✒️</span> 马孔多编年史
+            </h2>
+            <span class="text-[11px] text-[#8b4513] italic">“家族的第一个人被捆在树上……”</span>
+          </div>
+          <div id="chronicle-log" class="flex-1 overflow-y-auto pr-1 space-y-2 text-xs sm:text-sm leading-relaxed">
+            <!-- 日志条目 -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- 羊皮纸启示（关卡攻略提示）弹窗 -->
+  <div id="hint-modal" class="hidden fixed inset-0 bg-black/65 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="parchment-panel max-w-lg w-full max-h-full overflow-y-auto rounded-xl p-5 sm:p-6 relative">
+      <h3 class="text-lg sm:text-xl font-bold text-[#2c1e16] border-b border-[#8b5a2b]/40 pb-2 mb-3 flex items-center gap-2">
+        <span>📜</span> 梅尔基亚德斯的羊皮纸启示
+      </h3>
+      <ol class="list-decimal list-inside space-y-2 text-xs sm:text-sm text-[#3d291a] leading-relaxed">
+        <li><b>继承投掷之力</b>：向右走遇到<b>何塞·阿尔卡蒂奥</b>，获得【投掷】能力（可将身旁的火药桶跨河投出至多 3 格）。</li>
+        <li><b>继承宿命护盾</b>：向下走过河岸，遇到<b>奥雷里亚诺上校</b>，获得被动【宿命护盾】（可抵挡一次致命光束/子弹）。</li>
+        <li><b>穿越烈日死线</b>：沿木桥向右穿过红色聚焦光束，上校的护盾会替你挡下致命一击。</li>
+        <li><b>继承孤注一掷</b>：向上走到右岸遇到<b>丽贝卡</b>，获得【孤注一掷】（可隔河远距离射击指定目标）。</li>
+        <li><b>跨河爆破组合技</b>：走到<b>火药桶</b>正上方，点击【炼金投掷】，把火药桶扔到你右上方连着裂纹石墙的<b>木桥</b>上。随后点击【孤注一掷】引爆火药桶，打开通往<b>羊皮纸密室</b>的路。</li>
+      </ol>
+      <div class="mt-5 flex justify-end">
+        <button id="btn-close-hint" class="min-h-10 px-4 py-2 rounded-lg bg-[#8b4513] hover:bg-[#6e350d] text-[#f4ebd9] text-sm font-semibold transition">
+          合上羊皮纸
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结局弹窗（通关或陨落） -->
+  <div id="end-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="parchment-panel max-w-md w-full max-h-full overflow-y-auto rounded-xl p-6 text-center space-y-4">
+      <div id="end-icon" class="text-4xl sm:text-5xl">📜</div>
+      <h3 id="end-title" class="text-xl sm:text-2xl font-bold text-[#2c1e16]">破译羊皮纸</h3>
+      <p id="end-desc" class="text-xs sm:text-sm text-[#4a3525] leading-relaxed italic">
+        叙述文本
+      </p>
+      <div class="pt-2 flex justify-center gap-3">
+        <button id="btn-end-undo" class="min-h-10 px-4 py-2 rounded-lg bg-[#e6d6b8] hover:bg-[#d8c39e] border border-[#8b5a2b] text-sm font-semibold transition">
+          ↩️ 撤销上一步
+        </button>
+        <button id="btn-end-restart" class="min-h-10 px-4 py-2 rounded-lg bg-[#8b4513] hover:bg-[#6e350d] text-[#f4ebd9] text-sm font-semibold transition">
+          🔄 再次踏入马孔多
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * 《马孔多的羊皮纸：百年孤独解谜》
+     * 核心架构：数据驱动网格状态机 + Undo 历史栈 + Canvas 复古羊皮纸渲染器
+     */
+
+    // ==========================================
+    // 1. 常量与关卡蓝图定义 (10x8 网格)
+    // ==========================================
+    const COLS = 10;
+    const ROWS = 8;
+
+    // 地形类型
+    const TILE = {
+      FLOOR: 0,
+      WALL: 1,
+      WATER: 2,
+      BRIDGE: 3,
+      CRACKED_WALL: 4, // 必须由火药桶爆炸摧毁的裂纹石墙
+      GOAL: 5,         // 梅尔基亚德斯的羊皮纸密室
+      LASER_EMITTER: 6 // 烈日放大镜发射器（向下发射光束）
+    };
+
+    // 第一关地图蓝图 (10列 x 8行)
+    // 设计验证：
+    // - 玩家起点 (1,1)
+    // - 何塞 (2,1) -> 授予 [THROW] 投掷能力
+    // - 上校 (2,6) -> 授予 [SHIELD] 宿命护盾（被动中弹不死）
+    // - 外河 x=3 (y=1..4, 6)，木桥在 (3,5)
+    // - 烈日发射器在 (4,1)，光束垂直向下覆盖 (4,2)~(4,6)，封锁去往右半区的必经之路
+    // - 丽贝卡 (5,2) -> 授予 [SNIPE] 开枪必中
+    // - 火药桶 (5,6) -> 玩家站在 (5,5) 使用投掷，把火药桶扔到 (6,4) 的木桥上
+    // - 内河 x=6 (y=1..3, 5..6)，内河木桥在 (6,4)
+    // - 裂纹石墙 (7,4) 挡在羊皮纸密室 (8,4) 前；丽贝卡引爆木桥上的火药桶后可炸开石墙
+    const LEVEL_1_TERRAIN = [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // y=0
+      [1, 0, 0, 2, 6, 0, 2, 1, 1, 1], // y=1: (4,1) 烈日发射器
+      [1, 0, 1, 2, 0, 0, 2, 1, 1, 1], // y=2: (5,2) 丽贝卡
+      [1, 0, 0, 2, 0, 0, 2, 0, 1, 1], // y=3
+      [1, 0, 1, 2, 0, 0, 3, 4, 5, 1], // y=4: (6,4)内桥, (7,4)裂纹墙, (8,4)终点
+      [1, 0, 0, 3, 0, 0, 2, 1, 1, 1], // y=5: (3,5)外桥, (4,5)穿过光束
+      [1, 0, 0, 2, 0, 0, 2, 1, 1, 1], // y=6: (2,6) 上校, (5,6)火药桶
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  // y=7
+    ];
+
+    // 家族人物元信息
+    const CHARACTER_DEFS = {
+      JOSE: {
+        id: 'JOSE',
+        name: '何塞·阿尔卡蒂奥',
+        abilityName: '炼金投掷',
+        type: 'ACTIVE_THROW',
+        icon: '🧲',
+        color: '#8b4513',
+        desc: '选中身旁火药桶，越过河流投掷至 3 格内任意空地。',
+        quote: '“任何东西都有生命，问题在于如何唤醒它们的灵魂。”——你获得了何塞的【炼金投掷】之力！'
+      },
+      AURELIANO: {
+        id: 'AURELIANO',
+        name: '奥雷里亚诺上校',
+        abilityName: '宿命护盾',
+        type: 'PASSIVE_SHIELD',
+        icon: '🎖️',
+        color: '#b45309',
+        desc: '被动生效：抵挡一次致命光束或子弹，穿胸而不伤及要害。',
+        quote: '“他躲过了十四次暗杀、七十三次埋伏和一次枪决。”——上校的【宿命护盾】已庇佑你！'
+      },
+      REBECA: {
+        id: 'REBECA',
+        name: '丽贝卡',
+        abilityName: '孤注一掷',
+        type: 'ACTIVE_SNIPE',
+        icon: '🔫',
+        color: '#9e2a2b',
+        desc: '开枪必中：点击视野内任意目标，隔河精准射爆火药桶。',
+        quote: '一声清脆的枪响划破午后的闷热。——你继承了丽贝卡的【孤注一掷】枪法！'
+      }
+    };
+
+    // ==========================================
+    // 2. 游戏状态管理
+    // ==========================================
+    let state = null;
+    let historyStack = []; // 用于撤销（Undo）
+    let particles = [];    // 粒子特效（光束微粒、爆炸火花、蝴蝶）
+    let animFrameId = null;
+    let lastTime = 0;
+
+    // 交互模式：'MOVE' | 'SELECT_THROW_SOURCE' | 'SELECT_THROW_TARGET' | 'SELECT_SNIPE_TARGET'
+    let interactionMode = 'MOVE';
+    let selectedBarrelPos = null;
+    let hoverTile = null;
+
+    // 创建初始关卡状态
+    function createInitialState() {
+      return {
+        turn: 0,
+        status: 'PLAYING', // 'PLAYING' | 'WON' | 'DEAD'
+        player: { x: 1, y: 1 },
+        terrain: LEVEL_1_TERRAIN.map(row => [...row]),
+        npcs: [
+          { id: 'JOSE', x: 2, y: 1, collected: false },
+          { id: 'AURELIANO', x: 2, y: 6, collected: false },
+          { id: 'REBECA', x: 5, y: 2, collected: false }
+        ],
+        barrels: [
+          { x: 5, y: 6 }
+        ],
+        abilities: {
+          JOSE: { unlocked: false, charges: 0 },
+          AURELIANO: { unlocked: false, charges: 0 },
+          REBECA: { unlocked: false, charges: 0 }
+        },
+        laserTiles: [], // 实时计算的激光射线坐标
+        logs: [
+          {
+            turn: 0,
+            type: 'story',
+            text: '多年以后，站在梅尔基亚德斯的羊皮纸密室前，你仍会想起马孔多那个炙热的午后。'
+          }
+        ]
+      };
+    }
+
+    // 深拷贝状态用于撤销栈
+    function cloneState(s) {
+      return JSON.parse(JSON.stringify(s));
+    }
+
+    function pushHistory() {
+      historyStack.push(cloneState(state));
+      if (historyStack.length > 50) historyStack.shift();
+    }
+
+    // ==========================================
+    // 3. 核心解谜逻辑与回合结算 (Dweep 引擎)
+    // ==========================================
+
+    // 重新计算所有发射器的激光路径
+    function computeLasers(targetState) {
+      const beams = [];
+      for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+          if (targetState.terrain[y][x] === TILE.LASER_EMITTER) {
+            // 向下发射光束
+            for (let ny = y + 1; ny < ROWS; ny++) {
+              const t = targetState.terrain[ny][x];
+              // 墙壁、裂纹石墙会阻挡光束；河流与木桥不阻挡
+              if (t === TILE.WALL || t === TILE.CRACKED_WALL || t === TILE.LASER_EMITTER) {
+                break;
+              }
+              // 火药桶会阻挡光束（且若激光直接射中火药桶会引爆）
+              const barrelIdx = targetState.barrels.findIndex(b => b.x === x && b.y === ny);
+              beams.push({ x, y: ny });
+              if (barrelIdx !== -1) {
+                break;
+              }
+            }
+          }
+        }
+      }
+      targetState.laserTiles = beams;
+    }
+
+    // 检查网格是否可行走
+    function isWalkable(x, y) {
+      if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return false;
+      const t = state.terrain[y][x];
+      if (t === TILE.WALL || t === TILE.WATER || t === TILE.CRACKED_WALL || t === TILE.LASER_EMITTER) {
+        return false;
+      }
+      // 不能直接穿过未拾取的火药桶
+      if (state.barrels.some(b => b.x === x && b.y === y)) {
+        return false;
+      }
+      return true;
+    }
+
+    // 检查投掷目标格是否合法（距离<=3，且为空地或木桥，无NPC/玩家/桶）
+    function isValidThrowTarget(bx, by, tx, ty) {
+      if (tx < 0 || tx >= COLS || ty < 0 || ty >= ROWS) return false;
+      const dist = Math.abs(bx - tx) + Math.abs(by - ty);
+      if (dist === 0 || dist > 3) return false;
+      const t = state.terrain[ty][tx];
+      if (t !== TILE.FLOOR && t !== TILE.BRIDGE) return false;
+      if (state.player.x === tx && state.player.y === ty) return false;
+      if (state.barrels.some(b => b.x === tx && b.y === ty)) return false;
+      if (state.npcs.some(n => !n.collected && n.x === tx && n.y === ty)) return false;
+      return true;
+    }
+
+    // 检查直线视野（用于丽贝卡开枪必中：允许十字方向或任意无墙壁遮挡直线，这里支持同行/同列及无墙直线，兼容斜向射击！）
+    function hasLineOfSight(x0, y0, x1, y1) {
+      if (x0 === x1 && y0 === y1) return false;
+      // 使用 Bresenham 网格视线检测，任何无实心墙遮挡的格子均可射击
+      let dx = Math.abs(x1 - x0);
+      let dy = Math.abs(y1 - y0);
+      let sx = (x0 < x1) ? 1 : -1;
+      let sy = (y0 < y1) ? 1 : -1;
+      let err = dx - dy;
+      let cx = x0;
+      let cy = y0;
+
+      while (true) {
+        if (cx === x1 && cy === y1) return true;
+        if (!(cx === x0 && cy === y0)) {
+          const t = state.terrain[cy][cx];
+          if (t === TILE.WALL || t === TILE.CRACKED_WALL || t === TILE.LASER_EMITTER) {
+            return false;
+          }
+        }
+        let e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; cx += sx; }
+        if (e2 < dx) { err += dx; cy += sy; }
+      }
+    }
+
+    // 添加日志
+    function addLog(text, type = 'normal') {
+      state.logs.unshift({
+        turn: state.turn,
+        type,
+        text
+      });
+    }
+
+    // 引爆火药桶（摧毁自身及上下左右相邻的裂纹石墙）
+    function detonateBarrel(bx, by) {
+      state.barrels = state.barrels.filter(b => !(b.x === bx && b.y === by));
+      spawnExplosion(bx, by, '#e05a2b');
+
+      const dirs = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]];
+      let destroyedWall = false;
+      dirs.forEach(([dx, dy]) => {
+        const nx = bx + dx;
+        const ny = by + dy;
+        if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS) {
+          if (state.terrain[ny][nx] === TILE.CRACKED_WALL) {
+            state.terrain[ny][nx] = TILE.FLOOR;
+            destroyedWall = true;
+            spawnExplosion(nx, ny, '#c59b27');
+          }
+        }
+      });
+
+      if (destroyedWall) {
+        addLog('轰然巨响中，火药桶炸碎了古老的裂纹石墙，通往密室的道路豁然开朗！', 'highlight');
+      } else {
+        addLog('火药桶在空地上炸开，硝烟弥漫在马孔多的空气里。', 'normal');
+      }
+    }
+
+    // 回合结束后的环境与接触结算
+    function resolveTurn() {
+      // 1. 检查是否接触或靠近家族人物（踩上或相邻即可触发对话继承能力）
+      state.npcs.forEach(npc => {
+        if (!npc.collected) {
+          const dist = Math.abs(npc.x - state.player.x) + Math.abs(npc.y - state.player.y);
+          if (dist <= 1) {
+            npc.collected = true;
+            state.abilities[npc.id].unlocked = true;
+            state.abilities[npc.id].charges = 1;
+            const def = CHARACTER_DEFS[npc.id];
+            addLog(def.quote, 'character');
+            spawnExplosion(npc.x, npc.y, '#c59b27');
+          }
+        }
+      });
+
+      // 2. 重新计算激光
+      computeLasers(state);
+
+      // 3. 检查玩家是否处于激光束中
+      const inLaser = state.laserTiles.some(l => l.x === state.player.x && l.y === state.player.y);
+      if (inLaser) {
+        if (state.abilities.AURELIANO.charges > 0) {
+          // 触发奥雷里亚诺上校的【宿命护盾】
+          state.abilities.AURELIANO.charges = 0;
+          spawnExplosion(state.player.x, state.player.y, '#ffd166');
+          addLog('灼热的光束穿透了你的胸膛，却神奇地避开了心脏！奥雷里亚诺上校的【宿命护盾】救了你一命。', 'highlight');
+        } else {
+          state.status = 'DEAD';
+          addLog('烈日聚焦光束无情地吞噬了你的身影，一切化作马孔多的尘埃。', 'danger');
+          showEndModal(false);
+          renderUI();
+          return;
+        }
+      }
+
+      // 4. 检查是否抵达羊皮纸密室 (GOAL)
+      if (state.terrain[state.player.y][state.player.x] === TILE.GOAL) {
+        state.status = 'WON';
+        addLog('你推开密室尘封的木门，破译了梅尔基亚德斯的羊皮纸手稿！', 'highlight');
+        showEndModal(true);
+      }
+
+      renderUI();
+    }
+
+    // 玩家移动一步
+    function tryMove(dx, dy) {
+      if (state.status !== 'PLAYING') return;
+      if (interactionMode !== 'MOVE') {
+        cancelSkillMode();
+      }
+      const nx = state.player.x + dx;
+      const ny = state.player.y + dy;
+      if (!isWalkable(nx, ny)) return;
+
+      pushHistory();
+      state.player.x = nx;
+      state.player.y = ny;
+      state.turn += 1;
+      resolveTurn();
+    }
+
+    // 切换技能激活状态
+    function toggleSkill(skillId) {
+      if (state.status !== 'PLAYING') return;
+      const ab = state.abilities[skillId];
+      if (!ab || ab.charges <= 0) return;
+
+      if (skillId === 'JOSE') {
+        if (interactionMode === 'SELECT_THROW_SOURCE' || interactionMode === 'SELECT_THROW_TARGET') {
+          cancelSkillMode();
+          return;
+        }
+        // 查找玩家身旁（上下左右）是否有火药桶
+        const adjBarrels = state.barrels.filter(b =>
+          Math.abs(b.x - state.player.x) + Math.abs(b.y - state.player.y) === 1
+        );
+        if (adjBarrels.length === 0) {
+          addLog('何塞低语道：“你得先走到火药桶旁边，才能将它抛向远方。”', 'warning');
+          renderUI();
+          return;
+        }
+        if (adjBarrels.length === 1) {
+          // 只有一个相邻火药桶时，直接进入选择目标格阶段
+          selectedBarrelPos = { ...adjBarrels[0] };
+          interactionMode = 'SELECT_THROW_TARGET';
+          setBanner('🧲 炼金投掷：点击 3 格内高亮的空地投出火药桶（再次点击取消）');
+        } else {
+          interactionMode = 'SELECT_THROW_SOURCE';
+          setBanner('🧲 炼金投掷：请先点击身旁要投掷的火药桶');
+        }
+      } else if (skillId === 'REBECA') {
+        if (interactionMode === 'SELECT_SNIPE_TARGET') {
+          cancelSkillMode();
+          return;
+        }
+        interactionMode = 'SELECT_SNIPE_TARGET';
+        setBanner('🔫 孤注一掷：点击视野内的火药桶或裂纹石墙开枪射击');
+      }
+      renderUI();
+    }
+
+    function cancelSkillMode() {
+      interactionMode = 'MOVE';
+      selectedBarrelPos = null;
+      setBanner(null);
+      renderUI();
+    }
+
+    function setBanner(text) {
+      const banner = document.getElementById('action-banner');
+      if (!text) {
+        banner.classList.add('hidden');
+      } else {
+        banner.textContent = text;
+        banner.classList.remove('hidden');
+      }
+    }
+
+    // 处理画布点击
+    function handleCanvasClick(gx, gy) {
+      if (state.status !== 'PLAYING') return;
+      if (gx < 0 || gx >= COLS || gy < 0 || gy >= ROWS) return;
+
+      // 模式 1：选择投掷的火药桶
+      if (interactionMode === 'SELECT_THROW_SOURCE') {
+        const b = state.barrels.find(item => item.x === gx && item.y === gy);
+        if (b && Math.abs(b.x - state.player.x) + Math.abs(b.y - state.player.y) === 1) {
+          selectedBarrelPos = { ...b };
+          interactionMode = 'SELECT_THROW_TARGET';
+          setBanner('🧲 炼金投掷：点击 3 格内高亮的空地投出火药桶');
+          renderUI();
+        } else {
+          cancelSkillMode();
+        }
+        return;
+      }
+
+      // 模式 2：选择投掷落点
+      if (interactionMode === 'SELECT_THROW_TARGET' && selectedBarrelPos) {
+        if (isValidThrowTarget(selectedBarrelPos.x, selectedBarrelPos.y, gx, gy)) {
+          pushHistory();
+          // 移动火药桶
+          const barrel = state.barrels.find(b => b.x === selectedBarrelPos.x && b.y === selectedBarrelPos.y);
+          barrel.x = gx;
+          barrel.y = gy;
+          state.abilities.JOSE.charges = 0;
+          state.turn += 1;
+          addLog('你效仿何塞·阿尔卡蒂奥的怪力，将火药桶凌空抛了出去！', 'character');
+          cancelSkillMode();
+          resolveTurn();
+        } else {
+          addLog('那里无法承受火药桶的重量，请选择 3 格内的空地或木桥。', 'warning');
+          renderUI();
+        }
+        return;
+      }
+
+      // 模式 3：丽贝卡开枪射击
+      if (interactionMode === 'SELECT_SNIPE_TARGET') {
+        if (!hasLineOfSight(state.player.x, state.player.y, gx, gy)) {
+          addLog('视线被厚重的土坯墙挡住了，丽贝卡无法瞄准那里。', 'warning');
+          renderUI();
+          return;
+        }
+        const targetBarrel = state.barrels.find(b => b.x === gx && b.y === gy);
+        const targetCracked = state.terrain[gy][gx] === TILE.CRACKED_WALL;
+
+        if (targetBarrel) {
+          pushHistory();
+          state.abilities.REBECA.charges = 0;
+          state.turn += 1;
+          addLog('砰！丽贝卡的子弹跨越水面，精准击中了远处的火药桶！', 'character');
+          cancelSkillMode();
+          detonateBarrel(gx, gy);
+          resolveTurn();
+        } else if (targetCracked) {
+          // 射击坚固裂纹石墙给予提示（需火药桶爆炸才能彻底炸开）
+          addLog('子弹在石墙上擦出火花，但这堵石墙太厚了，需要引爆旁边的【火药桶】才能炸毁！', 'warning');
+          renderUI();
+        } else {
+          addLog('请瞄准视野内的【火药桶】进行射击。', 'warning');
+          renderUI();
+        }
+        return;
+      }
+
+      // 模式 0：普通移动（点击相邻格子）
+      const dx = gx - state.player.x;
+      const dy = gy - state.player.y;
+      if (Math.abs(dx) + Math.abs(dy) === 1) {
+        tryMove(dx, dy);
+      }
+    }
+
+    // 撤销操作
+    function undoMove() {
+      if (historyStack.length === 0) return;
+      state = historyStack.pop();
+      cancelSkillMode();
+      document.getElementById('end-modal').classList.add('hidden');
+      renderUI();
+    }
+
+    // 重置关卡
+    function resetLevel() {
+      historyStack = [];
+      state = createInitialState();
+      computeLasers(state);
+      cancelSkillMode();
+      document.getElementById('end-modal').classList.add('hidden');
+      renderUI();
+    }
+
+    // ==========================================
+    // 4. Canvas 视觉渲染 (手绘羊皮纸美学)
+    // ==========================================
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    let tileSize = 60;
+
+    function resizeCanvas() {
+      const wrapper = document.getElementById('canvas-wrapper');
+      const width = wrapper.clientWidth;
+      tileSize = Math.floor(width / COLS);
+      canvas.width = tileSize * COLS;
+      canvas.height = tileSize * ROWS;
+    }
+
+    function spawnExplosion(gx, gy, color) {
+      const cx = (gx + 0.5) * tileSize;
+      const cy = (gy + 0.5) * tileSize;
+      for (let i = 0; i < 22; i++) {
+        const angle = (Math.PI * 2 * i) / 22 + Math.random() * 0.3;
+        const speed = 1.5 + Math.random() * 3.5;
+        particles.push({
+          x: cx,
+          y: cy,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 1.0,
+          color,
+          size: 3 + Math.random() * 4
+        });
+      }
+    }
+
+    function drawBoard(timestamp) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 1. 绘制基础地形层
+      for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+          const px = x * tileSize;
+          const py = y * tileSize;
+          const t = state.terrain[y][x];
+
+          // 羊皮纸棋盘格底色
+          ctx.fillStyle = (x + y) % 2 === 0 ? '#efe3ca' : '#e7d7b9';
+          ctx.fillRect(px, py, tileSize, tileSize);
+
+          // 网格细线
+          ctx.strokeStyle = 'rgba(139, 90, 43, 0.22)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(px, py, tileSize, tileSize);
+
+          if (t === TILE.WALL) {
+            drawWallTile(px, py, tileSize);
+          } else if (t === TILE.WATER) {
+            drawWaterTile(px, py, tileSize, timestamp, x, y);
+          } else if (t === TILE.BRIDGE) {
+            drawWaterTile(px, py, tileSize, timestamp, x, y);
+            drawBridgeTile(px, py, tileSize);
+          } else if (t === TILE.CRACKED_WALL) {
+            drawCrackedWallTile(px, py, tileSize);
+          } else if (t === TILE.GOAL) {
+            drawGoalTile(px, py, tileSize, timestamp);
+          } else if (t === TILE.LASER_EMITTER) {
+            drawEmitterTile(px, py, tileSize);
+          }
+        }
+      }
+
+      // 2. 绘制技能可选范围高亮
+      if (interactionMode === 'SELECT_THROW_TARGET' && selectedBarrelPos) {
+        for (let y = 0; y < ROWS; y++) {
+          for (let x = 0; x < COLS; x++) {
+            if (isValidThrowTarget(selectedBarrelPos.x, selectedBarrelPos.y, x, y)) {
+              ctx.fillStyle = 'rgba(197, 155, 39, 0.35)';
+              ctx.fillRect(x * tileSize + 2, y * tileSize + 2, tileSize - 4, tileSize - 4);
+              ctx.strokeStyle = '#c59b27';
+              ctx.lineWidth = 2;
+              ctx.strokeRect(x * tileSize + 3, y * tileSize + 3, tileSize - 6, tileSize - 6);
+            }
+          }
+        }
+      } else if (interactionMode === 'SELECT_SNIPE_TARGET') {
+        state.barrels.forEach(b => {
+          if (hasLineOfSight(state.player.x, state.player.y, b.x, b.y)) {
+            const cx = (b.x + 0.5) * tileSize;
+            const cy = (b.y + 0.5) * tileSize;
+            ctx.strokeStyle = '#9e2a2b';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(cx, cy, tileSize * 0.42, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        });
+      }
+
+      // 3. 绘制烈日聚焦激光束
+      drawLaserBeams(timestamp);
+
+      // 4. 绘制火药桶
+      state.barrels.forEach(b => {
+        drawBarrel(b.x * tileSize, b.y * tileSize, tileSize);
+      });
+
+      // 5. 绘制尚未遇见的家族人物 (NPC)
+      state.npcs.forEach(npc => {
+        if (!npc.collected) {
+          drawCharacterToken(npc.x * tileSize, npc.y * tileSize, tileSize, CHARACTER_DEFS[npc.id], timestamp);
+        }
+      });
+
+      // 6. 绘制主角（布恩迪亚后裔）
+      drawPlayerToken(state.player.x * tileSize, state.player.y * tileSize, tileSize, timestamp);
+
+      // 7. 鼠标悬停提示框
+      if (hoverTile && state.status === 'PLAYING') {
+        ctx.strokeStyle = 'rgba(44, 30, 22, 0.45)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(hoverTile.x * tileSize + 2, hoverTile.y * tileSize + 2, tileSize - 4, tileSize - 4);
+      }
+
+      // 8. 粒子效果
+      updateAndDrawParticles();
+    }
+
+    function drawWallTile(px, py, s) {
+      ctx.fillStyle = '#5c4033';
+      ctx.fillRect(px + 1, py + 1, s - 2, s - 2);
+      ctx.strokeStyle = '#3b261d';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(px + 3, py + 3, s - 6, s - 6);
+      // 砖缝纹理
+      ctx.beginPath();
+      ctx.moveTo(px + 4, py + s * 0.5);
+      ctx.lineTo(px + s - 4, py + s * 0.5);
+      ctx.moveTo(px + s * 0.5, py + 4);
+      ctx.lineTo(px + s * 0.5, py + s * 0.5);
+      ctx.stroke();
+    }
+
+    function drawWaterTile(px, py, s, time, gx, gy) {
+      ctx.fillStyle = '#3b6e8c';
+      ctx.fillRect(px, py, s, s);
+      // 动态水波纹
+      const wave = Math.sin(time * 0.003 + gx + gy) * 3;
+      ctx.strokeStyle = 'rgba(214, 238, 248, 0.45)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(px + s * 0.2, py + s * 0.35 + wave);
+      ctx.quadraticCurveTo(px + s * 0.5, py + s * 0.25 + wave, px + s * 0.8, py + s * 0.35 + wave);
+      ctx.moveTo(px + s * 0.25, py + s * 0.7 - wave);
+      ctx.quadraticCurveTo(px + s * 0.55, py + s * 0.6 - wave, px + s * 0.85, py + s * 0.7 - wave);
+      ctx.stroke();
+    }
+
+    function drawBridgeTile(px, py, s) {
+      ctx.fillStyle = '#9c6635';
+      ctx.fillRect(px + 3, py + s * 0.15, s - 6, s * 0.7);
+      ctx.strokeStyle = '#4a2e16';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(px + 3, py + s * 0.15, s - 6, s * 0.7);
+      for (let i = 1; i <= 3; i++) {
+        ctx.beginPath();
+        ctx.moveTo(px + (s * i) / 4, py + s * 0.15);
+        ctx.lineTo(px + (s * i) / 4, py + s * 0.85);
+        ctx.stroke();
+      }
+    }
+
+    function drawCrackedWallTile(px, py, s) {
+      ctx.fillStyle = '#7d624d';
+      ctx.fillRect(px + 2, py + 2, s - 4, s - 4);
+      ctx.strokeStyle = '#2c1e16';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(px + 3, py + 3, s - 6, s - 6);
+      // 醒目裂纹
+      ctx.beginPath();
+      ctx.moveTo(px + s * 0.2, py + s * 0.2);
+      ctx.lineTo(px + s * 0.5, py + s * 0.48);
+      ctx.lineTo(px + s * 0.35, py + s * 0.78);
+      ctx.moveTo(px + s * 0.5, py + s * 0.48);
+      ctx.lineTo(px + s * 0.8, py + s * 0.65);
+      ctx.stroke();
+    }
+
+    function drawGoalTile(px, py, s, time) {
+      const pulse = 0.85 + Math.sin(time * 0.004) * 0.15;
+      ctx.fillStyle = `rgba(197, 155, 39, ${0.28 * pulse})`;
+      ctx.fillRect(px + 2, py + 2, s - 4, s - 4);
+      ctx.strokeStyle = '#c59b27';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(px + 4, py + 4, s - 8, s - 8);
+
+      ctx.font = `${Math.floor(s * 0.52)}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('📜', px + s * 0.5, py + s * 0.52);
+    }
+
+    function drawEmitterTile(px, py, s) {
+      ctx.fillStyle = '#3b261d';
+      ctx.fillRect(px + 2, py + 2, s - 4, s - 4);
+      // 放大镜与烈日核心
+      ctx.fillStyle = '#9e2a2b';
+      ctx.beginPath();
+      ctx.arc(px + s * 0.5, py + s * 0.5, s * 0.28, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#f4a261';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // 向下箭头指示发射方向
+      ctx.fillStyle = '#ffd166';
+      ctx.beginPath();
+      ctx.moveTo(px + s * 0.35, py + s * 0.72);
+      ctx.lineTo(px + s * 0.65, py + s * 0.72);
+      ctx.lineTo(px + s * 0.5, py + s * 0.92);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawLaserBeams(time) {
+      if (state.laserTiles.length === 0) return;
+      const flicker = 0.75 + Math.sin(time * 0.015) * 0.2;
+      state.laserTiles.forEach(tile => {
+        const cx = (tile.x + 0.5) * tileSize;
+        const py = tile.y * tileSize;
+
+        // 外层红晕
+        ctx.fillStyle = `rgba(158, 42, 43, ${0.28 * flicker})`;
+        ctx.fillRect(cx - tileSize * 0.16, py, tileSize * 0.32, tileSize);
+
+        // 核心光束
+        ctx.fillStyle = `rgba(230, 57, 70, ${0.9 * flicker})`;
+        ctx.fillRect(cx - tileSize * 0.05, py, tileSize * 0.1, tileSize);
+      });
+    }
+
+    function drawBarrel(px, py, s) {
+      const cx = px + s * 0.5;
+      const cy = py + s * 0.5;
+      const r = s * 0.34;
+
+      ctx.fillStyle = '#7f2714';
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#2c1e16';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.font = `${Math.floor(s * 0.44)}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🧨', cx, cy + 1);
+    }
+
+    function drawCharacterToken(px, py, s, def, time) {
+      const bob = Math.sin(time * 0.004) * 2.5;
+      const cx = px + s * 0.5;
+      const cy = py + s * 0.48 + bob;
+
+      // 光环底座
+      ctx.fillStyle = 'rgba(244, 235, 217, 0.92)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, s * 0.36, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = def.color;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      ctx.font = `${Math.floor(s * 0.44)}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(def.icon, cx, cy);
+
+      // 底部名字标签
+      ctx.fillStyle = '#2c1e16';
+      ctx.font = `bold ${Math.max(9, Math.floor(s * 0.17))}px "Noto Serif SC", serif`;
+      ctx.fillText(def.name.slice(0, 4), cx, py + s * 0.9);
+    }
+
+    function drawPlayerToken(px, py, s, time) {
+      const cx = px + s * 0.5;
+      const cy = py + s * 0.5;
+
+      // 若拥有上校的【宿命护盾】，绘制金色保护光环
+      if (state.abilities.AURELIANO.charges > 0) {
+        const pulse = 0.38 + Math.sin(time * 0.006) * 0.04;
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([5, 3]);
+        ctx.beginPath();
+        ctx.arc(cx, cy, s * pulse, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // 主角徽记
+      ctx.fillStyle = '#2c1e16';
+      ctx.beginPath();
+      ctx.arc(cx, cy, s * 0.32, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#c59b27';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.font = `${Math.floor(s * 0.42)}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🕯️', cx, cy);
+    }
+
+    function updateAndDrawParticles() {
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.03;
+        if (p.life <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+      }
+    }
+
+    function gameLoop(timestamp) {
+      drawBoard(timestamp);
+      animFrameId = requestAnimationFrame(gameLoop);
+    }
+
+    // ==========================================
+    // 5. DOM UI 同步渲染
+    // ==========================================
+    function renderUI() {
+      document.getElementById('turn-count').textContent = state.turn;
+
+      // 撤销按钮可用性
+      const undoBtn = document.getElementById('btn-undo');
+      undoBtn.disabled = historyStack.length === 0;
+      undoBtn.style.opacity = historyStack.length === 0 ? '0.45' : '1';
+
+      // 渲染三张人物能力卡片
+      const invContainer = document.getElementById('inventory-list');
+      invContainer.innerHTML = '';
+
+      ['JOSE', 'AURELIANO', 'REBECA'].forEach(id => {
+        const def = CHARACTER_DEFS[id];
+        const ab = state.abilities[id];
+        const isActive =
+          (id === 'JOSE' && (interactionMode === 'SELECT_THROW_SOURCE' || interactionMode === 'SELECT_THROW_TARGET')) ||
+          (id === 'REBECA' && interactionMode === 'SELECT_SNIPE_TARGET');
+
+        const card = document.createElement('div');
+        card.className = `parchment-card rounded-lg p-2.5 flex items-center justify-between gap-2 ${
+          isActive ? 'active-skill' : ''
+        } ${!ab.unlocked ? 'opacity-60' : ''}`;
+
+        let badgeHtml = '';
+        if (!ab.unlocked) {
+          badgeHtml = `<span class="px-2 py-1 rounded text-[11px] bg-[#cbb894] text-[#5c4332]">未相遇</span>`;
+        } else if (ab.charges > 0) {
+          if (id === 'AURELIANO') {
+            badgeHtml = `<span class="px-2.5 py-1 rounded-md text-xs font-bold bg-[#d97706]/20 text-[#92400e] border border-[#d97706]">🛡️ 庇护生效中</span>`;
+          } else {
+            badgeHtml = `<button data-skill="${id}" aria-label="${isActive ? '取消' : '施放'}${def.abilityName}" class="skill-btn min-h-10 px-3 py-1.5 rounded-md text-xs font-bold bg-[#8b4513] hover:bg-[#6e350d] text-[#f4ebd9] shadow-sm active:scale-[0.96] transition">
+              ${isActive ? '取消施放' : '施放能力 (1)'}
+            </button>`;
+          }
+        } else {
+          badgeHtml = `<span class="px-2 py-1 rounded text-[11px] bg-[#cbb894]/70 text-[#5c4332] line-through">执念已尽</span>`;
+        }
+
+        card.innerHTML = `
+          <div class="flex items-start gap-2.5">
+            <div class="text-2xl leading-none mt-0.5">${def.icon}</div>
+            <div>
+              <div class="text-xs sm:text-sm font-bold text-[#2c1e16]">
+                ${def.name} <span class="text-[#8b4513] font-semibold">· ${def.abilityName}</span>
+              </div>
+              <p class="text-[11px] sm:text-xs text-[#5c4332] mt-0.5 leading-snug">${def.desc}</p>
+            </div>
+          </div>
+          <div class="shrink-0">${badgeHtml}</div>
+        `;
+        invContainer.appendChild(card);
+      });
+
+      // 绑定技能按钮事件
+      document.querySelectorAll('.skill-btn').forEach(btn => {
+        btn.addEventListener('click', () => toggleSkill(btn.dataset.skill));
+      });
+
+      // 渲染编年史日志
+      const logContainer = document.getElementById('chronicle-log');
+      logContainer.innerHTML = state.logs.map(entry => {
+        let colorClass = 'text-[#3d291a]';
+        if (entry.type === 'character') colorClass = 'text-[#7c2d12] font-semibold';
+        if (entry.type === 'highlight') colorClass = 'text-[#92400e] font-bold';
+        if (entry.type === 'danger') colorClass = 'text-[#9e2a2b] font-bold';
+        if (entry.type === 'warning') colorClass = 'text-[#6e472b] italic';
+
+        return `<div class="border-b border-[#8b5a2b]/20 pb-1.5 ${colorClass}">
+          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#d8c39e] text-[#4a3525] mr-1">T${entry.turn}</span>
+          ${entry.text}
+        </div>`;
+      }).join('');
+    }
+
+    function showEndModal(isWin) {
+      const modal = document.getElementById('end-modal');
+      document.getElementById('end-icon').textContent = isWin ? '🦋' : '🥀';
+      document.getElementById('end-title').textContent = isWin
+        ? '羊皮纸的预言已然应验'
+        : '马孔多的一阵飓风抹去了足迹';
+      document.getElementById('end-desc').textContent = isWin
+        ? `你在第 ${state.turn} 回合集齐了家族三代人的执念与勇气，成功抵达梅尔基亚德斯的羊皮纸密室。`
+        : '在没有上校宿命护盾的庇佑下，直面烈日聚焦光束意味着粉身碎骨。你可以撤销上一步，或重新开启轮回。';
+      modal.classList.remove('hidden');
+    }
+
+    // ==========================================
+    // 6. 输入事件监听与初始化
+    // ==========================================
+    function initEvents() {
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+      });
+
+      // 键盘控制
+      window.addEventListener('keydown', e => {
+        if (!document.getElementById('hint-modal').classList.contains('hidden')) {
+          if (e.key === 'Escape') document.getElementById('hint-modal').classList.add('hidden');
+          return;
+        }
+        const key = e.key.toLowerCase();
+        if (key === 'arrowup' || key === 'w') { e.preventDefault(); tryMove(0, -1); }
+        else if (key === 'arrowdown' || key === 's') { e.preventDefault(); tryMove(0, 1); }
+        else if (key === 'arrowleft' || key === 'a') { e.preventDefault(); tryMove(-1, 0); }
+        else if (key === 'arrowright' || key === 'd') { e.preventDefault(); tryMove(1, 0); }
+        else if (key === 'z') { undoMove(); }
+        else if (key === 'r') { resetLevel(); }
+        else if (key === 'escape') { cancelSkillMode(); }
+      });
+
+      // 画布点击与悬停
+      canvas.addEventListener('click', e => {
+        const rect = canvas.getBoundingClientRect();
+        const gx = Math.floor(((e.clientX - rect.left) / rect.width) * COLS);
+        const gy = Math.floor(((e.clientY - rect.top) / rect.height) * ROWS);
+        handleCanvasClick(gx, gy);
+      });
+
+      canvas.addEventListener('mousemove', e => {
+        const rect = canvas.getBoundingClientRect();
+        const gx = Math.floor(((e.clientX - rect.left) / rect.width) * COLS);
+        const gy = Math.floor(((e.clientY - rect.top) / rect.height) * ROWS);
+        if (gx >= 0 && gx < COLS && gy >= 0 && gy < ROWS) {
+          hoverTile = { x: gx, y: gy };
+        } else {
+          hoverTile = null;
+        }
+      });
+
+      canvas.addEventListener('mouseleave', () => {
+        hoverTile = null;
+      });
+
+      // 移动端虚拟十字键
+      document.querySelectorAll('.dpad-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const dir = btn.dataset.dir;
+          if (dir === 'up') tryMove(0, -1);
+          if (dir === 'down') tryMove(0, 1);
+          if (dir === 'left') tryMove(-1, 0);
+          if (dir === 'right') tryMove(1, 0);
+        });
+      });
+
+      // 顶部与弹窗按钮
+      document.getElementById('btn-undo').addEventListener('click', undoMove);
+      document.getElementById('btn-reset').addEventListener('click', resetLevel);
+      document.getElementById('btn-end-undo').addEventListener('click', undoMove);
+      document.getElementById('btn-end-restart').addEventListener('click', resetLevel);
+
+      document.getElementById('btn-hint').addEventListener('click', () => {
+        document.getElementById('hint-modal').classList.remove('hidden');
+      });
+      document.getElementById('btn-close-hint').addEventListener('click', () => {
+        document.getElementById('hint-modal').classList.add('hidden');
+      });
+    }
+
+    resizeCanvas();
+    initEvents();
+    resetLevel();
+    animFrameId = requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
