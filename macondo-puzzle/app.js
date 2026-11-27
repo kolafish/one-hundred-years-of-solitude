@@ -6,6 +6,7 @@ const game = createGame(renderUI, MacondoPuzzle.LEVELS, {
 const { tryMove, toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, waitTurn, setCanvas, drawBoard } = game;
 const canvas = document.getElementById('game-canvas');
 const loadoutDialog = document.getElementById('loadout-dialog');
+const decisionDialog = document.getElementById('decision-dialog');
 const boardActions = document.getElementById('board-actions');
 const tileInspector = document.getElementById('tile-inspector');
 let hoverTile = null;
@@ -17,6 +18,8 @@ let board = null;
 let campaign = [];
 let activeEnding = null;
 let draft = null;
+let hintCount = 1;
+let levelHints = [];
 
 function resizeCanvas() {
   if (!board) return;
@@ -39,23 +42,22 @@ function hydrateStaticIcons() {
   });
 }
 
-function renderUI({ level, turn, canUndo, canWait, hazardLabel, banner, bannerIconId, cards, logs, ending, campaign: acts, storageFailed, relicCollected, relicCount, interactions, inspecting: canInspect, legend }) {
+function renderUI({ level, turn, canUndo, canWait, hazardLabel, banner, bannerIconId, cards, logs, ending, campaign: acts, storageFailed, relicCollected, relicCount, interactions, inspecting: canInspect, legend, decision }) {
   if (board?.id !== level.id) {
     board = level;
     hoverTile = null;
     inspectedTile = null;
     resizeCanvas();
     document.getElementById('act-subtitle').textContent = level.subtitle;
-    document.getElementById('act-hints').replaceChildren(...level.hints.map(hint => {
-      const item = document.createElement('li');
-      item.textContent = hint;
-      return item;
-    }));
+    levelHints = level.hints;
+    hintCount = 1;
+    renderHints();
   }
   campaign = acts;
   activeEnding = ending;
   inspecting = canInspect;
   renderBoardHelp(interactions, legend);
+  renderDecision(decision);
   renderCampaign(storageFailed, relicCollected, relicCount);
   const hazard = document.getElementById('hazard-status');
   hazard.textContent = hazardLabel;
@@ -145,7 +147,32 @@ function renderUI({ level, turn, canUndo, canWait, hazardLabel, banner, bannerIc
     document.getElementById('end-icon').innerHTML = MacondoIcons.getIconSvg(ending.iconId, 'w-14 h-14');
     document.getElementById('end-title').textContent = ending.title;
     document.getElementById('end-desc').textContent = ending.description;
+    document.getElementById('end-details').replaceChildren(...[
+      ...(ending.causal || []), ending.relic, ...(ending.missingRelics || []).map(hint => '未找到残页 · ' + hint)
+    ].filter(Boolean).map(detail => {
+      const item = document.createElement('li');
+      item.textContent = detail;
+      return item;
+    }));
     document.getElementById('end-action-label').textContent = ending.won ? (board.id === 5 ? '结算并返回编年史' : '结算并继续') : '再次踏入马孔多';
+  }
+}
+
+function renderHints() {
+  document.getElementById('act-hints').replaceChildren(...levelHints.slice(0, hintCount).map(({ label, text }) =>
+    descriptionNode('li', { name: label, detail: text })));
+  const next = document.getElementById('btn-next-hint');
+  next.hidden = hintCount >= levelHints.length;
+  next.textContent = next.hidden ? '' : '展开' + levelHints[hintCount].label;
+}
+
+function renderDecision(decision) {
+  if (decision) {
+    document.getElementById('decision-title').textContent = decision.title;
+    document.getElementById('decision-detail').textContent = decision.detail;
+    if (!decisionDialog.open) decisionDialog.showModal();
+  } else if (decisionDialog.open) {
+    decisionDialog.close();
   }
 }
 
@@ -237,6 +264,9 @@ function openLoadout(id, selected) {
   if (!draft) return;
   document.getElementById('loadout-title').textContent = draft.title;
   document.getElementById('loadout-slots').textContent = `先祖同行 ${draft.picked.length} / ${draft.slots}`;
+  const recommendation = document.getElementById('loadout-recommendation');
+  recommendation.hidden = !draft.recommendation;
+  recommendation.textContent = draft.recommendation ? '推荐同行 · ' + draft.recommendation : '';
   const act = campaign.find(item => item.id === id);
   document.getElementById('loadout-effects').replaceChildren(...act.causalHints.map(hint => {
     const item = document.createElement('li');
@@ -275,7 +305,7 @@ function initEvents() {
 
   // 键盘控制
   window.addEventListener('keydown', e => {
-    if (loadoutDialog.open) return;
+    if (loadoutDialog.open || decisionDialog.open) return;
     if (!document.getElementById('hint-modal').classList.contains('hidden')) {
       if (e.key === 'Escape') document.getElementById('hint-modal').classList.add('hidden');
       return;
@@ -356,6 +386,16 @@ function initEvents() {
   });
   document.getElementById('btn-close-hint').addEventListener('click', () => {
     document.getElementById('hint-modal').classList.add('hidden');
+  });
+  document.getElementById('btn-next-hint').addEventListener('click', () => {
+    hintCount += 1;
+    renderHints();
+  });
+  document.getElementById('btn-decision-cancel').addEventListener('click', () => game.resolveDecision(false));
+  document.getElementById('btn-decision-accept').addEventListener('click', () => game.resolveDecision(true));
+  decisionDialog.addEventListener('cancel', event => {
+    event.preventDefault();
+    game.resolveDecision(false);
   });
 }
 

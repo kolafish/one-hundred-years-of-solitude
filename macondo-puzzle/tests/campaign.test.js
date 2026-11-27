@@ -5,37 +5,496 @@ const { TILE } = require('../../miniprogram/game/levels.js');
 
 function play(game, steps) {
   const moves = { R: [1, 0], L: [-1, 0], U: [0, -1], D: [0, 1] };
-  for (const direction of steps) game.tryMove(...moves[direction]);
+  for (const direction of steps) {
+    const turn = game.getState().turn;
+    game.tryMove(...moves[direction]);
+    const current = game.getState();
+    assert.equal(current.turn, turn + 1, direction + ' → ' + JSON.stringify(current.player));
+    assert.notEqual(current.status, 'DEAD', current.deathReason);
+  }
 }
 
-function solveFirstAct(game) {
-  play(game, 'RLDDDDRRRRUUDD');
-  game.toggleSkill('JOSE');
-  game.handleCanvasClick(6, 4);
-  game.toggleSkill('REBECA');
-  game.handleCanvasClick(6, 4);
-  play(game, 'URRR');
+function use(game, ability, x, y) {
+  const turn = game.getState().turn;
+  game.toggleSkill(ability);
+  game.handleCanvasClick(x, y);
+  assert.equal(game.getState().turn, turn + 1, ability);
 }
 
-test('the original 20-turn first act can be solved and undone', () => {
+function waitTo(game, turn) {
+  while (game.getState().turn < turn) {
+    const previous = game.getState().turn;
+    game.waitTurn();
+    assert.equal(game.getState().turn, previous + 1);
+    assert.equal(game.getState().status, 'PLAYING');
+  }
+}
+
+function campaign(saved = {}, levels = LEVELS) {
   let view;
-  const game = createGame(update => { view = update; });
+  return {
+    game: createGame(update => { view = update; }, levels, {
+      read: () => saved.value,
+      write: value => { saved.value = structuredClone(value); }
+    }),
+    get view() { return view; }
+  };
+}
+
+function unlocked(ids, characters = [], flags = {}, completedLevels = {}) {
+  return { value: {
+    schemaVersion: 1, unlockedLevels: ids, unlockedCharacters: characters, worldFlags: flags, completedLevels
+  } };
+}
+
+function solveFirst(game, rewards = false) {
+  play(game, 'RR');
+  use(game, 'JOSE', 3, 2);
+  if (rewards) {
+    play(game, 'U');
+    assert.equal(game.getState().gates[0].open, false);
+    use(game, 'JOSE', 2, 2);
+    play(game, 'LLUUDDDRDRURR');
+    play(game, 'URRDRR');
+  } else {
+    play(game, 'RRURRDRR');
+  }
+  use(game, 'REBECA', 10, 5);
+  play(game, 'RDRR');
+}
+
+function turnMirror(game) {
+  play(game, 'RRRU');
+  assert(game.interactAt(5, 4));
+}
+
+function solveSecondSouth(game) {
+  turnMirror(game);
+  play(game, 'DD');
+  assert(game.interactAt(5, 6));
+  play(game, 'RRRRURU');
+}
+
+function solveSecondRelic(game, withJose = false) {
+  turnMirror(game);
+  play(game, 'UUURRRDD');
+  if (withJose) {
+    use(game, 'JOSE', 8, 2);
+    play(game, 'RRUUDDD');
+  } else {
+    play(game, 'DR');
+    use(game, 'URSULA', 8, 3);
+    play(game, 'URUUDDD');
+  }
+}
+
+function solveThirdArchive(game) {
+  play(game, 'R');
+  use(game, 'JOSE', 3, 2);
+  play(game, 'DRRRUR');
+  waitTo(game, 11);
+  play(game, 'RRRUUDDUDDDR');
+  game.waitTurn();
+  play(game, 'LLRRUU');
+}
+
+function enterRain(game) {
+  play(game, 'UR');
+  use(game, 'REMEDIOS', 6, 4);
+}
+
+function solveFourthSouth(game, relic = false) {
+  enterRain(game);
+  waitTo(game, 10);
+  play(game, relic ? 'DRRUURRUDD' : 'DRRRRU');
+}
+
+function prepareFinale(game, path = 'RDRRURR') {
+  play(game, path);
+  assert(game.interactAt(6, 5));
+  assert(game.getState().seals[0].open);
+  play(game, 'R');
+  use(game, 'URSULA', 7, 4);
+}
+
+function finishWithMirror(game) {
+  prepareFinale(game);
+  play(game, 'L');
+  const before = game.getState();
+  assert(game.interactAt(6, 4));
+  const blast = game.getState();
+  assert.equal(blast.items.length, 0);
+  assert.equal(blast.barrels.length, 0);
+  assert.equal(blast.terrain[5][10], TILE.FLOOR);
+  assert.equal(blast.emitterOffline, true);
+  assert.deepEqual(blast.logs.slice(0, 3).map(log => log.text[0]), ['①', '②', '③']);
+  game.undoMove();
+  assert.deepEqual(game.getState(), before);
+  assert(game.interactAt(6, 4));
+  play(game, 'RURRRDR');
+}
+
+test('first act teaches the three abilities in order and the green beam costs no shield', () => {
+  const run = campaign();
+  const { game } = run;
   game.resetLevel();
-  assert.deepEqual([view.level.cols, view.level.rows], [10, 8]);
-  solveFirstAct(game);
-  assert.equal(view.turn, 20);
+  assert.deepEqual([run.view.level.cols, run.view.level.rows], [14, 8]);
+  assert.equal(game.getState().abilities.JOSE.unlocked, false);
+  play(game, 'RR');
+  use(game, 'JOSE', 3, 2);
+  play(game, 'RRURR');
+  assert.deepEqual(game.getState().player, { x: 7, y: 3 });
+  assert.match(game.getState().logs[0].text, /安全示范/);
+  assert.equal(game.getState().abilities.AURELIANO.charges, 1);
+  assert(run.view.forecast.moves.some(move => move.x === 7 && move.y === 4 && move.label === '护盾 −1'));
+  play(game, 'DRR');
+  assert.equal(game.getState().abilities.AURELIANO.charges, 0);
+  use(game, 'REBECA', 10, 5);
+  play(game, 'RDRR');
+  assert.equal(game.getState().turn, 16);
   assert.equal(game.getState().status, 'WON');
   game.undoMove();
-  assert.equal(view.turn, 19);
-  assert.equal(game.getState().status, 'PLAYING');
-  game.tryMove(1, 0);
+  assert.equal(game.getState().turn, 15);
+  play(game, 'R');
   assert.equal(game.getState().status, 'WON');
+});
+
+test('old saves retain their format and only settled chapter rewards open later routes', () => {
+  const saved = {};
+  const run = campaign(saved);
+  const { game } = run;
+  game.resetLevel();
+  assert.equal(game.startLevel(2), false);
+  solveFirst(game, true);
+  assert.equal(game.getState().abilities.JOSE.charges, 0);
+  assert.equal(game.getState().localFlags.ICE_PRESERVED, true);
+  assert.match(run.view.ending.causal[0], /第二幕/);
+  assert.equal(run.view.ending.relic, '已找到本幕残页。');
+  assert.equal(saved.value, undefined);
+  game.undoMove();
+  assert.equal(game.commitVictory(), false);
+  play(game, 'R');
+  assert(game.commitVictory());
+  assert.equal(game.commitVictory(), false);
+  assert.equal(saved.value.schemaVersion, 1);
+  const reopened = campaign(saved).game;
+  assert(reopened.startLevel(2, ['JOSE', 'REBECA']));
+  assert.deepEqual(reopened.preparation(2, ['JOSE', 'REBECA']).picked, ['JOSE']);
+  assert.equal(reopened.getState().terrain[5][5], TILE.FLOOR);
+  assert(reopened.getState().gates.filter(gate => gate.mirror).every(gate => !gate.open));
+  turnMirror(reopened);
+  play(reopened, 'DRRRRRU');
+  assert.equal(reopened.getState().status, 'WON');
+  assert.equal(reopened.getState().turn, 12);
+});
+
+test('the three second-act routes use the mirror, and the southbridge flag settles separately', () => {
+  const saved = unlocked([2], ['JOSE']);
+  const run = campaign(saved);
+  const { game } = run;
+  assert(game.startLevel(2));
+  assert.equal(game.getState().mirrors[0].slash, true);
+  assert([5, 6].every(y => game.getState().laserTiles.some(tile => tile.x === 5 && tile.y === y)));
+  solveSecondSouth(game);
+  assert.equal(game.getState().turn, 15);
+  assert.match(run.view.ending.causal[0], /第四幕/);
+  assert.match(run.view.ending.relic, /北侧/);
+  assert(game.commitVictory());
+  assert.equal(saved.value.worldFlags.BRIDGE_REPAIRED, true);
+  assert(game.startLevel(2, []));
+  solveSecondRelic(game);
+  assert.equal(game.getState().relicCollected, true);
+  assert.equal(game.getState().turn, 23);
+  assert(game.startLevel(2, ['JOSE']));
+  solveSecondRelic(game, true);
+  assert.equal(game.getState().relicCollected, true);
+  assert.equal(game.getState().turn, 21);
+});
+
+test('mist seals an obtained active skill unless the protagonist has the note or Ursula', () => {
+  const run = campaign(unlocked([2], ['JOSE', 'URSULA']));
+  const { game } = run;
+  for (const [carried, opening, blocked] of [
+    [['JOSE'], 'URRR', true],
+    [['JOSE'], 'URRDRU', false],
+    [['URSULA'], 'URRR', false]
+  ]) {
+    assert(game.startLevel(2, carried));
+    play(game, opening);
+    assert(game.interactAt(5, 4));
+    play(game, 'UUURRRD');
+    assert.equal(run.view.cards.find(card => card.id === carried[0]).blocked, blocked);
+  }
+});
+
+test('archive cost requires explicit confirmation and a cancel changes no turn or tiles', () => {
+  const run = campaign(unlocked([3], ['REBECA']));
+  const { game } = run;
+  assert(game.startLevel(3, []));
+  play(game, 'UURR');
+  const before = game.getState();
+  assert(game.interactAt(4, 3));
+  assert.match(run.view.decision.detail, /第五幕.*秘道/);
+  assert.deepEqual(game.getState(), before);
+  game.tryMove(1, 0);
+  assert.deepEqual(game.getState(), before);
+  game.resolveDecision(false);
+  assert.equal(run.view.decision, null);
+  assert.deepEqual(game.getState(), before);
+  assert(game.interactAt(4, 3));
+  game.resolveDecision(true);
+  assert.equal(game.getState().archiveDestroyed, true);
+  assert.equal(game.getState().turn, before.turn + 1);
+  game.undoMove();
+  assert.deepEqual(game.getState(), before);
+  assert(game.interactAt(4, 3));
+  game.resolveDecision(true);
+  play(game, 'RRRRRRDDR');
+  assert.equal(game.getState().localFlags.ARCHIVE_INTACT, undefined);
+  assert(game.commitVictory());
+  assert(game.startLevel(3, ['REBECA']));
+  play(game, 'UU');
+  game.toggleSkill('REBECA');
+  game.handleCanvasClick(5, 3);
+  assert.match(run.view.decision.title, /档案/);
+  assert.equal(game.getState().turn, 2);
+});
+
+test('the workshop offers both intact routes and forges gold without granting Pilar', () => {
+  const run = campaign(unlocked([3], ['JOSE', 'REBECA']));
+  const { game } = run;
+  assert(game.startLevel(3, ['JOSE']));
+  solveThirdArchive(game);
+  assert.equal(game.getState().status, 'WON');
+  assert.equal(game.getState().relicCollected, true);
+  assert.equal(game.getState().localFlags.GOLD_FISH_FORGED, true);
+  assert.equal(game.getState().localFlags.ARCHIVE_INTACT, true);
+  assert.equal(run.view.ending.causal.length, 2);
+  const room = { ...LEVELS[2], npcs: LEVELS[2].npcs.filter(npc => npc.id !== 'PILAR') };
+  const separate = campaign(unlocked([3], ['JOSE']), [room]).game;
+  assert(separate.startLevel(3, ['JOSE']));
+  solveThirdArchive(separate);
+  assert.equal(separate.getState().localFlags.GOLD_FISH_FORGED, true);
+  assert.equal(separate.getState().abilities.PILAR.unlocked, false);
+
+  assert(game.startLevel(3, ['REBECA']));
+  play(game, 'RU');
+  use(game, 'REBECA', 5, 4);
+  play(game, 'RRRDR');
+  waitTo(game, 11);
+  play(game, 'RRRR');
+  assert.equal(game.getState().status, 'WON');
+  assert.equal(game.getState().localFlags.ARCHIVE_INTACT, true);
+});
+
+test('forecast matches a real guard move and can be removed by a black curtain', () => {
+  const room = {
+    ...LEVELS[2], cols: 6, rows: 4, start: { x: 3, y: 2 },
+    terrain: Array.from({ length: 4 }, () => Array(6).fill(TILE.FLOOR)),
+    npcs: [], barrels: [], boxes: [], gates: [], levers: [], fuses: [], items: [],
+    guards: [{ path: [{ x: 1, y: 1 }, { x: 2, y: 1 }] }]
+  };
+  const run = campaign(unlocked([3], ['AMARANTA']), [room]);
+  const { game } = run;
+  assert(game.startLevel(3, ['AMARANTA']));
+  const before = game.getState();
+  assert(run.view.forecast.guardTiles.some(tile => tile.x === 4 && tile.y === 2));
+  assert(run.view.forecast.moves.some(tile => tile.x === 4 && tile.y === 2 && tile.label === '致命'));
+  game.tryMove(1, 0);
+  assert.equal(game.getState().deathReason, 'guard');
+  assert.equal(run.view.ending.iconId, 'patrol');
+  game.undoMove();
+  assert.deepEqual(game.getState(), before);
+  use(game, 'AMARANTA', 3, 1);
+  assert.equal(game.getState().status, 'PLAYING');
+  assert.equal(game.getState().curtains.length, 1);
+  assert(!run.view.forecast.moves.some(tile => tile.x === 3 && tile.y === 1));
+});
+
+test('Pilar advances one turn and flips tide and direction, leaving the gate untouched', () => {
+  const run = campaign(unlocked([3, 4], ['PILAR', 'AURELIANO'], { GOLD_FISH_FORGED: true }));
+  const { game } = run;
+  assert(game.startLevel(4, ['AURELIANO', 'PILAR']));
+  const before = game.getState();
+  assert.equal(before.abilities.AURELIANO.charges, 2);
+  assert.equal(before.terrain[7][5], TILE.WATER);
+  game.toggleSkill('PILAR');
+  assert.equal(game.getState().turn, 1);
+  assert.equal(game.getState().tideHigh, true);
+  assert.equal(game.getState().reversed, true);
+  assert.equal(game.getState().barrels[0].x, 5);
+  assert.equal(game.getState().gates[0].open, false);
+  game.undoMove();
+  assert.deepEqual(game.getState(), before);
+  assert(game.startLevel(3, ['PILAR']));
+  game.toggleSkill('PILAR');
+  assert.equal(game.getState().turn, 1);
+  assert.equal(game.getState().gates[0].open, false);
+});
+
+test('the shallow crossing forecasts tide, and a shield cannot absorb flood damage', () => {
+  const run = campaign(unlocked([4], ['AURELIANO']));
+  const { game } = run;
+  assert(game.startLevel(4, ['AURELIANO']));
+  play(game, 'UR');
+  waitTo(game, 5);
+  assert.equal(run.view.forecast.tideRising, true);
+  assert(run.view.forecast.moves.some(move => move.cause === 'tide' && move.label === '致命'));
+  const before = game.getState();
+  game.tryMove(1, 0);
+  assert.equal(game.getState().deathReason, 'tide');
+  assert.equal(game.getState().abilities.AURELIANO.charges, 1);
+  assert.equal(run.view.ending.iconId, 'river');
+  game.undoMove();
+  assert.deepEqual(game.getState(), before);
+});
+
+test('one drifting barrel supports the two exits and the saved bridge is at the south crossing', () => {
+  const run = campaign(unlocked([4], ['JOSE', 'URSULA', 'MELQUIADES'], { BRIDGE_REPAIRED: true }));
+  const { game } = run;
+  assert(game.startLevel(4, ['MELQUIADES']));
+  assert.equal(game.getState().terrain[7][5], TILE.BRIDGE);
+  assert.equal(game.getState().barrels.length + game.getState().boxes.length, 1);
+  play(game, 'DRDRRU');
+  use(game, 'MELQUIADES', 6, 5);
+  play(game, 'RRRRU');
+  assert.equal(game.getState().turn, 12);
+  assert.equal(game.getState().status, 'WON');
+
+  assert(game.startLevel(4, ['JOSE']));
+  use(game, 'JOSE', 4, 2);
+  enterRain(game);
+  waitTo(game, 6);
+  assert(game.interactAt(6, 3));
+  assert.equal(game.getState().terrain[2][7], TILE.FLOOR);
+  play(game, 'UURRRRDD');
+  assert.equal(game.getState().status, 'WON');
+  assert.equal(game.getState().relicCollected, true);
+
+  const alternate = campaign(unlocked([4], ['URSULA'])).game;
+  assert(alternate.startLevel(4, ['URSULA']));
+  play(alternate, 'UR');
+  use(alternate, 'URSULA', 5, 4);
+  play(alternate, 'R');
+  waitTo(alternate, 18);
+  play(alternate, 'R');
+  assert(alternate.interactAt(6, 3));
+  play(alternate, 'UURRRRDD');
+  assert.equal(alternate.getState().status, 'WON');
+});
+
+test('a new player can finish all five chapters without companions in the loadout', () => {
+  const saved = {};
+  const run = campaign(saved);
+  const { game } = run;
+  game.resetLevel();
+  solveFirst(game);
+  assert(game.commitVictory());
+  assert(game.startLevel(2, []));
+  turnMirror(game);
+  play(game, 'UUURRRDDDRR');
+  assert(game.commitVictory());
+  assert(game.startLevel(3, []));
+  play(game, 'UURR');
+  assert(game.interactAt(4, 3));
+  game.resolveDecision(true);
+  play(game, 'RRRRRRDDR');
+  assert(game.commitVictory());
+  assert(game.startLevel(4, []));
+  solveFourthSouth(game);
+  assert(game.commitVictory());
+  assert(Object.values(saved.value.worldFlags).every(value => !value));
+  assert(game.startLevel(5, []));
+  finishWithMirror(game);
+  assert.equal(game.getState().turn, 19);
+  assert.equal(game.getState().endingId, 'ESCAPE');
+  assert.equal(run.view.ending.missingRelics.length, 4);
+  assert(LEVELS[4].parTurns <= game.getState().turn + 2);
+  assert(game.commitVictory());
+  assert.equal(saved.value.completedLevels[5].ending, 'ESCAPE');
+});
+
+test('four relics unlock the true ending and the archive alternate still requires the seal', () => {
+  const saved = {};
+  const { game } = campaign(saved);
+  game.resetLevel();
+  solveFirst(game, true);
+  assert(game.commitVictory());
+  assert(game.startLevel(2, ['JOSE']));
+  solveSecondRelic(game, true);
+  assert(game.commitVictory());
+  assert(game.startLevel(3, ['JOSE']));
+  solveThirdArchive(game);
+  assert(game.commitVictory());
+  assert(game.startLevel(4, []));
+  solveFourthSouth(game, true);
+  assert(game.commitVictory());
+  assert([1, 2, 3, 4].every(id => saved.value.completedLevels[id].relicCollected));
+
+  assert(game.startLevel(5, ['REBECA']));
+  play(game, 'RDD');
+  assert.equal(game.getState().abilities.REBECA.charges, 2);
+  play(game, 'URRURR');
+  assert.equal(game.getState().seals[0].open, false);
+  assert(game.interactAt(6, 5));
+  play(game, 'R');
+  use(game, 'URSULA', 7, 4);
+  play(game, 'UR');
+  use(game, 'REBECA', 9, 4);
+  use(game, 'REBECA', 10, 4);
+  play(game, 'RRDR');
+  assert.equal(game.getState().endingId, 'TRUTH');
+  assert(game.commitVictory());
+  assert.equal(saved.value.completedLevels[5].ending, 'TRUTH');
+});
+
+test('hurricane starts at turn 14, with turn 10 warning and deterministic undo', () => {
+  const run = campaign(unlocked([5]));
+  const { game } = run;
+  assert(game.startLevel(5));
+  assert.match(run.view.hazardLabel, /第 10 回合预警/);
+  waitTo(game, 10);
+  assert(game.getState().logs.some(log => /开始围拢/.test(log.text)));
+  waitTo(game, 13);
+  const before = game.getState();
+  game.waitTurn();
+  const collapsed = game.getState();
+  assert.equal(collapsed.terrain[5][1], TILE.RUBBLE);
+  assert.equal(collapsed.deathReason, 'hurricane');
+  assert.equal(run.view.ending.iconId, 'hurricane');
+  game.undoMove();
+  assert.deepEqual(game.getState(), before);
+  game.waitTurn();
+  assert.deepEqual(game.getState(), collapsed);
+});
+
+test('flight offers a faster first-act replay and a final-act route', () => {
+  const run = campaign(unlocked([5], ['REMEDIOS'], {}, { 1: { bestTurns: 16, rank: 'S' } }));
+  const { game } = run;
+  assert(game.startLevel(1, ['REMEDIOS']));
+  play(game, 'RR');
+  use(game, 'REMEDIOS', 5, 4);
+  play(game, 'URRDRR');
+  use(game, 'REBECA', 10, 5);
+  play(game, 'RDRR');
+  assert.equal(game.getState().turn, 14);
+  assert.equal(game.getState().status, 'WON');
+
+  assert(game.startLevel(5, ['REMEDIOS']));
+  play(game, 'R');
+  use(game, 'REMEDIOS', 4, 5);
+  prepareFinale(game, 'DURR');
+  play(game, 'L');
+  assert(game.interactAt(6, 4));
+  play(game, 'RURRRDR');
+  assert.equal(game.getState().status, 'WON');
+  assert.equal(game.getState().turn, 18);
 });
 
 test('map dimensions, boundary clicks, hazards and reset follow the loaded act', () => {
   const wide = {
     ...LEVELS[0], id: 99, cols: 13, rows: 9,
-    start: { x: 11, y: 8 }, npcs: [], barrels: [],
+    start: { x: 11, y: 8 }, npcs: [], barrels: [], boxes: [], gates: [], practiceBeams: [],
     terrain: Array.from({ length: 9 }, () => Array(13).fill(0))
   };
   wide.terrain[8][12] = 5;
@@ -58,286 +517,9 @@ test('map dimensions, boundary clicks, hazards and reset follow the loaded act',
   assert.deepEqual(game.getState(), before);
 });
 
-function campaign(saved) {
-  let view;
-  return {
-    game: createGame(update => { view = update; }, LEVELS, {
-      read: () => saved.value,
-      write: value => { saved.value = structuredClone(value); }
-    }),
-    get view() { return view; }
-  };
-}
-
-test('victory, undo, settlement and loading the next act preserve only committed rewards', () => {
-  const saved = {};
-  const { game } = campaign(saved);
-  game.resetLevel();
-  assert.equal(game.startLevel(2), false);
-  play(game, 'RLDDR LDDRRRRUUUU DDDD'.replaceAll(' ', ''));
-  assert.equal(game.getState().localFlags.ICE_PRESERVED, true);
-  assert.equal(game.getState().relicCollected, true);
-  game.toggleSkill('JOSE');
-  game.handleCanvasClick(6, 4);
-  game.toggleSkill('REBECA');
-  game.handleCanvasClick(6, 4);
-  play(game, 'URRR');
-  assert.equal(game.getState().status, 'WON');
-  assert.equal(saved.value, undefined);
-  game.undoMove();
-  assert.equal(game.commitVictory(), false);
-  play(game, 'R');
-  assert.equal(game.commitVictory(), true);
-  assert.equal(game.commitVictory(), false);
-  assert.equal(saved.value.completedLevels[1].relicCollected, true);
-  const reopened = campaign(saved).game;
-  assert.equal(reopened.startLevel(2, ['JOSE', 'REBECA']), true);
-  assert.deepEqual(reopened.preparation(2, ['JOSE', 'REBECA']).picked, ['JOSE']);
-  assert.equal(reopened.getState().terrain[5][5], 0);
-  play(reopened, 'RRRRRRRRU');
-  assert.equal(reopened.getState().status, 'WON');
-  assert.equal(reopened.getState().turn, 9);
-});
-
-test('the mirror route works without the ice flag and repairs survive a confirmed victory', () => {
-  const saved = { value: { schemaVersion: 1, unlockedLevels: [2], unlockedCharacters: ['JOSE'] } };
-  const { game, view } = campaign(saved);
-  game.startLevel(2);
-  play(game, 'RRRU');
-  const before = game.getState();
-  game.handleCanvasClick(5, 4);
-  assert.equal(game.getState().mirrors[0].slash, true);
-  game.undoMove();
-  assert.deepEqual(game.getState(), before);
-  game.handleCanvasClick(5, 4);
-  play(game, 'UUURRRDDDRR');
-  assert.equal(game.getState().status, 'WON');
-  assert.equal(game.getState().turn, 16);
-  game.startLevel(2, ['JOSE']);
-  play(game, 'RRRD');
-  game.handleCanvasClick(5, 6);
-  assert.equal(game.getState().localFlags.BRIDGE_REPAIRED, true);
-  play(game, 'RRRRRUU');
-  assert.equal(game.getState().status, 'WON');
-  game.commitVictory();
-  assert.equal(saved.value.worldFlags.BRIDGE_REPAIRED, true);
-});
-
-test('the workshop supports both archive routes, forging, and deterministic patrol undo', () => {
-  const saved = { value: { schemaVersion: 1, unlockedLevels: [3] } };
-  const { game } = campaign(saved);
-  game.startLevel(3);
-  play(game, 'DDRRRLULU');
-  assert.equal(game.getState().localFlags.GOLD_FISH_FORGED, true);
-  const before = game.getState();
-  game.toggleSkill('URSULA');
-  game.handleCanvasClick(3, 5);
-  assert.equal(game.getState().gates[0].open, true);
-  game.undoMove();
-  assert.deepEqual(game.getState(), before);
-  game.toggleSkill('URSULA');
-  game.handleCanvasClick(3, 5);
-  play(game, 'RURRDRRR');
-  game.toggleSkill('AMARANTA');
-  game.handleCanvasClick(8, 4);
-  assert.equal(game.getState().curtains.length, 1);
-  play(game, 'RDDRUU');
-  assert.equal(game.getState().status, 'WON');
-  assert.equal(game.getState().relicCollected, true);
-  game.commitVictory();
-  assert.equal(saved.value.worldFlags.ARCHIVE_INTACT, true);
-  assert.equal(saved.value.worldFlags.GOLD_FISH_FORGED, true);
-
-  game.startLevel(3, []);
-  play(game, 'UURR');
-  assert(game.interactAt(4, 3));
-  assert.equal(game.getState().archiveDestroyed, true);
-  play(game, 'RRRRRRDDR');
-  assert.equal(game.getState().status, 'WON');
-  assert.equal(game.getState().localFlags.ARCHIVE_INTACT, undefined);
-  game.commitVictory();
-  assert.equal(saved.value.worldFlags.ARCHIVE_INTACT, true);
-});
-
-test('rain supports both bridge variants, deterministic drift, tide reversal and undo', () => {
-  const saved = { value: {
-    schemaVersion: 1,
-    unlockedLevels: [4],
-    unlockedCharacters: ['AURELIANO', 'PILAR'],
-    worldFlags: { GOLD_FISH_FORGED: true }
-  } };
-  const { game } = campaign(saved);
-  game.startLevel(4, ['AURELIANO', 'PILAR']);
-  assert.equal(game.getState().abilities.AURELIANO.charges, 2);
-  assert.equal(game.getState().terrain[4][5], 9);
-  game.toggleSkill('PILAR');
-  assert.equal(game.getState().turn, 0);
-  assert.equal(game.getState().tideHigh, true);
-  assert.equal(game.getState().boxes[0].x, 5);
-  assert.equal(game.getState().abilities.PILAR.charges, 0);
-  const flipped = game.getState();
-  game.toggleSkill('PILAR');
-  assert.deepEqual(game.getState(), flipped);
-  game.undoMove();
-  assert.equal(game.getState().tideHigh, false);
-  assert.equal(game.getState().boxes[0].x, 4);
-  assert.equal(game.getState().abilities.PILAR.charges, 1);
-  play(game, 'RR');
-  const shore = game.getState();
-  play(game, 'R');
-  assert.equal(game.getState().status, 'DEAD');
-  assert.equal(game.getState().abilities.AURELIANO.charges, 2);
-  game.undoMove();
-  assert.deepEqual(game.getState(), shore);
-  game.waitTurn();
-  assert.equal(game.getState().boxes[0].x, 6);
-  assert.equal(game.getState().barrels[0].x, 6);
-  play(game, 'RRDRRRUUURDD');
-  assert.equal(game.getState().status, 'WON');
-  assert.equal(game.getState().relicCollected, true);
-  game.commitVictory();
-
-  saved.value.worldFlags.BRIDGE_REPAIRED = true;
-  const reopened = campaign(saved).game;
-  reopened.startLevel(4);
-  assert.equal(reopened.getState().terrain[4][5], 3);
-  play(reopened, 'RRRR');
-  assert(reopened.interactAt(6, 3));
-  assert.equal(reopened.getState().terrain[2][7], TILE.FLOOR);
-  play(reopened, 'UURRRDDR');
-  assert.equal(reopened.getState().status, 'WON');
-});
-
-function finishWithMirror(game) {
-  play(game, 'RDRRURR');
-  assert(game.interactAt());
-  assert.equal(game.getState().seals[0].open, true);
-  const before = game.getState();
-  assert(game.interactAt());
-  const blast = game.getState();
-  assert.equal(blast.items.length, 0);
-  assert.equal(blast.barrels.length, 0);
-  assert.equal(blast.terrain[5][10], TILE.FLOOR);
-  assert.equal(blast.emitterOffline, true);
-  assert.deepEqual(blast.logs.slice(0, 3).map(log => log.text[0]), ['①', '②', '③']);
-  game.undoMove();
-  assert.deepEqual(game.getState(), before);
-  assert(game.interactAt());
-  play(game, 'RURRDRR');
-}
-
-test('an empty save reaches all five acts with every optional flag off', () => {
-  const saved = {};
-  const { game } = campaign(saved);
-  game.resetLevel();
-  solveFirstAct(game);
-  assert(game.commitVictory());
-
-  assert(game.startLevel(2, []));
-  play(game, 'RRRU');
-  game.handleCanvasClick(5, 4);
-  play(game, 'UUURRRDDDRR');
-  assert(game.commitVictory());
-
-  assert(game.startLevel(3, []));
-  play(game, 'UURR');
-  assert(game.interactAt(4, 3));
-  play(game, 'RRRRRRDDR');
-  assert(game.commitVictory());
-
-  assert(game.startLevel(4, []));
-  play(game, 'RR');
-  game.waitTurn();
-  play(game, 'RRDRRRUR');
-  assert(game.commitVictory());
-  assert.deepEqual(Object.values(saved.value.worldFlags), [false, false, false, false]);
-
-  assert(game.startLevel(5, []));
-  finishWithMirror(game);
-  assert.equal(game.getState().status, 'WON');
-  assert.equal(game.getState().endingId, 'ESCAPE');
-  assert.equal(game.getState().turn, 16);
-  assert(game.commitVictory());
-  assert.equal(saved.value.completedLevels[5].ending, 'ESCAPE');
-  assert.equal(saved.value.unlockedCharacters.length, 9);
-});
-
-test('four real relic pickups unlock the true ending via the archive shortcut', () => {
-  const saved = {};
-  const { game } = campaign(saved);
-  game.resetLevel();
-  play(game, 'RLDDRLDDRRRRUUUUDDDD');
-  game.toggleSkill('JOSE');
-  game.handleCanvasClick(6, 4);
-  game.toggleSkill('REBECA');
-  game.handleCanvasClick(6, 4);
-  play(game, 'URRR');
-  assert(game.commitVictory());
-
-  assert(game.startLevel(2, []));
-  play(game, 'RRRD');
-  game.handleCanvasClick(5, 6);
-  play(game, 'RRRRUU');
-  game.toggleSkill('URSULA');
-  game.handleCanvasClick(8, 3);
-  play(game, 'URUUDDD');
-  assert(game.commitVictory());
-
-  assert(game.startLevel(3, []));
-  play(game, 'DDRRRLULU');
-  game.toggleSkill('URSULA');
-  game.handleCanvasClick(3, 5);
-  play(game, 'RURRDRRR');
-  game.toggleSkill('AMARANTA');
-  game.handleCanvasClick(8, 4);
-  assert.equal(game.getState().curtains.length, 1);
-  play(game, 'RDDRUU');
-  assert(game.commitVictory());
-
-  assert(game.startLevel(4, []));
-  play(game, 'RRRR');
-  game.waitTurn();
-  play(game, 'DRRRUUURDD');
-  assert(game.commitVictory());
-
-  assert.deepEqual(Object.values(saved.value.worldFlags), [true, true, true, true]);
-  assert.deepEqual([1, 2, 3, 4].map(id => saved.value.completedLevels[id].relicCollected), [true, true, true, true]);
-  const reopened = campaign(saved).game;
-  assert(reopened.startLevel(5, ['AURELIANO', 'URSULA', 'JOSE', 'PILAR']));
-  assert.equal(reopened.getState().abilities.AURELIANO.charges, 2);
-  assert.equal(reopened.getState().abilities.PILAR.unlocked, false);
-  play(reopened, 'RDRRRRRRR');
-  reopened.toggleSkill('REBECA');
-  reopened.handleCanvasClick(10, 4);
-  play(reopened, 'RUR');
-  assert.equal(reopened.getState().status, 'WON');
-  assert.equal(reopened.getState().endingId, 'TRUTH');
-  assert(reopened.commitVictory());
-  assert.equal(saved.value.completedLevels[5].ending, 'TRUTH');
-});
-
-test('the hurricane warning, collapse and defeat can be replayed exactly after undo', () => {
-  const saved = { value: { schemaVersion: 1, unlockedLevels: [5] } };
-  const run = campaign(saved);
-  run.game.startLevel(5);
-  assert.match(run.view.hazardLabel, /第 15 回合预警/);
-  for (let turn = 1; turn <= 17; turn++) run.game.waitTurn();
-  assert.equal(run.game.getState().status, 'PLAYING');
-  const previous = run.game.getState();
-  run.game.waitTurn();
-  assert.equal(run.game.getState().status, 'DEAD');
-  assert.equal(run.game.getState().terrain[5][1], 10);
-  assert.match(run.view.ending.description, /飓风/);
-  const collapsed = run.game.getState();
-  run.game.undoMove();
-  assert.deepEqual(run.game.getState(), previous);
-  run.game.waitTurn();
-  assert.deepEqual(run.game.getState(), collapsed);
-});
-
 test('a closed optical loop terminates instead of tracing forever', () => {
   const room = {
-    ...LEVELS[0], id: 99, cols: 5, rows: 5, npcs: [], barrels: [], items: [],
+    ...LEVELS[0], id: 99, cols: 5, rows: 5, npcs: [], barrels: [], boxes: [], gates: [], practiceBeams: [], items: [],
     start: { x: 0, y: 0 },
     terrain: Array.from({ length: 5 }, () => Array(5).fill(0)),
     emitters: [{ x: 2, y: 1, dx: 1, dy: 0 }],
@@ -351,21 +533,16 @@ test('a closed optical loop terminates instead of tracing forever', () => {
   assert.equal(game.getState().laserTiles.length, 8);
 });
 
-test('a forged goldfish blocks two separate hits and undo restores the corresponding charge', () => {
+test('the beam forecast agrees with a two-charge shield and a beam defeat', () => {
   const terrain = Array.from({ length: 3 }, () => Array(5).fill(TILE.FLOOR));
   terrain[1][4] = TILE.LASER_EMITTER;
   const room = {
     ...LEVELS[0], id: 5, cols: 5, rows: 3, slots: 1, terrain,
-    start: { x: 1, y: 1 }, npcs: [], barrels: [], items: [],
+    start: { x: 1, y: 1 }, npcs: [], barrels: [], boxes: [], gates: [], practiceBeams: [], items: [],
     emitters: [{ x: 4, y: 1, dx: -1, dy: 0 }]
   };
-  const game = createGame(() => {}, [room], {
-    read: () => ({
-      schemaVersion: 1,
-      unlockedCharacters: ['AURELIANO'],
-      worldFlags: { GOLD_FISH_FORGED: true }
-    })
-  });
+  const run = campaign(unlocked([5], ['AURELIANO'], { GOLD_FISH_FORGED: true }), [room]);
+  const { game } = run;
   assert(game.startLevel(5, ['AURELIANO']));
   assert.equal(game.getState().abilities.AURELIANO.charges, 2);
   play(game, 'R');
@@ -374,26 +551,14 @@ test('a forged goldfish blocks two separate hits and undo restores the correspon
   play(game, 'R');
   assert.equal(game.getState().status, 'PLAYING');
   assert.equal(game.getState().abilities.AURELIANO.charges, 0);
-  play(game, 'L');
+  assert(run.view.forecast.moves.some(move => move.cause === 'beam' && move.label === '致命'));
+  game.tryMove(-1, 0);
   assert.equal(game.getState().status, 'DEAD');
+  assert.equal(run.view.ending.iconId, 'sunbeam');
   game.undoMove();
   game.undoMove();
   assert.equal(game.getState().status, 'PLAYING');
   assert.equal(game.getState().abilities.AURELIANO.charges, 1);
-});
-
-test('Pilar flips a gate immediately and the action uses one ordinary turn', () => {
-  const { game } = campaign({ value: {
-    schemaVersion: 1, unlockedLevels: [3], unlockedCharacters: ['PILAR']
-  } });
-  assert(game.startLevel(3, ['PILAR']));
-  const initial = game.getState();
-  assert.equal(initial.gates[0].open, false);
-  game.toggleSkill('PILAR');
-  assert.equal(game.getState().gates[0].open, true);
-  assert.equal(game.getState().turn, 1);
-  game.undoMove();
-  assert.deepEqual(game.getState(), initial);
 });
 
 test('Canvas emitter nozzles point in the four configured beam directions', () => {
@@ -407,7 +572,7 @@ test('Canvas emitter nozzles point in the four configured beam directions', () =
   for (const { x, y } of emitters) terrain[y][x] = TILE.LASER_EMITTER;
   const room = {
     ...LEVELS[0], id: 99, cols: 7, rows: 7, terrain, emitters,
-    start: { x: 0, y: 0 }, npcs: [], barrels: [], items: []
+    start: { x: 0, y: 0 }, npcs: [], barrels: [], boxes: [], gates: [], practiceBeams: [], items: []
   };
   const triangles = [];
   let points;
@@ -460,55 +625,8 @@ test('a carried character gains exactly one charge when meeting the map characte
   assert.equal(game.getState().abilities.REBECA.charges, 2);
   play(game, 'UD');
   assert.equal(game.getState().abilities.REBECA.charges, 2);
-  play(game, 'URR');
+  play(game, 'UURR');
   game.toggleSkill('REBECA');
-  game.handleCanvasClick(5, 3);
+  game.handleCanvasClick(5, 4);
   assert.equal(game.getState().abilities.REBECA.charges, 1);
-});
-
-test('crossing the mist without the note delays the box skill on the relic route', () => {
-  const run = campaign({ value: { schemaVersion: 1, unlockedLevels: [2] } });
-  const { game } = run;
-  assert(game.startLevel(2));
-  play(game, 'URRR');
-  assert(game.interactAt(5, 4));
-  play(game, 'UUURRRDDDR');
-  assert.deepEqual(game.getState().player, { x: 8, y: 4 });
-  assert.equal(game.getState().memoRead, false);
-  assert(run.view.cards.find(card => card.id === 'URSULA').blocked);
-  game.toggleSkill('URSULA');
-  game.handleCanvasClick(8, 3);
-  assert.equal(game.getState().gates[0].open, false);
-  play(game, 'DU');
-  game.toggleSkill('URSULA');
-  game.handleCanvasClick(8, 3);
-  assert.equal(game.getState().gates[0].open, true);
-  play(game, 'URUUDDD');
-  assert.equal(game.getState().status, 'WON');
-  assert.equal(game.getState().relicCollected, true);
-});
-
-test('the rain chapter grants flight before the river and the finale rewards carrying it', () => {
-  const { game } = campaign({ value: {
-    schemaVersion: 1, unlockedLevels: [4, 5], unlockedCharacters: ['REMEDIOS']
-  } });
-  assert(game.startLevel(4, []));
-  play(game, 'RR');
-  game.toggleSkill('REMEDIOS');
-  game.handleCanvasClick(6, 4);
-  assert.deepEqual(game.getState().player, { x: 6, y: 4 });
-  assert.equal(game.getState().status, 'PLAYING');
-
-  assert(game.startLevel(5, ['REMEDIOS']));
-  play(game, 'R');
-  game.toggleSkill('REMEDIOS');
-  game.handleCanvasClick(4, 5);
-  play(game, 'RR');
-  assert.equal(game.getState().turn, 4);
-  assert(game.getState().abilities.BABYLON.unlocked);
-  assert(game.interactAt());
-  assert(game.interactAt());
-  play(game, 'RURRDRR');
-  assert.equal(game.getState().status, 'WON');
-  assert.equal(game.getState().turn, 13);
 });

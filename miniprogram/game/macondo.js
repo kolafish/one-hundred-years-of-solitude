@@ -6,7 +6,7 @@ const Icons = typeof require === 'function' ? require('./icons.js') : MacondoIco
 const MacondoPuzzle = (() => {
   const DEFAULT_BEAM_DIRECTION = { dx: 0, dy: 1 };
   const MECHANICS = {
-    beam: ['烈日光束', '被光束照到会受击。铜镜可改变光束方向。'],
+    beam: ['烈日光束', '红色光束会造成伤害。第一幕的绿色示范光束可以安全通过。铜镜可改变光束方向。'],
     emitter: ['光束发射器', '铜制喷嘴所指的方向就是光束发射方向。'],
     emitterOff: ['已熄灭的发射器', '连锁反应打断了灯座，门廊可以通过。'],
     translator: ['译码台', '继承巴比伦的能力后，在这里可开启门廊另一端的封印。'],
@@ -16,7 +16,7 @@ const MacondoPuzzle = (() => {
     bridge: ['木桥', '可以走过水面。'],
     goal: ['终点', '走到这个格子即可完成本幕。'],
     hot: ['焦土', '高温挡路。第一幕带出的冰块能冷却它。'],
-    mist: ['失眠迷雾', '踩入后主动能力封印两回合。备忘字条和乌尔苏拉同行可抵消。'],
+    mist: ['失眠迷雾', '踩入后主动能力封印两回合。已读备忘字条或已获得乌尔苏拉可抵消。'],
     shallows: ['潮汐浅滩', '退潮时可以走。涨潮前要离开。'],
     rubble: ['坍塌地面', '飓风已卷走这片地面。'],
     mirror: ['铜镜', '靠近后可拨转九十度，改变光束方向。'],
@@ -25,7 +25,7 @@ const MacondoPuzzle = (() => {
     box: ['木箱', '可推动、投掷、挡光，也能压住踏板。'],
     barrel: ['火药桶', '可被光束或丽贝卡点燃。爆炸会破开相邻裂纹墙。'],
     plate: ['踏板', '用箱桶或铜镜压住踏板，铁门才会开启。'],
-    gate: ['铁栅门', '由对应踏板或拉杆控制。'],
+    gate: ['铁栅门', '由对应踏板、拉杆或铜镜控制。'],
     lever: ['机关拉杆', '丽贝卡可以从视野内远程触发。'],
     fuse: ['引火机关', '箱桶到位后，靠近就能触发相邻的爆破机关。'],
     curtain: ['黑纱', '遮住光束和守卫视线，持续三回合。'],
@@ -55,6 +55,21 @@ const MacondoPuzzle = (() => {
   const LEGEND_POSITIONS = Object.fromEntries(LEGEND_ROWS.flatMap((row, y) =>
     row.map((id, x) => [id, { left: -100 * x, top: -100 * y }])));
   const ADJACENT = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+  const DEFEATS = {
+    beam: ['被烈日光束击中', '撤销一步，等光束移开或留一次护盾再通过。', 'sunbeam'],
+    guard: ['被巡逻守卫发现', '撤销一步，观察守卫下一回合的警戒范围。', 'patrol'],
+    tide: ['被涨潮困在浅滩', '撤销一步，等退潮后再过河。', 'river'],
+    hurricane: ['被飓风卷走', '撤销一步，离开下一圈即将坍塌的地面。', 'hurricane']
+  };
+  const DANGER_NAMES = { beam: '烈日光束', guard: '巡逻守卫', tide: '涨潮', hurricane: '飓风' };
+  const ARCHIVE_WARNING = '墙后有档案，炸开会失去第五幕的档案秘道。';
+  const HINT_TITLES = ['看哪里', '用什么', '完整解法'];
+  const CAUSAL_REWARDS = {
+    ICE_PRESERVED: '冰块 · 第二幕开放冷却后的中路。',
+    BRIDGE_REPAIRED: '木桥 · 第四幕开放南岸过河路线。',
+    ARCHIVE_INTACT: '完整档案 · 第五幕开放提前遇见丽贝卡的秘道。',
+    GOLD_FISH_FORGED: '小金鱼 · 第四、五幕带上校时多一次护盾。'
+  };
   const CHARACTER_DEFS = {
     JOSE: {
       id: 'JOSE',
@@ -65,7 +80,7 @@ const MacondoPuzzle = (() => {
       charges: 2,
       iconId: 'char_jose',
       color: '#8b4513',
-      desc: '选中身旁火药桶，越过河流投掷至 3 格内任意空地。',
+      desc: '选中身旁重物，投到距重物 3 格以内的空地或木桥。',
       epigraph: '「磁铁迷狂、天文演算、炼金幻梦」 · 范晔译，第一章',
       quote: '“任何东西都有生命，问题在于如何唤醒它们的灵魂。”——你获得了何塞的【炼金投掷】之力！'
     },
@@ -78,7 +93,7 @@ const MacondoPuzzle = (() => {
       charges: 1,
       iconId: 'char_aureliano',
       color: '#b45309',
-      desc: '被动生效：抵挡一次致命光束或子弹，穿胸而不伤及要害。',
+      desc: '被动抵挡一次光束或守卫攻击。',
       epigraph: '「父亲带他去见识冰块的那个遥远的下午」 · 范晔译，第一章',
       quote: '“他躲过了十四次暗杀、七十三次埋伏和一次枪决。”——上校的【宿命护盾】已庇佑你！'
     },
@@ -91,7 +106,7 @@ const MacondoPuzzle = (() => {
       charges: 1,
       iconId: 'char_rebeca',
       color: '#9e2a2b',
-      desc: '开枪必中：点击视野内任意目标，隔河精准射爆火药桶。',
+      desc: '远程触发视野内的火药桶、冰晶或拉杆。',
       epigraph: '「丽贝卡又开始吃土」 · 范晔译，第五章',
       quote: '一声清脆的枪响划破午后的闷热。——你继承了丽贝卡的【孤注一掷】枪法！'
     },
@@ -123,7 +138,7 @@ const MacondoPuzzle = (() => {
       id: 'PILAR', name: '庇拉尔·特尔内拉', shortName: '庇拉尔',
       abilityName: '纸牌逆转', type: 'ACTIVE', charges: 1,
       iconId: 'char_pilar', color: '#7b4b3d',
-      desc: '点击施放即可翻转机关。在雨幕中会立即翻转潮相。',
+      desc: '立即翻转潮相和单向门方向，消耗一回合。',
       epigraph: '「在清晰可见确定无疑的未来中生活」 · 范晔译，第十九章',
       quote: '庇拉尔翻过纸牌，机关换了一个方向。'
     },
@@ -164,6 +179,8 @@ const MacondoPuzzle = (() => {
     let ctx = null;
     let tileSize = 60;
     let playerToken = null;
+    let forecast = { moves: [], guardTiles: [] };
+    let pendingDecision = null;
 
     function readProgress() {
       try {
@@ -188,7 +205,7 @@ const MacondoPuzzle = (() => {
       }));
       const eligible = new Set(choices.filter(character => character.unlocked).map(character => character.id));
       const picked = [...new Set(selected)].filter(id => eligible.has(id)).slice(0, slots);
-      return { id: act.id, title: act.title, slots, picked, choices };
+      return { id: act.id, title: act.title, slots, picked, choices, recommendation: act.recommendation };
     }
 
     function commitVictory() {
@@ -201,7 +218,7 @@ const MacondoPuzzle = (() => {
         completedLevels: {
           [level.id]: { bestTurns: state.turn, rank, relicCollected: state.relicCollected, ending: state.endingId }
         },
-        unlockedCharacters: level.unlocks,
+        unlockedCharacters: (level.unlocks || []).filter(id => state.npcs.some(npc => npc.id === id && npc.collected)),
         worldFlags: state.localFlags,
         lastSelectedLoadout: loadout
       }, levels[0].id);
@@ -224,6 +241,8 @@ const MacondoPuzzle = (() => {
       for (const change of level.changes || []) {
         if (campaignFlags[change.flag]) terrain[change.y][change.x] = change.tile;
       }
+      const npcs = [...level.npcs];
+      if (level.archiveCompanion && campaignFlags.ARCHIVE_INTACT) npcs.push(level.archiveCompanion);
       return {
         turn: 0,
         settled: false,
@@ -237,18 +256,19 @@ const MacondoPuzzle = (() => {
         seals: (level.seals || []).map(seal => ({ ...seal, open: false })),
         gates: (level.gates || []).map(gate => ({ ...gate, open: false })),
         levers: (level.levers || []).map(lever => ({ ...lever, on: false })),
-        guards: (level.guards || []).map(({ path }) => ({
-          path, x: path[0].x, y: path[0].y, index: 0, step: 1,
+        guards: (level.guards || []).map(({ path, range = 3 }) => ({
+          path, range, x: path[0].x, y: path[0].y, index: 0, step: 1,
           dx: path[1].x - path[0].x, dy: path[1].y - path[0].y
         })),
         curtains: [],
         reversed: false,
+        tideTick: 0,
         tideHigh: false,
         memoRead: loadout.includes('URSULA'),
         status: 'PLAYING', // 'PLAYING' | 'WON' | 'DEAD'
         player: { ...level.start },
         terrain,
-        npcs: level.npcs.map(npc => ({ ...npc, collected: false })),
+        npcs: npcs.map(npc => ({ ...npc, collected: false })),
         barrels: level.barrels.map(barrel => ({ ...barrel })),
         boxes: (level.boxes || []).map(box => ({ ...box })),
         mirrors: (level.mirrors || []).map(mirror => ({ ...mirror })),
@@ -285,12 +305,12 @@ const MacondoPuzzle = (() => {
       if (historyStack.length > 50) historyStack.shift();
     }
 
-    function takeTurn(change, advancesTime = true) {
+    function takeTurn(change, flipTide = false) {
       pushHistory();
-      if (advancesTime) state.turn += 1;
+      state.turn += 1;
       const previous = state.player;
       change();
-      resolveTurn(previous.x !== state.player.x || previous.y !== state.player.y, advancesTime);
+      resolveTurn(previous.x !== state.player.x || previous.y !== state.player.y, flipTide);
     }
 
     // ==========================================
@@ -346,27 +366,27 @@ const MacondoPuzzle = (() => {
       return hits;
     }
 
-    function resolveBeams() {
-      const before = state.logs.length;
+    function resolveBeams(target) {
+      const before = target.logs.length;
       const chain = Boolean(level.beamBreak);
-      let hits = computeLasers(state);
+      let hits = computeLasers(target);
       while (hits.size > 0) {
         for (const hit of hits) {
           if (hit.kind === 'crystal') {
-            if (!state.items.includes(hit)) continue;
-            state.items = state.items.filter(item => item !== hit);
-            spawnExplosion(hit.x, hit.y, '#8bc3d9');
-            addLog(chain ? '① 折射光束击碎冰晶。' : '折射光束击碎了冰晶。', 'highlight');
-          } else if (state.barrels.includes(hit)) {
-            addLog(chain ? '② 光束点燃冰晶后方的火药桶。' : '光束点燃了火药桶。', 'highlight');
-            detonateBarrel(hit.x, hit.y, chain ? 10 : 0);
+            if (!target.items.includes(hit)) continue;
+            target.items = target.items.filter(item => item !== hit);
+            if (target === state) spawnExplosion(hit.x, hit.y, '#8bc3d9');
+            if (target === state) addLog(chain ? '① 折射光束击碎冰晶。' : '折射光束击碎了冰晶。', 'highlight');
+          } else if (target.barrels.includes(hit)) {
+            if (target === state) addLog(chain ? '② 光束点燃冰晶后方的火药桶。' : '光束点燃了火药桶。', 'highlight');
+            detonateBarrel(hit.x, hit.y, chain ? 10 : 0, target);
           }
         }
-        hits = computeLasers(state);
+        hits = computeLasers(target);
       }
-      if (chain && state.logs.length > before) {
-        const events = state.logs.splice(0, state.logs.length - before).reverse();
-        state.logs.unshift(...events);
+      if (target === state && chain && target.logs.length > before) {
+        const events = target.logs.splice(0, target.logs.length - before).reverse();
+        target.logs.unshift(...events);
       }
     }
 
@@ -385,7 +405,7 @@ const MacondoPuzzle = (() => {
     }
 
     // 检查直线视野（用于丽贝卡开枪必中：允许十字方向或任意无墙壁遮挡直线，这里支持同行/同列及无墙直线，兼容斜向射击！）
-    function hasLineOfSight(x0, y0, x1, y1) {
+    function hasLineOfSight(x0, y0, x1, y1, target = state) {
       if (x0 === x1 && y0 === y1) return false;
       // 使用 Bresenham 网格视线检测，任何无实心墙遮挡的格子均可射击
       let dx = Math.abs(x1 - x0);
@@ -399,8 +419,8 @@ const MacondoPuzzle = (() => {
       while (true) {
         if (cx === x1 && cy === y1) return true;
         if (!(cx === x0 && cy === y0)) {
-          if (isSolid(cx, cy) || at(state.curtains, cx, cy)
-            || state.items.some(item => item.kind === 'crystal' && item.x === cx && item.y === cy)) {
+          if (isSolid(cx, cy, target) || at(target.curtains, cx, cy)
+            || target.items.some(item => item.kind === 'crystal' && item.x === cx && item.y === cy)) {
             return false;
           }
         }
@@ -421,10 +441,10 @@ const MacondoPuzzle = (() => {
     }
 
     // 引爆火药桶（摧毁自身及上下左右相邻的裂纹石墙）
-    function detonateBarrel(bx, by, delay = 0) {
-      if (!at(state.barrels, bx, by)) return;
-      state.barrels = state.barrels.filter(b => !(b.x === bx && b.y === by));
-      spawnExplosion(bx, by, '#e05a2b', delay);
+    function detonateBarrel(bx, by, delay = 0, target = state) {
+      if (!at(target.barrels, bx, by)) return;
+      target.barrels = target.barrels.filter(b => !(b.x === bx && b.y === by));
+      if (target === state) spawnExplosion(bx, by, '#e05a2b', delay);
 
       const dirs = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]];
       let destroyedWall = false;
@@ -434,36 +454,36 @@ const MacondoPuzzle = (() => {
         const nx = bx + dx;
         const ny = by + dy;
         if (nx >= 0 && nx < level.cols && ny >= 0 && ny < level.rows) {
-          const barrel = at(state.barrels, nx, ny);
+          const barrel = at(target.barrels, nx, ny);
           if (barrel) adjacentBarrels.push(barrel);
-          state.items = state.items.filter(item => !(item.kind === 'crystal' && item.x === nx && item.y === ny));
-          if (state.terrain[ny][nx] === TILE.CRACKED_WALL) {
-            state.terrain[ny][nx] = TILE.FLOOR;
-            if (level.archiveWall?.x === nx && level.archiveWall?.y === ny) state.archiveDestroyed = true;
+          target.items = target.items.filter(item => !(item.kind === 'crystal' && item.x === nx && item.y === ny));
+          if (target.terrain[ny][nx] === TILE.CRACKED_WALL) {
+            target.terrain[ny][nx] = TILE.FLOOR;
+            if (level.archiveWall?.x === nx && level.archiveWall?.y === ny) target.archiveDestroyed = true;
             destroyedWall = true;
-            if (level.beamBreak?.x === nx && level.beamBreak?.y === ny && !state.emitterOffline) {
-              state.emitterOffline = true;
+            if (level.beamBreak?.x === nx && level.beamBreak?.y === ny && !target.emitterOffline) {
+              target.emitterOffline = true;
               brokeEmitter = true;
             }
-            spawnExplosion(nx, ny, '#c59b27', delay ? delay + 12 : 0);
+            if (target === state) spawnExplosion(nx, ny, '#c59b27', delay ? delay + 12 : 0);
           }
         }
       });
 
-      if (brokeEmitter) {
+      if (target === state && brokeEmitter) {
         addLog(delay ? '③ 裂纹墙破开，灯座随之熄灭。密室门廊可以通行。' : '裂纹墙破开，灯座随之熄灭。', 'highlight');
-      } else if (state.archiveDestroyed && destroyedWall) {
+      } else if (target === state && target.archiveDestroyed && destroyedWall) {
         addLog('裂纹墙轰然倒塌，墙后的档案也没能留下。', 'warning');
-      } else if (destroyedWall) {
+      } else if (target === state && destroyedWall) {
         addLog('轰然巨响中，火药桶炸碎了古老的裂纹石墙，通往密室的道路豁然开朗！', 'highlight');
-      } else {
+      } else if (target === state) {
         addLog('火药桶在空地上炸开，硝烟弥漫在马孔多的空气里。', 'normal');
       }
-      for (const barrel of adjacentBarrels) detonateBarrel(barrel.x, barrel.y, delay ? delay + 6 : 0);
+      for (const barrel of adjacentBarrels) detonateBarrel(barrel.x, barrel.y, delay ? delay + 6 : 0, target);
     }
 
     // 回合结束后的环境与接触结算
-    function resolveTurn(enteredTile, advancesTime) {
+    function resolveTurn(enteredTile, flipTide) {
       const { x, y } = state.player;
       const item = at(state.items, x, y);
       if (item) {
@@ -471,10 +491,9 @@ const MacondoPuzzle = (() => {
         if (item.kind === 'relic') {
           state.relicCollected = true;
           addLog('你找到了这一幕的羊皮纸残页。', 'highlight');
-          if (level.id === 2) grantAbility('MELQUIADES');
         } else if (item.kind === 'ice') {
           state.localFlags.ICE_PRESERVED = true;
-          addLog('你把冷冽的冰块裹好，准备带出庄园。', 'highlight');
+          addLog('冰块已收好。通关结算后，第二幕的焦土会冷却，开放中路。', 'highlight');
         } else if (item.kind === 'gold') {
           state.gold += 1;
           addLog('你拾起一枚熔炉金屑。', 'highlight');
@@ -484,64 +503,46 @@ const MacondoPuzzle = (() => {
           addLog('备忘字条让你记住了家族馈赠。', 'highlight');
         }
       }
-      if (enteredTile && state.terrain[y][x] === TILE.MIST && !state.memoRead) {
+      if (enteredTile && state.terrain[y][x] === TILE.MIST && !state.memoRead && !state.abilities.URSULA.unlocked) {
         state.mistUntil = state.turn + 2;
         addLog('失眠迷雾封印了主动能力。再经过两回合即可恢复。', 'warning');
       }
-      // 1. 检查是否接触或靠近家族人物（踩上或相邻即可触发对话继承能力）
-      state.npcs.forEach(npc => {
-        if (!npc.collected) {
-          const dist = Math.abs(npc.x - state.player.x) + Math.abs(npc.y - state.player.y);
-          if (dist <= 1) {
-            npc.collected = true;
-            const def = CHARACTER_DEFS[npc.id];
-            grantAbility(npc.id);
-            addLog(def.quote, 'character');
-            if (loadout.includes(npc.id) && def.type !== 'PASSIVE_RUNE') {
-              state.abilities[npc.id].charges += 1;
-              addLog(`${def.name} · 执念共鸣，能力次数 +1。`, 'highlight');
-            }
-            spawnExplosion(npc.x, npc.y, '#c59b27');
-          }
+      const npc = at(state.npcs, x, y);
+      if (enteredTile && npc && !npc.collected) {
+        npc.collected = true;
+        const def = CHARACTER_DEFS[npc.id];
+        grantAbility(npc.id);
+        addLog(def.quote, 'character');
+        if (loadout.includes(npc.id) && def.type !== 'PASSIVE_RUNE') {
+          state.abilities[npc.id].charges += 1;
+          addLog(`${def.name} · 执念共鸣，能力次数 +1。`, 'highlight');
         }
-      });
+        spawnExplosion(npc.x, npc.y, '#c59b27');
+      }
 
       if (level.forge && state.gold >= 2 && !state.localFlags.GOLD_FISH_FORGED
         && Math.abs(x - level.forge.x) + Math.abs(y - level.forge.y) <= 1) {
         state.localFlags.GOLD_FISH_FORGED = true;
-        grantAbility('PILAR');
         addLog('上校用两枚金屑锻成小金鱼。后两幕携带上校时可多挡一次攻击。', 'highlight');
       }
 
-      updateGates();
-      if (advancesTime) advanceGuards();
-      updateTide();
-      updateHurricane();
-      state.curtains = state.curtains.filter(curtain => curtain.expires > state.turn);
-      resolveBeams();
-      const underfoot = state.terrain[y][x];
-      if ((state.tideHigh && underfoot === TILE.SHALLOWS) || underfoot === TILE.RUBBLE) {
-        state.status = 'DEAD';
-        state.deathReason = underfoot === TILE.RUBBLE ? '飓风卷过了脚下的地面。可以撤销一步，退回安全处。'
-          : '涨潮淹没了脚下的浅滩。可以撤销一步，回到岸边等待退潮。';
-        addLog(state.deathReason, 'danger');
-        renderUI();
-        return;
+      if (at(level.practiceBeams || [], x, y) && enteredTile) {
+        addLog('这是安全示范光束，不扣护盾。下一束红光会消耗一次护盾。', 'highlight');
       }
-      const inLaser = Boolean(at(state.laserTiles, x, y));
-      const seenByGuard = state.guards.some(guard => guardSees(guard, x, y));
-      if (inLaser || seenByGuard) {
-        if (state.abilities.AURELIANO.charges > 0) {
-          // 触发奥雷里亚诺上校的【宿命护盾】
-          state.abilities.AURELIANO.charges -= 1;
-          spawnExplosion(state.player.x, state.player.y, '#ffd166');
-          addLog(inLaser
-            ? '灼热的光束穿透了你的胸膛，却神奇地避开了心脏！奥雷里亚诺上校的【宿命护盾】救了你一命。'
-            : '守卫发现了你。上校的宿命护盾挡下攻击并打断警报。', 'highlight');
+
+      advanceEnvironment(state, flipTide);
+      const cause = dangerAt(state, x, y);
+      if (cause) {
+        const shield = state.abilities.AURELIANO;
+        if (shield.charges > 0 && shieldProtects(cause)) {
+          shield.charges -= 1;
+          spawnExplosion(x, y, '#ffd166');
+          addLog(cause === 'beam' ? '宿命护盾挡下了烈日光束，护盾 -1。'
+            : '宿命护盾挡下了守卫的攻击，护盾 -1。', 'highlight');
         } else {
           state.status = 'DEAD';
-          if (seenByGuard && !inLaser) state.deathReason = '守卫拉响了警报。可以撤销一步，等巡逻转向。';
-          addLog(inLaser ? '烈日聚焦光束无情地吞噬了你的身影，一切化作马孔多的尘埃。' : '守卫拉响了警报。', 'danger');
+          state.deathReason = cause;
+          addLog(DEFEATS[cause][0] + '。', 'danger');
           renderUI();
           return;
         }
@@ -555,7 +556,7 @@ const MacondoPuzzle = (() => {
         }
         if (level.archiveWall && !state.archiveDestroyed) {
           state.localFlags.ARCHIVE_INTACT = true;
-          addLog('档案完整保留下来。', 'highlight');
+          addLog('档案完整保留下来。第五幕可以提前遇见丽贝卡。', 'highlight');
         }
         addLog('你推开密室尘封的木门，破译了梅尔基亚德斯的羊皮纸手稿！', 'highlight');
       }
@@ -563,52 +564,58 @@ const MacondoPuzzle = (() => {
       renderUI();
     }
 
-    function updateTide() {
+    function updateTide(target, flip) {
       if (!level.tide) return;
-      const wasHigh = state.tideHigh;
-      state.tideHigh = (state.turn % 2 === 1) !== state.reversed;
-      if (wasHigh || !state.tideHigh) return;
+      const wasHigh = target.tideHigh;
+      target.tideTick = flip ? (wasHigh ? 0 : 2) : (target.tideTick + 1) % 4;
+      target.tideHigh = target.tideTick >= 2;
+      if (wasHigh || !target.tideHigh) return;
 
       const drifting = [];
-      for (const object of [...state.barrels, ...state.boxes]) {
-        const current = at(level.currents || [], object.x, object.y);
+      for (const object of [...target.barrels, ...target.boxes]) {
+        const current = currentDirection(at(level.currents || [], object.x, object.y), target);
         if (!current) continue;
         const x = object.x + current.dx;
         const y = object.y + current.dy;
-        if (!inBounds(x, y) || isSolid(x, y) || at(objects(), x, y) || at(drifting, x, y)
-          || (state.player.x === x && state.player.y === y)) continue;
+        if (!inBounds(x, y) || isSolid(x, y, target) || at(objects(target), x, y) || at(drifting, x, y)
+          || (target.player.x === x && target.player.y === y)) continue;
         drifting.push({ object, x, y });
       }
       for (const { object, x, y } of drifting) Object.assign(object, { x, y });
       if (drifting.length) {
-        updateGates();
-        addLog('涨潮把河边的箱桶推了一个格子。', 'highlight');
+        updateGates(target);
+        if (target === state) addLog('涨潮把河边的箱桶推了一个格子。', 'highlight');
       }
+    }
+
+    function currentDirection(current, target) {
+      const branch = current?.bridgeRoute;
+      return branch && target.terrain[branch.bridge.y][branch.bridge.x] === TILE.BRIDGE ? branch : current;
     }
 
     function hurricaneRing(x, y) {
       return Math.min(x, y, level.cols - 1 - x, level.rows - 1 - y) - 1;
     }
 
-    function updateHurricane() {
+    function updateHurricane(target) {
       if (!level.hurricane) return;
       const { warningTurn, collapseTurn, ringInterval } = level.hurricane;
-      const elapsed = state.turn - collapseTurn;
-      if (state.turn === warningTurn) addLog('飓风开始围拢，虚线标出了下一圈将坍塌的格子。', 'warning');
+      const elapsed = target.turn - collapseTurn;
+      if (target === state && target.turn === warningTurn) addLog('飓风开始围拢，虚线标出了下一圈将坍塌的格子。', 'warning');
       if (elapsed < 0 || elapsed % ringInterval !== 0) return;
       const ring = elapsed / ringInterval;
       for (let y = 0; y < level.rows; y++) {
         for (let x = 0; x < level.cols; x++) {
-          if (hurricaneRing(x, y) === ring && ![TILE.WALL, TILE.GOAL].includes(state.terrain[y][x])) {
-            state.terrain[y][x] = TILE.RUBBLE;
+          if (hurricaneRing(x, y) === ring && ![TILE.WALL, TILE.GOAL].includes(target.terrain[y][x])) {
+            target.terrain[y][x] = TILE.RUBBLE;
           }
         }
       }
-      if (ring < Math.floor(Math.min(level.cols, level.rows) / 2)) addLog('一圈地面被飓风卷走。', 'warning');
+      if (target === state && ring < Math.floor(Math.min(level.cols, level.rows) / 2)) addLog('一圈地面被飓风卷走。', 'warning');
     }
 
     function waitTurn() {
-      if (state.status !== 'PLAYING' || !canWait()) return;
+      if (state.status !== 'PLAYING' || pendingDecision || !canWait()) return;
       clearSkillMode();
       takeTurn(() => {});
     }
@@ -617,11 +624,12 @@ const MacondoPuzzle = (() => {
       return Boolean(level.tide || level.guards?.length || level.hurricane);
     }
 
-    function updateGates() {
-      for (const gate of state.gates) {
-        const weighted = Boolean(at(objects(), gate.plate.x, gate.plate.y));
-        const activated = state.levers.some(lever => lever.id === gate.id && lever.on);
-        gate.open = (weighted || activated) !== state.reversed;
+    function updateGates(target = state) {
+      for (const gate of target.gates) {
+        const weighted = gate.plate && Boolean(at(objects(target), gate.plate.x, gate.plate.y));
+        const activated = target.levers.some(lever => lever.id === gate.id && lever.on);
+        const redirected = gate.mirror && at(target.mirrors, gate.mirror.x, gate.mirror.y)?.slash === gate.mirror.slash;
+        gate.open = Boolean(weighted || activated || redirected);
       }
     }
 
@@ -631,8 +639,8 @@ const MacondoPuzzle = (() => {
       }
     }
 
-    function advanceGuards() {
-      for (const guard of state.guards) {
+    function advanceGuards(target) {
+      for (const guard of target.guards) {
         if (!guard.path[guard.index + guard.step]) guard.step *= -1;
         guard.index += guard.step;
         const next = guard.path[guard.index];
@@ -643,36 +651,87 @@ const MacondoPuzzle = (() => {
       }
     }
 
-    function guardSees(guard, x, y) {
+    function guardSees(guard, x, y, target = state) {
       const dx = x - guard.x;
       const dy = y - guard.y;
       const distance = dx * guard.dx + dy * guard.dy;
       const sideways = Math.abs(dx * guard.dy - dy * guard.dx);
-      return (dx === 0 && dy === 0) || (distance >= 1 && distance <= 3 && sideways <= Math.floor(distance / 2)
-        && !isSolid(x, y) && !at(state.curtains, x, y) && hasLineOfSight(guard.x, guard.y, x, y));
+      return (dx === 0 && dy === 0) || (distance >= 1 && distance <= guard.range && sideways <= Math.floor(distance / 2)
+        && !isSolid(x, y, target) && !at(target.curtains, x, y) && hasLineOfSight(guard.x, guard.y, x, y, target));
     }
 
-    // 玩家移动一步
-    function tryMove(dx, dy) {
-      if (state.status !== 'PLAYING' || Math.abs(dx) + Math.abs(dy) !== 1) return;
-      if (interactionMode !== 'MOVE') {
-        cancelSkillMode();
-      }
+    function advanceEnvironment(target, flipTide = false) {
+      updateGates(target);
+      advanceGuards(target);
+      updateTide(target, flipTide);
+      updateHurricane(target);
+      target.curtains = target.curtains.filter(curtain => curtain.expires > target.turn);
+      resolveBeams(target);
+    }
+
+    function dangerAt(target, x, y) {
+      const terrain = target.terrain[y][x];
+      if (terrain === TILE.RUBBLE) return 'hurricane';
+      if (target.tideHigh && terrain === TILE.SHALLOWS) return 'tide';
+      if (at(target.laserTiles, x, y) && !at(level.practiceBeams || [], x, y)) return 'beam';
+      if (target.guards.some(guard => guardSees(guard, x, y, target))) return 'guard';
+      return null;
+    }
+
+    function shieldProtects(cause) {
+      return cause === 'beam' || cause === 'guard';
+    }
+
+    function moveDestination(dx, dy) {
       const nx = state.player.x + dx;
       const ny = state.player.y + dy;
-      if (!isWalkable(nx, ny)) return;
+      if (!isWalkable(nx, ny)) return null;
       const lane = at(level.oneWay || [], nx, ny);
       const sign = state.reversed ? -1 : 1;
-      if (lane && (dx !== lane.dx * sign || dy !== lane.dy * sign)) return;
+      return !lane || (dx === lane.dx * sign && dy === lane.dy * sign) ? { x: nx, y: ny } : null;
+    }
 
-      takeTurn(() => {
-        state.player = { x: nx, y: ny };
+    function nextEnvironment(player) {
+      const next = cloneState({ ...state, player, turn: state.turn + 1, logs: [] });
+      advanceEnvironment(next);
+      return next;
+    }
+
+    function forecastDanger() {
+      if (state.status !== 'PLAYING') return { moves: [], guardTiles: [] };
+      const next = nextEnvironment(state.player);
+      const guardTiles = [];
+      if (next.guards.length) {
+        for (let y = 0; y < level.rows; y++) {
+          for (let x = 0; x < level.cols; x++) {
+            if (next.guards.some(guard => guardSees(guard, x, y, next))) guardTiles.push({ x, y });
+          }
+        }
+      }
+      const moves = ADJACENT.flatMap(([dx, dy]) => {
+        const step = moveDestination(dx, dy);
+        if (!step) return [];
+        const { x, y } = step;
+        const result = level.tide ? nextEnvironment(step) : next;
+        const cause = dangerAt(result, x, y);
+        if (!cause) return [];
+        const npc = at(state.npcs, x, y);
+        const canShield = state.abilities.AURELIANO.charges > 0 || (npc?.id === 'AURELIANO' && !npc.collected);
+        return [{ x, y, cause, label: shieldProtects(cause) && canShield ? '护盾 −1' : '致命' }];
       });
+      return { moves, guardTiles, tideRising: !state.tideHigh && next.tideHigh };
+    }
+
+    function tryMove(dx, dy) {
+      if (state.status !== 'PLAYING' || pendingDecision || Math.abs(dx) + Math.abs(dy) !== 1) return;
+      if (interactionMode !== 'MOVE') cancelSkillMode();
+      const step = moveDestination(dx, dy);
+      if (step) takeTurn(() => { state.player = step; });
     }
 
     // 切换技能激活状态
     function toggleSkill(skillId) {
-      if (state.status !== 'PLAYING') return;
+      if (state.status !== 'PLAYING' || pendingDecision) return;
       const ab = state.abilities[skillId];
       if (!ab || ab.charges <= 0 || CHARACTER_DEFS[skillId].type.startsWith('PASSIVE')) return;
       if (state.turn < state.mistUntil) return;
@@ -681,8 +740,9 @@ const MacondoPuzzle = (() => {
         takeTurn(() => {
           ab.charges -= 1;
           state.reversed = !state.reversed;
-          addLog('纸牌翻面，二元机关随之逆转。', 'highlight');
-        }, !level.tide);
+          const effects = [level.tide && '潮相', level.oneWay?.length && '单向门方向'].filter(Boolean);
+          addLog(effects.length ? `纸牌翻面。${effects.join('与')}逆转。` : '纸牌翻面。这一幕没有可逆转的潮汐或单向门。', 'highlight');
+        }, Boolean(level.tide));
         return;
       }
       if (activeAbility === skillId) {
@@ -739,7 +799,7 @@ const MacondoPuzzle = (() => {
 
     // Handle board click
     function handleCanvasClick(gx, gy) {
-      if (state.status !== 'PLAYING') return;
+      if (state.status !== 'PLAYING' || pendingDecision) return;
       if (!inBounds(gx, gy)) return;
       if (interactionMode === 'SELECT_ABILITY') {
         const effect = abilityTarget(activeAbility, gx, gy);
@@ -772,8 +832,8 @@ const MacondoPuzzle = (() => {
         if (isValidThrowTarget(selectedBarrelPos.x, selectedBarrelPos.y, gx, gy)) {
           takeTurn(() => {
           const object = at(objects(), selectedBarrelPos.x, selectedBarrelPos.y);
-          object.x = gx;
-          object.y = gy;
+            object.x = gx;
+            object.y = gy;
             state.abilities.JOSE.charges -= 1;
           addLog('你效仿何塞·阿尔卡蒂奥的怪力，将重物凌空抛了出去！', 'character');
             clearSkillMode();
@@ -798,7 +858,7 @@ const MacondoPuzzle = (() => {
         const crystal = at(state.items.filter(item => item.kind === 'crystal'), gx, gy);
 
         if (targetBarrel || lever || crystal) {
-          takeTurn(() => {
+          const shoot = () => takeTurn(() => {
             state.abilities.REBECA.charges -= 1;
             if (targetBarrel) {
               addLog('砰！丽贝卡精准击中了远处的火药桶！', 'character');
@@ -812,6 +872,8 @@ const MacondoPuzzle = (() => {
             }
             clearSkillMode();
           });
+          if (targetBarrel && threatensArchive(targetBarrel)) requestArchiveDecision(shoot);
+          else shoot();
         } else if (targetCracked) {
           // 射击坚固裂纹石墙给予提示（需火药桶爆炸才能彻底炸开）
           addLog('子弹在石墙上擦出火花，但这堵石墙太厚了，需要引爆旁边的【火药桶】才能炸毁！', 'warning');
@@ -841,7 +903,7 @@ const MacondoPuzzle = (() => {
     }
 
     function getInteractions() {
-      if (state.status !== 'PLAYING' || activeAbility) return [];
+      if (state.status !== 'PLAYING' || activeAbility || pendingDecision) return [];
       const labels = { seal: '译码封印', mirror: '拨转铜镜', repair: '修复木桥', fuse: '触发引火机关' };
       const near = ADJACENT.flatMap(([dx, dy]) => {
         const x = state.player.x + dx;
@@ -872,7 +934,7 @@ const MacondoPuzzle = (() => {
       }
 
       const kind = interactionAt(action.x, action.y);
-      takeTurn(() => {
+      const operate = () => takeTurn(() => {
         if (kind === 'seal') {
           at(state.seals, action.x, action.y).open = true;
           addLog('巴比伦译出了铭文，古梵文封印开启。', 'highlight');
@@ -888,7 +950,36 @@ const MacondoPuzzle = (() => {
           repairBridge(action.x, action.y);
         }
       });
+      const fuse = kind === 'fuse' && at(level.fuses, action.x, action.y);
+      if (fuse && threatensArchive(fuse.target)) requestArchiveDecision(operate);
+      else operate();
       return true;
+    }
+
+    function threatensArchive(source) {
+      const wall = level.archiveWall;
+      if (!wall || state.archiveDestroyed) return false;
+      const nearby = [source];
+      for (const barrel of nearby) {
+        if (Math.abs(barrel.x - wall.x) + Math.abs(barrel.y - wall.y) <= 1) return true;
+        for (const linked of state.barrels) {
+          if (Math.abs(barrel.x - linked.x) + Math.abs(barrel.y - linked.y) === 1 && !nearby.includes(linked)) nearby.push(linked);
+        }
+      }
+      return false;
+    }
+
+    function requestArchiveDecision(accept) {
+      pendingDecision = { title: '确认炸开档案墙？', detail: ARCHIVE_WARNING, accept };
+      renderUI();
+    }
+
+    function resolveDecision(confirmed) {
+      if (!pendingDecision) return;
+      const { accept } = pendingDecision;
+      pendingDecision = null;
+      if (confirmed) accept();
+      else renderUI();
     }
 
     function tileMechanics(x, y) {
@@ -899,7 +990,7 @@ const MacondoPuzzle = (() => {
         at(state.barrels, x, y) && 'barrel',
         at(state.seals, x, y) && 'seal',
         at(state.gates, x, y) && 'gate',
-        state.gates.some(gate => gate.plate.x === x && gate.plate.y === y) && 'plate',
+        state.gates.some(gate => gate.plate?.x === x && gate.plate.y === y) && 'plate',
         at(state.levers, x, y) && 'lever',
         at(state.curtains, x, y) && 'curtain',
         at(state.guards, x, y) && 'guard',
@@ -927,8 +1018,11 @@ const MacondoPuzzle = (() => {
       const descriptions = kinds.map(mechanicDescription);
       if (npc) {
         const character = CHARACTER_DEFS[npc.id];
-        descriptions.unshift({ id: npc.id, name: character.name, detail: character.desc });
+        descriptions.unshift({ id: npc.id, name: character.name, detail: '踩上此格继承能力。' + character.desc });
       }
+      const danger = at(forecast.moves, x, y);
+      if (danger) descriptions.unshift({ id: 'danger-' + danger.cause + danger.label, name: danger.label,
+        detail: '下一回合 · ' + DANGER_NAMES[danger.cause] });
       return {
         descriptions: descriptions.length ? descriptions : [{ id: 'floor', name: '石板地', detail: '可沿相邻格移动。' }],
         distant: Math.abs(state.player.x - x) + Math.abs(state.player.y - y) > 1
@@ -946,8 +1040,12 @@ const MacondoPuzzle = (() => {
 
     function repairBridge(x, y) {
       state.terrain[y][x] = TILE.BRIDGE;
-      if (at(level.repairs || [], x, y)) state.localFlags.BRIDGE_REPAIRED = true;
-      addLog('木板铺稳，河岸之间有了落脚处。', 'highlight');
+      if (at(level.repairs || [], x, y)) {
+        state.localFlags.BRIDGE_REPAIRED = true;
+        addLog('木桥已修好。通关结算后，第四幕会开放南岸木桥路线。', 'highlight');
+      } else {
+        addLog('木板铺稳，河岸之间有了落脚处。', 'highlight');
+      }
     }
 
     function abilityTarget(skill, x, y) {
@@ -991,6 +1089,7 @@ const MacondoPuzzle = (() => {
 
     // 撤销操作
     function undoMove() {
+      if (pendingDecision) return resolveDecision(false);
       if (historyStack.length === 0) return;
       state = historyStack.pop();
       particles = [];
@@ -1010,6 +1109,7 @@ const MacondoPuzzle = (() => {
 
     // 重置关卡
     function resetLevel() {
+      pendingDecision = null;
       historyStack = [];
       seenMechanics = new Set();
       particles = [];
@@ -1109,6 +1209,11 @@ const MacondoPuzzle = (() => {
               ctx.lineDashOffset = 0;
             }
             drawMechanism('shallows', x, y, { active: state.tideHigh });
+            if (forecast.tideRising) {
+              ctx.strokeStyle = '#9e2a2b';
+              ctx.lineWidth = Math.max(1.5, tileSize * 0.045);
+              ctx.strokeRect(px + 2, py + 2, tileSize - 4, tileSize - 4);
+            }
           } else if (tile === TILE.HOT || tile === TILE.MIST) {
             ctx.fillStyle = tile === TILE.HOT ? 'rgba(158, 42, 43, 0.45)' : 'rgba(115, 102, 124, 0.43)';
             ctx.fillRect(px + 2, py + 2, tileSize - 4, tileSize - 4);
@@ -1129,8 +1234,13 @@ const MacondoPuzzle = (() => {
         }
       }
 
+      const drawnPlates = new Set();
       for (const gate of state.gates) {
-        drawMechanism('plate', gate.plate.x, gate.plate.y, { active: Boolean(at(objects(), gate.plate.x, gate.plate.y)) });
+        const plate = gate.plate;
+        if (plate && !drawnPlates.has(plate.x + ':' + plate.y)) {
+          drawnPlates.add(plate.x + ':' + plate.y);
+          drawMechanism('plate', plate.x, plate.y, { active: Boolean(at(objects(), plate.x, plate.y)) });
+        }
         drawMechanism('gate', gate.x, gate.y, { active: gate.open });
       }
       for (const seal of state.seals) {
@@ -1151,10 +1261,17 @@ const MacondoPuzzle = (() => {
       }
       for (const current of level.currents || []) {
         if (!at(objects(), current.x, current.y)) {
-          drawMechanism('waterFlow', current.x, current.y, current);
+          drawMechanism('waterFlow', current.x, current.y, currentDirection(current, state));
         }
       }
       for (const guard of state.guards) drawGuard(guard);
+      ctx.strokeStyle = 'rgba(158, 42, 43, 0.55)';
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash([3, 3]);
+      for (const { x, y } of forecast.guardTiles) {
+        ctx.strokeRect(x * tileSize + 3, y * tileSize + 3, tileSize - 6, tileSize - 6);
+      }
+      ctx.setLineDash([]);
 
       // 2. Active skill targeting highlights
       if (interactionMode === 'SELECT_THROW_TARGET' && selectedBarrelPos) {
@@ -1241,6 +1358,10 @@ const MacondoPuzzle = (() => {
         ctx.lineWidth = 2;
         Icons.roundedRectPath(ctx, hoverTile.x * tileSize + 2, hoverTile.y * tileSize + 2, tileSize - 4, tileSize - 4, 4);
         ctx.stroke();
+      }
+
+      if (!activeAbility) {
+        for (const warning of forecast.moves) drawDangerLabel(warning);
       }
 
       // 8. Particle effects
@@ -1432,7 +1553,7 @@ const MacondoPuzzle = (() => {
     function drawGuard(guard) {
       const s = tileSize;
       ctx.fillStyle = 'rgba(158, 42, 43, 0.25)';
-      for (let distance = 1; distance <= 3; distance++) {
+      for (let distance = 1; distance <= guard.range; distance++) {
         for (let side = -Math.floor(distance / 2); side <= Math.floor(distance / 2); side++) {
           const x = guard.x + guard.dx * distance - guard.dy * side;
           const y = guard.y + guard.dy * distance + guard.dx * side;
@@ -1440,6 +1561,32 @@ const MacondoPuzzle = (() => {
         }
       }
       drawMechanism('guard', guard.x, guard.y, guard);
+    }
+
+    function drawDangerLabel({ x, y, label, cause }) {
+      const s = tileSize;
+      const left = x * s;
+      const bottom = (y + 1) * s;
+      const protectedMove = label !== '致命';
+      const stacked = protectedMove && s < 36;
+      const height = stacked ? Math.min(s - 2, 22) : Math.max(12, s * 0.29);
+      ctx.save();
+      ctx.fillStyle = protectedMove ? '#49341c' : '#7d2728';
+      Icons.roundedRectPath(ctx, left + 1, bottom - height - 1, s - 2, height, 3);
+      ctx.fill();
+      ctx.fillStyle = cause === 'tide' ? '#f6f3e8' : '#fff3cb';
+      ctx.font = `bold ${stacked ? Math.min(10, height * 0.49) : Math.max(8, Math.min(16, s * 0.28))}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const centerX = left + s / 2;
+      const top = bottom - height - 1;
+      if (stacked) {
+        ctx.fillText('护盾', centerX, top + height * 0.26, s - 3);
+        ctx.fillText('−1', centerX, top + height * 0.73, s - 3);
+      } else {
+        ctx.fillText(label, centerX, top + height / 2, s - 4);
+      }
+      ctx.restore();
     }
 
     function drawMechanism(kind, x, y, options) {
@@ -1497,10 +1644,11 @@ const MacondoPuzzle = (() => {
         ctx.moveTo(x - tile.incoming.dx * half, y - tile.incoming.dy * half);
         ctx.lineTo(x, y);
         ctx.lineTo(x + tile.outgoing.dx * half, y + tile.outgoing.dy * half);
-        ctx.strokeStyle = `rgba(158, 42, 43, ${0.26 * flicker})`;
+        const practice = at(level.practiceBeams || [], tile.x, tile.y);
+        ctx.strokeStyle = practice ? 'rgba(75, 112, 82, 0.25)' : `rgba(158, 42, 43, ${0.26 * flicker})`;
         ctx.lineWidth = tileSize * 0.32;
         ctx.stroke();
-        ctx.strokeStyle = `rgba(230, 57, 70, ${0.88 * flicker})`;
+        ctx.strokeStyle = practice ? '#6a8e61' : `rgba(230, 57, 70, ${0.88 * flicker})`;
         ctx.lineWidth = tileSize * 0.10;
         ctx.stroke();
         ctx.strokeStyle = `rgba(255, 224, 130, ${0.75 * flicker})`;
@@ -1657,8 +1805,22 @@ const MacondoPuzzle = (() => {
       return `飓风正在合围 · 下一圈第 ${nextRing} 回合坍塌`;
     }
 
+    function settlementDetails() {
+      const causal = Object.entries(CAUSAL_REWARDS).filter(([flag]) => state.localFlags[flag]).map(([, detail]) => detail);
+      const relic = level.relicArea && (state.relicCollected ? '已找到本幕残页。'
+        : progress.completedLevels[level.id]?.relicCollected ? '本幕残页已收入编年史。'
+          : '本幕残页未找到 · ' + level.relicArea);
+      const missingRelics = level.id === 5 ? levels.filter(act => act.relicArea && !progress.completedLevels[act.id]?.relicCollected)
+        .map(act => `第 ${act.id} 幕 · ${act.relicArea}`) : [];
+      return { causal, relic, missingRelics };
+    }
+
     function renderUI() {
-      const present = new Set([...loadout, ...level.npcs.map(npc => npc.id)]);
+      forecast = forecastDanger();
+      const practice = state.status === 'PLAYING' && at(level.practiceBeams || [], state.player.x, state.player.y);
+      const visibleBanner = banner || (practice ? '这束绿光可安全通过。下一格红光会扣一次护盾。' : '');
+      const visibleBannerIcon = bannerIconId || (practice ? 'shield' : '');
+      const present = new Set([...loadout, ...state.npcs.map(npc => npc.id)]);
       const cards = Object.values(CHARACTER_DEFS).filter(character => present.has(character.id)).map(({ id, name, abilityName, iconId, desc, type }) => {
         const { unlocked, charges } = state.abilities[id];
         const isActive = activeAbility === id;
@@ -1683,6 +1845,7 @@ const MacondoPuzzle = (() => {
         ending = {
           won: true,
           settled: state.settled,
+          ...settlementDetails(),
           iconId: 'butterfly',
           iconUri: Icons.getIconDataUri('butterfly'),
           title: state.endingId === 'TRUTH' ? '百年真相完全破译' : state.endingId === 'ESCAPE' ? '飓风掠境前的仓促撤离' : '羊皮纸的预言已然应验',
@@ -1691,16 +1854,18 @@ const MacondoPuzzle = (() => {
               : `你在第 ${state.turn} 回合完成了「${level.title}」。`
         };
       } else if (state.status === 'DEAD') {
+        const [title, description, iconId] = DEFEATS[state.deathReason];
         ending = {
-          iconId: 'wither',
-          iconUri: Icons.getIconDataUri('wither'),
-          title: '马孔多的一阵飓风抹去了足迹',
-          description: state.deathReason || '烈日聚焦光束击中了你。可以撤销上一步，或者重试这一幕。'
+          iconId,
+          iconUri: Icons.getIconDataUri(iconId),
+          title,
+          description
         };
       }
 
       onUpdate({
-        level: { id: level.id, title: level.title, subtitle: level.subtitle, cols: level.cols, rows: level.rows, hints: level.hints },
+        level: { id: level.id, title: level.title, subtitle: level.subtitle, cols: level.cols, rows: level.rows,
+          hints: HINT_TITLES.map((label, index) => ({ label, text: level.hints[index] })) },
         campaign: levels.map(act => ({
           id: act.id, title: act.title, unlocked: progress.unlockedLevels.includes(act.id),
           record: progress.completedLevels[act.id] || null,
@@ -1712,21 +1877,27 @@ const MacondoPuzzle = (() => {
         turn: state.turn,
         canUndo: historyStack.length > 0,
         interactions: getInteractions(),
+        decision: pendingDecision ? { title: pendingDecision.title, detail: pendingDecision.detail } : null,
+        forecast,
         inspecting: !activeAbility,
         legend: levelLegend(),
         canWait: canWait(),
-        hazardLabel: level.tide ? (state.tideHigh ? '涨潮中 · 下一回合退潮' : '退潮中 · 下一回合涨潮')
+        hazardLabel: level.tide ? (state.tideHigh
+          ? `涨潮中 · ${4 - state.tideTick === 1 ? '下回合' : '两回合后'}退潮`
+          : `退潮中 · ${2 - state.tideTick === 1 ? '下回合' : '两回合后'}涨潮`)
           : level.hurricane ? hurricaneLabel() : '',
-        banner,
-        bannerIconId,
-        bannerIconUri: bannerIconId ? Icons.getIconDataUri(bannerIconId) : '',
+        banner: visibleBanner,
+        bannerIconId: visibleBannerIcon,
+        bannerIconUri: visibleBannerIcon ? Icons.getIconDataUri(visibleBannerIcon) : '',
         cards,
         logs: state.logs,
         ending
       });
     }
 
-    return { startLevel, preparation, commitVictory, inspectTile, interactAt, tryMove, waitTurn, toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, setCanvas, loadPlayerTokenImage, drawBoard, getState: () => cloneState(state) };
+    return { startLevel, preparation, commitVictory, inspectTile, interactAt, resolveDecision, tryMove, waitTurn,
+      toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, setCanvas, loadPlayerTokenImage, drawBoard,
+      getState: () => cloneState(state) };
   }
 
   return { LEVELS, createGame };

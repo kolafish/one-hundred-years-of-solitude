@@ -12,6 +12,7 @@ Page({
     cards: [],
     logs: [],
     showHints: false,
+    hintCount: 1,
     showLegend: false,
     tileDescriptions: [],
     canvasError: false,
@@ -40,6 +41,7 @@ Page({
       }
       this.setData({
         ...update,
+        hintCount: 1,
         rows: Array.from({ length: level.rows }, (_, row) => row),
         columns: Array.from({ length: level.cols }, (_, col) => col),
         boardRatio: (level.rows / level.cols) * 100
@@ -170,6 +172,18 @@ Page({
 
   toggleHints() {
     this.setData({ showHints: !this.data.showHints });
+  },
+
+  revealHint() {
+    this.setData({ hintCount: Math.min(this.data.hintCount + 1, this.data.level.hints.length) });
+  },
+
+  cancelDecision() {
+    this.game.resolveDecision(false);
+  },
+
+  confirmDecision() {
+    this.game.resolveDecision(true);
   },
 
   selectAct(event) {
