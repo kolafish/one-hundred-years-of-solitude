@@ -169,6 +169,7 @@ const MacondoPuzzle = (() => {
     let state = null;
     let historyStack = []; // 用于撤销（Undo）
     let particles = [];    // 粒子特效（光束微粒、爆炸火花、蝴蝶）
+    let relicEffect = null;
 
     let interactionMode = 'MOVE';
     let selectedBarrelPos = null;
@@ -490,6 +491,7 @@ const MacondoPuzzle = (() => {
         state.items = state.items.filter(entry => entry !== item);
         if (item.kind === 'relic') {
           state.relicCollected = true;
+          relicEffect = { x, y, start: null };
           addLog('你找到了这一幕的羊皮纸残页。', 'highlight');
         } else if (item.kind === 'ice') {
           state.localFlags.ICE_PRESERVED = true;
@@ -1093,6 +1095,7 @@ const MacondoPuzzle = (() => {
       if (historyStack.length === 0) return;
       state = historyStack.pop();
       particles = [];
+      relicEffect = null;
       clearSkillMode();
       renderUI();
     }
@@ -1113,6 +1116,7 @@ const MacondoPuzzle = (() => {
       historyStack = [];
       seenMechanics = new Set();
       particles = [];
+      relicEffect = null;
       state = createInitialState();
       updateGates();
       computeLasers(state);
@@ -1155,7 +1159,7 @@ const MacondoPuzzle = (() => {
       }
     }
 
-    function drawBoard(timestamp, hoverTile) {
+    function drawBoard(timestamp, hoverTile, reduceMotion = false) {
       if (!ctx || !state) return;
       const t = timestamp || 0;
       ctx.clearRect(0, 0, level.cols * tileSize, level.rows * tileSize);
@@ -1366,6 +1370,48 @@ const MacondoPuzzle = (() => {
 
       // 8. Particle effects
       updateAndDrawParticles();
+      if (relicEffect) drawRelicEffect(t, reduceMotion);
+    }
+
+    function drawRelicEffect(time, reduceMotion) {
+      if (relicEffect.start === null) relicEffect.start = time;
+      const progress = Math.max(0, (time - relicEffect.start) / 780);
+      if (progress >= 1) {
+        relicEffect = null;
+        return;
+      }
+
+      const size = tileSize;
+      const x = (relicEffect.x + 0.5) * size;
+      const y = (relicEffect.y + 0.5) * size;
+      const ease = 1 - (1 - progress) ** 3;
+      const opacity = 1 - progress;
+      const radius = size * (reduceMotion ? 0.4 : 0.28 + 0.53 * ease);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(249, 215, 133, ${0.22 * opacity})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(190, 140, 46, ${0.85 * opacity})`;
+      ctx.lineWidth = Math.max(1, size * 0.045);
+      ctx.stroke();
+
+      if (!reduceMotion) {
+        ctx.fillStyle = '#f2c365';
+        ctx.globalAlpha = opacity * 0.85;
+        for (let i = 0; i < 8; i++) {
+          const angle = i * Math.PI / 4;
+          const distance = radius * (i % 2 ? 0.68 : 0.9);
+          ctx.beginPath();
+          ctx.arc(x + Math.cos(angle) * distance, y + Math.sin(angle) * distance, Math.max(1, size * 0.035), 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = Math.min(1, opacity * 2);
+        const scrollY = Math.max(size * 0.46, y - size * (0.18 + 0.72 * ease));
+        Icons.drawScrollCanvas(ctx, x, scrollY, size * (0.8 + 0.28 * ease));
+      }
+      ctx.restore();
     }
 
     function drawWallTile(px, py, s) {

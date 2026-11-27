@@ -280,7 +280,10 @@
     <!-- 顶部标题栏 -->
     <header class="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-[#8b5a2b]/40 pb-3 gap-2">
       <div>
-        <a href="../" class="inline-flex items-center min-h-10 text-xs sm:text-sm font-semibold text-[#6e472b] underline underline-offset-2">← 返回首页</a>
+        <div class="flex items-center gap-3">
+          <a href="../" class="inline-flex items-center min-h-10 text-xs sm:text-sm font-semibold text-[#6e472b] underline underline-offset-2">← 返回首页</a>
+          <button type="button" id="sound-toggle" class="campaign-button" aria-label="残页音效" aria-pressed="true">音效开</button>
+        </div>
         <div class="flex items-center gap-2.5">
           <span class="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 shrink-0" data-icon="butterfly"></span>
           <h1 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-wide text-balance text-[#2c1e16]">
@@ -448,7 +451,8 @@
   <script src="../miniprogram/game/icons.js"></script>
   <script src="../miniprogram/game/levels.js"></script>
   <script src="../miniprogram/game/progress.js"></script>
-  <script src="../miniprogram/game/macondo.js"></script>
-  <script src="./app.js?v=stable-board"></script>
+  <audio id="relic-sound" preload="auto" src="../miniprogram/assets/relic-chime.mp3"></audio>
+  <script src="../miniprogram/game/macondo.js?v=relic-feedback"></script>
+  <script src="./app.js?v=relic-feedback"></script>
 </body>
 </html>

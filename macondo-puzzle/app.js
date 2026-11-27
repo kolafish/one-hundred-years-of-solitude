@@ -12,6 +12,12 @@ const boardActions = document.getElementById('board-actions');
 const actLegend = document.getElementById('act-legend');
 const tileTooltip = document.getElementById('tile-tooltip');
 const chronicleLog = document.getElementById('chronicle-log');
+const relicSound = document.getElementById('relic-sound');
+const soundToggle = document.getElementById('sound-toggle');
+const soundKey = 'macondo_relic_sound';
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+let soundEnabled = true;
+let previousRelicCollected = false;
 let hoverTile = null;
 let tooltipDismissed = false;
 let inspectedTile = null;
@@ -40,7 +46,7 @@ function resizeCanvas() {
 }
 
 function gameLoop(timestamp) {
-  drawBoard(timestamp, hoverTile);
+  drawBoard(timestamp, hoverTile, reducedMotion.matches);
   requestAnimationFrame(gameLoop);
 }
 
@@ -97,6 +103,15 @@ function renderUI({ level, turn, canUndo, canWait, hazardLabel, banner, bannerIc
 
   renderAbilityCards(cards);
   renderChronicle(logs);
+  if (relicCollected !== previousRelicCollected) {
+    previousRelicCollected = relicCollected;
+    if (relicCollected && soundEnabled) {
+      relicSound.currentTime = 0;
+      relicSound.play().catch(() => {});
+    } else {
+      relicSound.pause();
+    }
+  }
 
   document.getElementById('end-modal').classList.toggle('hidden', !ending || ending.settled);
   if (ending && !ending.settled) {
@@ -500,6 +515,18 @@ function initEvents() {
   document.getElementById('btn-undo').addEventListener('click', undoMove);
   document.getElementById('btn-reset').addEventListener('click', resetLevel);
   document.getElementById('btn-wait').addEventListener('click', waitTurn);
+  try { soundEnabled = localStorage.getItem(soundKey) !== 'off'; } catch {}
+  const showSoundState = () => {
+    soundToggle.textContent = soundEnabled ? '音效开' : '音效关';
+    soundToggle.setAttribute('aria-pressed', String(soundEnabled));
+  };
+  showSoundState();
+  soundToggle.addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    if (!soundEnabled) relicSound.pause();
+    try { localStorage.setItem(soundKey, soundEnabled ? 'on' : 'off'); } catch {}
+    showSoundState();
+  });
   document.getElementById('btn-end-undo').addEventListener('click', undoMove);
   document.getElementById('btn-end-restart').addEventListener('click', finishAttempt);
   document.getElementById('loadout-start').addEventListener('click', () => {
