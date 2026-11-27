@@ -6,7 +6,12 @@ const game = createGame(renderUI, MacondoPuzzle.LEVELS, {
 const { tryMove, toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, waitTurn, setCanvas, drawBoard } = game;
 const canvas = document.getElementById('game-canvas');
 const loadoutDialog = document.getElementById('loadout-dialog');
+const boardActions = document.getElementById('board-actions');
+const tileInspector = document.getElementById('tile-inspector');
 let hoverTile = null;
+let inspectedTile = null;
+let inspecting = true;
+let legendKey = '';
 let board = null;
 let campaign = [];
 let activeEnding = null;
@@ -33,10 +38,11 @@ function hydrateStaticIcons() {
   });
 }
 
-function renderUI({ level, turn, canUndo, canWait, hazardLabel, banner, bannerIconId, cards, logs, ending, campaign: acts, storageFailed, relicCollected, relicCount }) {
+function renderUI({ level, turn, canUndo, canWait, hazardLabel, banner, bannerIconId, cards, logs, ending, campaign: acts, storageFailed, relicCollected, relicCount, interactions, inspecting: canInspect, legend }) {
   if (board?.id !== level.id) {
     board = level;
     hoverTile = null;
+    inspectedTile = null;
     resizeCanvas();
     document.getElementById('act-subtitle').textContent = level.subtitle;
     document.getElementById('act-hints').replaceChildren(...level.hints.map(hint => {
@@ -47,6 +53,8 @@ function renderUI({ level, turn, canUndo, canWait, hazardLabel, banner, bannerIc
   }
   campaign = acts;
   activeEnding = ending;
+  inspecting = canInspect;
+  renderBoardHelp(interactions, legend);
   renderCampaign(storageFailed, relicCollected, relicCount);
   const hazard = document.getElementById('hazard-status');
   hazard.textContent = hazardLabel;
@@ -140,13 +148,54 @@ function renderUI({ level, turn, canUndo, canWait, hazardLabel, banner, bannerIc
   }
 }
 
+function descriptionNode(tag, { name, detail }) {
+  const node = document.createElement(tag);
+  const title = document.createElement('strong');
+  title.textContent = name;
+  node.append(title, ' · ' + detail);
+  return node;
+}
+
+function renderInspection() {
+  const tile = hoverTile || inspectedTile;
+  const descriptions = tile ? game.inspectTile(tile.x, tile.y)?.descriptions || [] : [];
+  tileInspector.replaceChildren(...descriptions.map(entry => descriptionNode('p', entry)));
+}
+
+function renderBoardHelp(interactions, legend) {
+  boardActions.replaceChildren(...interactions.map((action, index) => {
+    const button = document.createElement('button');
+    button.className = 'campaign-button';
+    button.disabled = !action.ready;
+    button.textContent = action.ready ? action.label : '译码封印 · 需要巴比伦';
+    if (action.ready && index === interactions.findIndex(candidate => candidate.ready)) button.title = '快捷键 E 或空格';
+    button.addEventListener('click', () => game.interactAt(action.x, action.y));
+    return button;
+  }));
+  boardActions.hidden = interactions.length === 0;
+  const key = legend.map(entry => entry.id).join('|');
+  if (key !== legendKey) {
+    legendKey = key;
+    document.getElementById('act-legend').replaceChildren(...legend.map(entry => descriptionNode('li', entry)));
+  }
+  renderInspection();
+}
+
 function renderCampaign(storageFailed, relicCollected, relicCount) {
   const nav = document.getElementById('campaign-nav');
   nav.replaceChildren(...campaign.map(act => {
     const button = document.createElement('button');
     button.className = 'campaign-button';
     button.disabled = !act.unlocked;
-    button.textContent = `${act.id}. ${act.title}${act.record?.relicCollected ? ' · 残页' : ''}${act.record ? ` · ${act.record.rank}` : ''}`;
+    const label = `${act.id}. ${act.title}${act.record?.relicCollected ? ' · 残页' : ''}${act.record ? ` · ${act.record.rank}` : ''}`;
+    button.setAttribute('aria-label', label);
+    const full = document.createElement('span');
+    full.className = 'chapter-full';
+    full.textContent = label;
+    const short = document.createElement('span');
+    short.className = 'chapter-short';
+    short.textContent = `${act.id}幕${act.record?.relicCollected ? '✦' : ''}`;
+    button.append(full, short);
     if (act.record) button.title = `最佳 ${act.record.bestTurns} 回合`;
     if (act.id === board.id) button.setAttribute('aria-current', 'step');
     button.addEventListener('click', () => openLoadout(act.id));
@@ -207,6 +256,10 @@ function initEvents() {
       return;
     }
     const key = e.key.toLowerCase();
+    if (key === 'e' || (key === ' ' && !e.target.closest?.('button,a,input,textarea,select,summary'))) {
+      if (!e.repeat && game.interactAt()) e.preventDefault();
+      return;
+    }
     if (key === 'arrowup' || key === 'w') { e.preventDefault(); tryMove(0, -1); }
     else if (key === 'arrowdown' || key === 's') { e.preventDefault(); tryMove(0, 1); }
     else if (key === 'arrowleft' || key === 'a') { e.preventDefault(); tryMove(-1, 0); }
@@ -218,26 +271,36 @@ function initEvents() {
   });
 
   // 画布点击与悬停
+  function canvasTile(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: Math.floor(((e.clientX - rect.left) / rect.width) * board.cols),
+      y: Math.floor(((e.clientY - rect.top) / rect.height) * board.rows)
+    };
+  }
+
   canvas.addEventListener('click', e => {
-    const rect = canvas.getBoundingClientRect();
-    const gx = Math.floor(((e.clientX - rect.left) / rect.width) * board.cols);
-    const gy = Math.floor(((e.clientY - rect.top) / rect.height) * board.rows);
-    handleCanvasClick(gx, gy);
-  });
-
-  canvas.addEventListener('mousemove', e => {
-    const rect = canvas.getBoundingClientRect();
-    const gx = Math.floor(((e.clientX - rect.left) / rect.width) * board.cols);
-    const gy = Math.floor(((e.clientY - rect.top) / rect.height) * board.rows);
-    if (gx >= 0 && gx < board.cols && gy >= 0 && gy < board.rows) {
-      hoverTile = { x: gx, y: gy };
-    } else {
-      hoverTile = null;
+    const tile = canvasTile(e);
+    if (inspecting && game.inspectTile(tile.x, tile.y)?.distant) {
+      inspectedTile = tile;
+      renderInspection();
+      return;
     }
+    inspectedTile = null;
+    handleCanvasClick(tile.x, tile.y);
   });
 
-  canvas.addEventListener('mouseleave', () => {
+  canvas.addEventListener('pointermove', e => {
+    if (e.pointerType === 'touch') return;
+    const tile = canvasTile(e);
+    if (hoverTile?.x === tile.x && hoverTile?.y === tile.y) return;
+    hoverTile = game.inspectTile(tile.x, tile.y) ? tile : null;
+    renderInspection();
+  });
+
+  canvas.addEventListener('pointerleave', () => {
     hoverTile = null;
+    renderInspection();
   });
 
   // 移动端虚拟十字键
@@ -272,5 +335,6 @@ function initEvents() {
 
 hydrateStaticIcons();
 initEvents();
+game.loadPlayerTokenImage(new Image(), '../miniprogram/assets/player-token.png');
 resetLevel();
 requestAnimationFrame(gameLoop);

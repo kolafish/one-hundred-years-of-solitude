@@ -12,6 +12,8 @@ Page({
     cards: [],
     logs: [],
     showHints: false,
+    showLegend: false,
+    tileDescriptions: [],
     canvasError: false,
     campaign: [],
     preparation: null,
@@ -31,7 +33,7 @@ Page({
 
   onLoad() {
     this.game = createGame(({ level, ...view }) => {
-      const update = { level, ...view, logs: view.logs.slice(0, 30) };
+      const update = { level, ...view, tileDescriptions: [], logs: view.logs.slice(0, 30) };
       if (level.id === this.data.level?.id) {
         this.setData(update);
         return;
@@ -95,6 +97,9 @@ Page({
       canvas.height = Math.round(board.height * pixelRatio);
       const context = canvas.getContext("2d");
       context.scale(canvas.width / board.width, canvas.height / board.height);
+      if (this.canvas !== canvas && typeof canvas.createImage === "function") {
+        this.game.loadPlayerTokenImage(canvas.createImage(), "/assets/player-token.png");
+      }
       this.canvas = canvas;
       this.game.setCanvas(context, board.width / this.data.level.cols);
       this.setData({ canvasError: false });
@@ -122,8 +127,24 @@ Page({
   tapTile(event) {
     const { col, row } = event.target.dataset;
     if (col !== undefined && row !== undefined) {
-      this.game.handleCanvasClick(Number(col), Number(row));
+      const x = Number(col);
+      const y = Number(row);
+      const tile = this.game.inspectTile(x, y);
+      if (this.data.inspecting && tile?.distant) {
+        this.setData({ tileDescriptions: tile.descriptions });
+        return;
+      }
+      this.game.handleCanvasClick(x, y);
     }
+  },
+
+  useInteraction(event) {
+    const { x, y } = event.currentTarget.dataset;
+    this.game.interactAt(Number(x), Number(y));
+  },
+
+  toggleLegend() {
+    this.setData({ showLegend: !this.data.showLegend });
   },
 
   move(event) {
@@ -179,7 +200,7 @@ Page({
 
   beginAct() {
     const { id, picked } = this.data.preparation;
-    if (this.game.startLevel(id, picked)) this.setData({ preparation: null, showHints: false });
+    if (this.game.startLevel(id, picked)) this.setData({ preparation: null, showHints: false, showLegend: false });
   },
 
   settle() {
