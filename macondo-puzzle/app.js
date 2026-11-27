@@ -335,5 +335,6 @@ function initEvents() {
 
 hydrateStaticIcons();
 initEvents();
+game.loadPlayerTokenImage(new Image(), '../miniprogram/assets/player-token.png');
 resetLevel();
 requestAnimationFrame(gameLoop);

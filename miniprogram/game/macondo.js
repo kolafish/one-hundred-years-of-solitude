@@ -153,6 +153,7 @@ const MacondoPuzzle = (() => {
     let bannerIconId = '';
     let ctx = null;
     let tileSize = 60;
+    let playerToken = null;
 
     function readProgress() {
       try {
@@ -1016,6 +1017,13 @@ const MacondoPuzzle = (() => {
       tileSize = size;
     }
 
+    function loadPlayerTokenImage(image, source) {
+      const token = { image, ready: false };
+      playerToken = token;
+      image.onload = () => { token.ready = true; };
+      image.src = source;
+    }
+
     function spawnExplosion(gx, gy, color, delay = 0) {
       const cx = (gx + 0.5) * tileSize;
       const cy = (gy + 0.5) * tileSize;
@@ -1588,11 +1596,17 @@ const MacondoPuzzle = (() => {
       ctx.arc(cx, cy, s * 0.42, 0, Math.PI * 2);
       ctx.fill();
 
-      // Player medallion
+      // The dark medallion backs the sprite's translucent areas and the fallback lantern.
       ctx.fillStyle = '#241710';
       ctx.beginPath();
       ctx.arc(cx, cy, s * 0.33, 0, Math.PI * 2);
       ctx.fill();
+      if (playerToken?.ready) {
+        const diameter = s * 0.66 + 2.2;
+        ctx.drawImage(playerToken.image, cx - diameter / 2, cy - diameter / 2, diameter, diameter);
+        return;
+      }
+
       ctx.strokeStyle = '#c59b27';
       ctx.lineWidth = 2.2;
       ctx.stroke();
@@ -1700,7 +1714,7 @@ const MacondoPuzzle = (() => {
       });
     }
 
-    return { startLevel, preparation, commitVictory, inspectTile, interactAt, tryMove, waitTurn, toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, setCanvas, drawBoard, getState: () => cloneState(state) };
+    return { startLevel, preparation, commitVictory, inspectTile, interactAt, tryMove, waitTurn, toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, setCanvas, loadPlayerTokenImage, drawBoard, getState: () => cloneState(state) };
   }
 
   return { LEVELS, createGame };

@@ -97,6 +97,9 @@ Page({
       canvas.height = Math.round(board.height * pixelRatio);
       const context = canvas.getContext("2d");
       context.scale(canvas.width / board.width, canvas.height / board.height);
+      if (this.canvas !== canvas && typeof canvas.createImage === "function") {
+        this.game.loadPlayerTokenImage(canvas.createImage(), "/assets/player-token.png");
+      }
       this.canvas = canvas;
       this.game.setCanvas(context, board.width / this.data.level.cols);
       this.setData({ canvasError: false });
