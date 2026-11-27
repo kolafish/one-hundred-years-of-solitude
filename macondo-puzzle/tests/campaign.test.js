@@ -121,3 +121,36 @@ test('the mirror route works without the ice flag and repairs survive a confirme
   game.commitVictory();
   assert.equal(saved.value.worldFlags.BRIDGE_REPAIRED, true);
 });
+
+test('the workshop supports both archive routes, forging, and deterministic patrol undo', () => {
+  const saved = { value: { schemaVersion: 1, unlockedLevels: [3] } };
+  const { game } = campaign(saved);
+  game.startLevel(3);
+  play(game, 'DDRRRLULU');
+  assert.equal(game.getState().localFlags.GOLD_FISH_FORGED, true);
+  const before = game.getState();
+  game.toggleSkill('URSULA');
+  game.handleCanvasClick(3, 5);
+  assert.equal(game.getState().gates[0].open, true);
+  game.undoMove();
+  assert.deepEqual(game.getState(), before);
+  game.toggleSkill('URSULA');
+  game.handleCanvasClick(3, 5);
+  play(game, 'RURRDRRDDRRRUU');
+  assert.equal(game.getState().status, 'WON');
+  assert.equal(game.getState().relicCollected, true);
+  game.commitVictory();
+  assert.equal(saved.value.worldFlags.ARCHIVE_INTACT, true);
+  assert.equal(saved.value.worldFlags.GOLD_FISH_FORGED, true);
+
+  game.startLevel(3, []);
+  play(game, 'UURR');
+  game.toggleSkill('REBECA');
+  game.handleCanvasClick(5, 3);
+  assert.equal(game.getState().archiveDestroyed, true);
+  play(game, 'RRRRRRDDR');
+  assert.equal(game.getState().status, 'WON');
+  assert.equal(game.getState().localFlags.ARCHIVE_INTACT, undefined);
+  game.commitVictory();
+  assert.equal(saved.value.worldFlags.ARCHIVE_INTACT, true);
+});

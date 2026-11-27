@@ -54,6 +54,20 @@ const MacondoPuzzle = (() => {
       iconId: 'char_melquiades', color: '#73502d',
       desc: '与视野内四格以内的可移动物体交换位置。',
       quote: '梅尔基亚德斯翻开羊皮纸，两处位置在字迹间悄然对调。'
+    },
+    AMARANTA: {
+      id: 'AMARANTA', name: '阿玛兰妲', shortName: '阿玛兰妲',
+      abilityName: '黑纱蔽日', type: 'ACTIVE', charges: 1,
+      iconId: 'char_amaranta', color: '#65526d',
+      desc: '在视野内空地展开黑纱，遮蔽光束与守卫视线三回合。',
+      quote: '阿玛兰妲展开黑纱，把守卫的视线留在帷幕之外。'
+    },
+    PILAR: {
+      id: 'PILAR', name: '庇拉尔·特尔内拉', shortName: '庇拉尔',
+      abilityName: '纸牌逆转', type: 'ACTIVE', charges: 1,
+      iconId: 'char_pilar', color: '#7b4b3d',
+      desc: '翻转机关状态，点棋盘即可施放。',
+      quote: '庇拉尔翻过纸牌，机关换了一个方向。'
     }
   };
 
@@ -134,6 +148,16 @@ const MacondoPuzzle = (() => {
         localFlags: {},
         relicCollected: false,
         mistUntil: 0,
+        gold: 0,
+        archiveDestroyed: false,
+        gates: (level.gates || []).map(gate => ({ ...gate, open: false })),
+        levers: (level.levers || []).map(lever => ({ ...lever, on: false })),
+        guards: (level.guards || []).map(({ path }) => ({
+          path, x: path[0].x, y: path[0].y, index: 0, step: 1,
+          dx: path[1].x - path[0].x, dy: path[1].y - path[0].y
+        })),
+        curtains: [],
+        reversed: false,
         memoRead: loadout.includes('URSULA'),
         status: 'PLAYING', // 'PLAYING' | 'WON' | 'DEAD'
         player: { ...level.start },
@@ -144,7 +168,10 @@ const MacondoPuzzle = (() => {
         mirrors: (level.mirrors || []).map(mirror => ({ ...mirror })),
         items: (level.items || []).map(item => ({ ...item })),
         abilities: Object.fromEntries(Object.values(CHARACTER_DEFS).map(character => [
-          character.id, { unlocked: loadout.includes(character.id), charges: loadout.includes(character.id) ? character.charges : 0 }
+          character.id, {
+            unlocked: loadout.includes(character.id),
+            charges: loadout.includes(character.id) ? startingCharges(character) : 0
+          }
         ])),
         laserTiles: [], // 实时计算的激光射线坐标
         logs: [
@@ -159,6 +186,10 @@ const MacondoPuzzle = (() => {
     }
 
     // 深拷贝状态用于撤销栈
+    function startingCharges(character) {
+      return character.charges + Number(character.id === 'AURELIANO' && level.id >= 4 && campaignFlags.GOLD_FISH_FORGED);
+    }
+
     function cloneState(s) {
       return JSON.parse(JSON.stringify(s));
     }
@@ -194,7 +225,9 @@ const MacondoPuzzle = (() => {
     }
 
     function isSolid(x, y, target = state) {
-      return [TILE.WALL, TILE.CRACKED_WALL, TILE.LASER_EMITTER].includes(target.terrain[y][x]);
+      const gate = at(target.gates, x, y);
+      return [TILE.WALL, TILE.CRACKED_WALL, TILE.LASER_EMITTER].includes(target.terrain[y][x])
+        || Boolean(gate && !gate.open);
     }
 
     function computeLasers(target) {
@@ -204,7 +237,7 @@ const MacondoPuzzle = (() => {
       for (const emitter of emitters) {
         let { x, y, dx, dy } = emitter;
         const visited = new Set();
-        while (inBounds(x += dx, y += dy) && !isSolid(x, y, target)) {
+        while (inBounds(x += dx, y += dy) && !isSolid(x, y, target) && !at(target.curtains, x, y)) {
           const key = [x, y, dx, dy].join(',');
           if (visited.has(key)) break;
           visited.add(key);
@@ -247,7 +280,7 @@ const MacondoPuzzle = (() => {
       while (true) {
         if (cx === x1 && cy === y1) return true;
         if (!(cx === x0 && cy === y0)) {
-          if (isSolid(cx, cy)) {
+          if (isSolid(cx, cy) || at(state.curtains, cx, cy)) {
             return false;
           }
         }
@@ -280,13 +313,16 @@ const MacondoPuzzle = (() => {
         if (nx >= 0 && nx < level.cols && ny >= 0 && ny < level.rows) {
           if (state.terrain[ny][nx] === TILE.CRACKED_WALL) {
             state.terrain[ny][nx] = TILE.FLOOR;
+            if (level.archiveWall?.x === nx && level.archiveWall?.y === ny) state.archiveDestroyed = true;
             destroyedWall = true;
             spawnExplosion(nx, ny, '#c59b27');
           }
         }
       });
 
-      if (destroyedWall) {
+      if (state.archiveDestroyed && destroyedWall) {
+        addLog('裂纹墙轰然倒塌，墙后的档案也没能留下。', 'warning');
+      } else if (destroyedWall) {
         addLog('轰然巨响中，火药桶炸碎了古老的裂纹石墙，通往密室的道路豁然开朗！', 'highlight');
       } else {
         addLog('火药桶在空地上炸开，硝烟弥漫在马孔多的空气里。', 'normal');
@@ -305,6 +341,9 @@ const MacondoPuzzle = (() => {
         } else if (item.kind === 'ice') {
           state.localFlags.ICE_PRESERVED = true;
           addLog('你把冷冽的冰块裹好，准备带出庄园。', 'highlight');
+        } else if (item.kind === 'gold') {
+          state.gold += 1;
+          addLog('你拾起一枚熔炉金屑。', 'highlight');
         } else if (item.kind === 'note') {
           state.memoRead = true;
           state.mistUntil = 0;
@@ -331,20 +370,29 @@ const MacondoPuzzle = (() => {
         }
       });
 
-      // 2. 重新计算激光
-      computeLasers(state);
+      if (level.forge && state.gold >= 2 && !state.localFlags.GOLD_FISH_FORGED
+        && Math.abs(x - level.forge.x) + Math.abs(y - level.forge.y) <= 1) {
+        state.localFlags.GOLD_FISH_FORGED = true;
+        addLog('上校用两枚金屑锻成小金鱼。后两幕携带上校时可多挡一次攻击。', 'highlight');
+      }
 
-      // 3. 检查玩家是否处于激光束中
-      const inLaser = state.laserTiles.some(l => l.x === state.player.x && l.y === state.player.y);
-      if (inLaser) {
+      updateGates();
+      advanceGuards();
+      state.curtains = state.curtains.filter(curtain => curtain.expires > state.turn);
+      computeLasers(state);
+      const inLaser = Boolean(at(state.laserTiles, x, y));
+      const seenByGuard = state.guards.some(guard => guardSees(guard, x, y));
+      if (inLaser || seenByGuard) {
         if (state.abilities.AURELIANO.charges > 0) {
           // 触发奥雷里亚诺上校的【宿命护盾】
           state.abilities.AURELIANO.charges = 0;
           spawnExplosion(state.player.x, state.player.y, '#ffd166');
-          addLog('灼热的光束穿透了你的胸膛，却神奇地避开了心脏！奥雷里亚诺上校的【宿命护盾】救了你一命。', 'highlight');
+          addLog(inLaser
+            ? '灼热的光束穿透了你的胸膛，却神奇地避开了心脏！奥雷里亚诺上校的【宿命护盾】救了你一命。'
+            : '守卫发现了你。上校的宿命护盾挡下攻击并打断警报。', 'highlight');
         } else {
           state.status = 'DEAD';
-          addLog('烈日聚焦光束无情地吞噬了你的身影，一切化作马孔多的尘埃。', 'danger');
+          addLog(inLaser ? '烈日聚焦光束无情地吞噬了你的身影，一切化作马孔多的尘埃。' : '守卫拉响了警报。', 'danger');
           renderUI();
           return;
         }
@@ -353,10 +401,43 @@ const MacondoPuzzle = (() => {
       // 4. 检查是否抵达羊皮纸密室 (GOAL)
       if (state.terrain[state.player.y][state.player.x] === TILE.GOAL) {
         state.status = 'WON';
+        if (level.archiveWall && !state.archiveDestroyed) {
+          state.localFlags.ARCHIVE_INTACT = true;
+          addLog('档案完整保留下来。', 'highlight');
+        }
         addLog('你推开密室尘封的木门，破译了梅尔基亚德斯的羊皮纸手稿！', 'highlight');
       }
 
       renderUI();
+    }
+
+    function updateGates() {
+      for (const gate of state.gates) {
+        const weighted = Boolean(at(objects(), gate.plate.x, gate.plate.y));
+        const activated = state.levers.some(lever => lever.id === gate.id && lever.on);
+        gate.open = (weighted || activated) !== state.reversed;
+      }
+    }
+
+    function advanceGuards() {
+      for (const guard of state.guards) {
+        if (!guard.path[guard.index + guard.step]) guard.step *= -1;
+        guard.index += guard.step;
+        const next = guard.path[guard.index];
+        guard.dx = next.x - guard.x;
+        guard.dy = next.y - guard.y;
+        guard.x = next.x;
+        guard.y = next.y;
+      }
+    }
+
+    function guardSees(guard, x, y) {
+      const dx = x - guard.x;
+      const dy = y - guard.y;
+      const distance = dx * guard.dx + dy * guard.dy;
+      const sideways = Math.abs(dx * guard.dy - dy * guard.dx);
+      return (dx === 0 && dy === 0) || (distance >= 1 && distance <= 3 && sideways <= Math.floor(distance / 2)
+        && !isSolid(x, y) && !at(state.curtains, x, y) && hasLineOfSight(guard.x, guard.y, x, y));
     }
 
     // 玩家移动一步
@@ -368,6 +449,9 @@ const MacondoPuzzle = (() => {
       const nx = state.player.x + dx;
       const ny = state.player.y + dy;
       if (!isWalkable(nx, ny)) return;
+      const lane = at(level.oneWay || [], nx, ny);
+      const sign = state.reversed ? -1 : 1;
+      if (lane && (dx !== lane.dx * sign || dy !== lane.dy * sign)) return;
 
       takeTurn(() => {
         state.player = { x: nx, y: ny };
@@ -410,7 +494,7 @@ const MacondoPuzzle = (() => {
       } else if (skillId === 'REBECA') {
         interactionMode = 'SELECT_SNIPE_TARGET';
         bannerIconId = 'char_rebeca';
-        banner = '孤注一掷：点击视野内的火药桶或裂纹石墙开枪射击';
+        banner = '孤注一掷：点视野内的火药桶、冰晶或拉杆。';
       } else {
         interactionMode = 'SELECT_ABILITY';
         bannerIconId = CHARACTER_DEFS[skillId].iconId;
@@ -489,20 +573,30 @@ const MacondoPuzzle = (() => {
         }
         const targetBarrel = state.barrels.find(b => b.x === gx && b.y === gy);
         const targetCracked = state.terrain[gy][gx] === TILE.CRACKED_WALL;
+        const lever = at(state.levers, gx, gy);
+        const crystal = at(state.items.filter(item => item.kind === 'crystal'), gx, gy);
 
-        if (targetBarrel) {
+        if (targetBarrel || lever || crystal) {
           takeTurn(() => {
             state.abilities.REBECA.charges = 0;
-            addLog('砰！丽贝卡的子弹跨越水面，精准击中了远处的火药桶！', 'character');
+            if (targetBarrel) {
+              addLog('砰！丽贝卡精准击中了远处的火药桶！', 'character');
+              detonateBarrel(gx, gy);
+            } else if (lever) {
+              lever.on = !lever.on;
+              addLog('丽贝卡击中了机关拉杆。', 'highlight');
+            } else {
+              state.items = state.items.filter(item => item !== crystal);
+              addLog('一声脆响，挡路的冰晶碎了。', 'highlight');
+            }
             clearSkillMode();
-            detonateBarrel(gx, gy);
           });
         } else if (targetCracked) {
           // 射击坚固裂纹石墙给予提示（需火药桶爆炸才能彻底炸开）
           addLog('子弹在石墙上擦出火花，但这堵石墙太厚了，需要引爆旁边的【火药桶】才能炸毁！', 'warning');
           renderUI();
         } else {
-          addLog('请瞄准视野内的【火药桶】进行射击。', 'warning');
+          addLog('请瞄准视野内的火药桶、冰晶或拉杆。', 'warning');
           renderUI();
         }
         return;
@@ -550,6 +644,19 @@ const MacondoPuzzle = (() => {
           Object.assign(object, previous);
         };
       }
+      if (skill === 'AMARANTA' && distance > 0 && isWalkable(x, y, true)
+        && !at(state.curtains, x, y) && hasLineOfSight(state.player.x, state.player.y, x, y)) {
+        return () => {
+          state.curtains.push({ x, y, expires: state.turn + 3 });
+          addLog('黑纱展开，接下来三回合会遮住光束和守卫视线。', 'highlight');
+        };
+      }
+      if (skill === 'PILAR' && distance === 0) {
+        return () => {
+          state.reversed = !state.reversed;
+          addLog('纸牌翻面，二元机关随之逆转。', 'highlight');
+        };
+      }
       return null;
     }
 
@@ -581,6 +688,7 @@ const MacondoPuzzle = (() => {
       historyStack = [];
       particles = [];
       state = createInitialState();
+      updateGates();
       computeLasers(state);
       clearSkillMode();
       renderUI();
@@ -658,6 +766,19 @@ const MacondoPuzzle = (() => {
         }
       }
 
+      for (const gate of state.gates) {
+        drawBoardMark(gate.plate.x * tileSize, gate.plate.y * tileSize, '踏', '#875325');
+        drawBoardMark(gate.x * tileSize, gate.y * tileSize, gate.open ? '开' : '栅');
+      }
+      for (const lever of state.levers) drawBoardMark(lever.x * tileSize, lever.y * tileSize, '杆', '#9e2a2b');
+      for (const curtain of state.curtains) drawBoardMark(curtain.x * tileSize, curtain.y * tileSize, '纱', '#574360');
+      for (const lane of level.oneWay || []) {
+        const sign = state.reversed ? -1 : 1;
+        const symbol = lane.dx ? (lane.dx * sign > 0 ? '→' : '←') : (lane.dy * sign > 0 ? '↓' : '↑');
+        drawBoardMark(lane.x * tileSize, lane.y * tileSize, symbol, state.reversed ? '#325d78' : '#9e2a2b');
+      }
+      for (const guard of state.guards) drawGuard(guard);
+
       // 2. Active skill targeting highlights
       if (interactionMode === 'SELECT_THROW_TARGET' && selectedBarrelPos) {
         const pulse = 0.7 + Math.sin(t * 0.008) * 0.25;
@@ -680,7 +801,7 @@ const MacondoPuzzle = (() => {
         }
       } else if (interactionMode === 'SELECT_SNIPE_TARGET') {
         const pulse = 0.75 + Math.sin(t * 0.01) * 0.25;
-        state.barrels.forEach(b => {
+        [...state.barrels, ...state.levers, ...state.items.filter(item => item.kind === 'crystal')].forEach(b => {
           if (hasLineOfSight(state.player.x, state.player.y, b.x, b.y)) {
             const cx = (b.x + 0.5) * tileSize;
             const cy = (b.y + 0.5) * tileSize;
@@ -716,7 +837,7 @@ const MacondoPuzzle = (() => {
         if (item.kind === 'relic') {
           Icons.drawScrollCanvas(ctx, (item.x + 0.5) * tileSize, (item.y + 0.5) * tileSize, tileSize * 0.8);
         } else {
-          drawBoardMark(item.x * tileSize, item.y * tileSize, { ice: '冰', note: '签', gold: '金' }[item.kind]);
+          drawBoardMark(item.x * tileSize, item.y * tileSize, { ice: '冰', note: '签', gold: '金', crystal: '晶' }[item.kind]);
         }
       }
       for (const bridge of level.repairs || []) {
@@ -926,6 +1047,19 @@ const MacondoPuzzle = (() => {
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
+    }
+
+    function drawGuard(guard) {
+      const s = tileSize;
+      ctx.fillStyle = 'rgba(158, 42, 43, 0.25)';
+      for (let distance = 1; distance <= 3; distance++) {
+        for (let side = -Math.floor(distance / 2); side <= Math.floor(distance / 2); side++) {
+          const x = guard.x + guard.dx * distance - guard.dy * side;
+          const y = guard.y + guard.dy * distance + guard.dx * side;
+          if (inBounds(x, y) && guardSees(guard, x, y)) ctx.fillRect(x * s + 1, y * s + 1, s - 2, s - 2);
+        }
+      }
+      drawBoardMark(guard.x * s, guard.y * s, '卫', '#9e2a2b');
     }
 
     function drawBoardMark(px, py, label, color = '#2c1e16') {
