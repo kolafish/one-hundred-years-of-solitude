@@ -265,7 +265,10 @@ Page({
 
   beginAct() {
     const { id, picked } = this.data.preparation;
+    const inspectedTile = this.inspectedTile;
+    this.inspectedTile = null;
     if (this.game.startLevel(id, picked)) this.setData({ preparation: null, showHints: false, showLegend: false });
+    else this.inspectedTile = inspectedTile;
   },
 
   settle() {
