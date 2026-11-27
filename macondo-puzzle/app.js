@@ -1,5 +1,5 @@
-const { createGame, LEVELS } = MacondoPuzzle;
-const game = createGame(renderUI, LEVELS, {
+const { createGame } = MacondoPuzzle;
+const game = createGame(renderUI, MacondoPuzzle.LEVELS, {
   read: () => JSON.parse(localStorage.getItem(MacondoProgress.KEY)),
   write: progress => localStorage.setItem(MacondoProgress.KEY, JSON.stringify(progress))
 });
