@@ -11,6 +11,7 @@ const tileInspector = document.getElementById('tile-inspector');
 let hoverTile = null;
 let inspectedTile = null;
 let inspecting = true;
+let inspectionKey = null;
 let legendKey = '';
 let board = null;
 let campaign = [];
@@ -156,10 +157,34 @@ function descriptionNode(tag, { name, detail }) {
   return node;
 }
 
+function legendEntry(entry) {
+  const text = descriptionNode('span', entry);
+  const icon = document.createElement('span');
+  icon.className = 'legend-icon';
+  icon.setAttribute('aria-hidden', 'true');
+  const sprite = document.createElement('img');
+  sprite.src = '../miniprogram/assets/mechanism-legend.png';
+  sprite.alt = '';
+  sprite.style.left = `${entry.icon.left}%`;
+  sprite.style.top = `${entry.icon.top}%`;
+  icon.append(sprite);
+  const item = document.createElement('li');
+  item.append(icon, text);
+  return item;
+}
+
 function renderInspection() {
   const tile = hoverTile || inspectedTile;
   const descriptions = tile ? game.inspectTile(tile.x, tile.y)?.descriptions || [] : [];
-  tileInspector.replaceChildren(...descriptions.map(entry => descriptionNode('p', entry)));
+  const key = descriptions.map(entry => entry.id).join('|');
+  if (key === inspectionKey) return;
+  inspectionKey = key;
+  if (descriptions.length) {
+    tileInspector.replaceChildren(...descriptions.map(entry => descriptionNode('p', entry)));
+  } else {
+    tileInspector.replaceChildren(document.getElementById('tile-inspector-placeholder').content.cloneNode(true));
+  }
+  tileInspector.scrollTop = 0;
 }
 
 function renderBoardHelp(interactions, legend) {
@@ -176,7 +201,7 @@ function renderBoardHelp(interactions, legend) {
   const key = legend.map(entry => entry.id).join('|');
   if (key !== legendKey) {
     legendKey = key;
-    document.getElementById('act-legend').replaceChildren(...legend.map(entry => descriptionNode('li', entry)));
+    document.getElementById('act-legend').replaceChildren(...legend.map(legendEntry));
   }
   renderInspection();
 }
@@ -287,6 +312,7 @@ function initEvents() {
       return;
     }
     inspectedTile = null;
+    renderInspection();
     handleCanvasClick(tile.x, tile.y);
   });
 
@@ -294,7 +320,7 @@ function initEvents() {
     if (e.pointerType === 'touch') return;
     const tile = canvasTile(e);
     if (hoverTile?.x === tile.x && hoverTile?.y === tile.y) return;
-    hoverTile = game.inspectTile(tile.x, tile.y) ? tile : null;
+    hoverTile = tile;
     renderInspection();
   });
 

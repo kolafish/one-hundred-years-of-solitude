@@ -44,6 +44,16 @@ const MacondoPuzzle = (() => {
     [TILE.WATER]: 'water', [TILE.BRIDGE]: 'bridge', [TILE.GOAL]: 'goal',
     [TILE.HOT]: 'hot', [TILE.MIST]: 'mist', [TILE.SHALLOWS]: 'shallows', [TILE.RUBBLE]: 'rubble'
   };
+  // Each row follows the tiles in assets/mechanism-legend.png.
+  const LEGEND_ROWS = [
+    ['beam', 'emitter', 'emitterOff', 'mirror', 'box', 'barrel'],
+    ['crack', 'water', 'bridge', 'repair', 'hot', 'mist'],
+    ['shallows', 'waterFlow', 'oneWay', 'rubble', 'guard', 'curtain'],
+    ['plate', 'gate', 'lever', 'fuse', 'forge', 'gold'],
+    ['seal', 'translator', 'ice', 'crystal', 'note', 'relic']
+  ];
+  const LEGEND_POSITIONS = Object.fromEntries(LEGEND_ROWS.flatMap((row, y) =>
+    row.map((id, x) => [id, { left: -100 * x, top: -100 * y }])));
   const ADJACENT = [[0, -1], [1, 0], [0, 1], [-1, 0]];
   const CHARACTER_DEFS = {
     JOSE: {
@@ -929,7 +939,9 @@ const MacondoPuzzle = (() => {
       for (let y = 0; y < level.rows; y++) {
         for (let x = 0; x < level.cols; x++) tileMechanics(x, y).forEach(kind => seenMechanics.add(kind));
       }
-      return [...seenMechanics].filter(kind => kind !== 'wall' && kind !== 'goal').map(mechanicDescription);
+      return [...seenMechanics].filter(kind => LEGEND_POSITIONS[kind]).map(kind => ({
+        ...mechanicDescription(kind), icon: LEGEND_POSITIONS[kind]
+      }));
     }
 
     function repairBridge(x, y) {

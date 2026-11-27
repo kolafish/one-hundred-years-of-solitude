@@ -46,20 +46,28 @@
     <image wx:if="{{bannerIconUri}}" class="ui-icon-sm" src="{{bannerIconUri}}" mode="aspectFit" />
     <text>{{banner}}</text>
   </view>
-  <view wx:else class="board-caption">点邻格移动，点远处格子查看说明。</view>
+  <view wx:else class="board-caption">点相邻格移动。</view>
 
   <view wx:if="{{interactions.length}}" class="act-nav" aria-label="附近可操作机关">
     <button wx:for="{{interactions}}" wx:key="id" class="control" data-x="{{item.x}}" data-y="{{item.y}}" disabled="{{!item.ready}}" bindtap="useInteraction">
       {{item.ready ? item.label : '译码封印 · 需要巴比伦'}}
     </button>
   </view>
-  <view wx:if="{{tileDescriptions.length}}" class="panel board-help">
-    <view wx:for="{{tileDescriptions}}" wx:key="id"><text class="help-name">{{item.name}}</text> · {{item.detail}}</view>
-  </view>
+  <scroll-view class="panel tile-inspector" scroll-y>
+    <view class="board-help inspector-content">
+      <view wx:for="{{tileDescriptions}}" wx:key="id"><text class="help-name">{{item.name}}</text> · {{item.detail}}</view>
+      <text wx:if="{{!tileDescriptions.length}}">点远处格子查看说明。</text>
+    </view>
+  </scroll-view>
   <view class="board-legend">
     <button class="control" bindtap="toggleLegend">{{showLegend ? '收起机关图例' : '本幕机关图例'}}</button>
     <view wx:if="{{showLegend}}" class="panel board-help">
-      <view wx:for="{{legend}}" wx:key="id"><text class="help-name">{{item.name}}</text> · {{item.detail}}</view>
+      <view wx:for="{{legend}}" wx:key="id" class="legend-item">
+        <view class="legend-icon" aria-hidden="true">
+          <image src="/assets/mechanism-legend.png" mode="scaleToFill" style="left: {{item.icon.left}}%; top: {{item.icon.top}}%;" />
+        </view>
+        <view><text class="help-name">{{item.name}}</text> · {{item.detail}}</view>
+      </view>
     </view>
   </view>
 
