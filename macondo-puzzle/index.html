@@ -114,6 +114,21 @@
       font-size: 0.8rem;
     }
 
+    .board-help, .act-legend {
+      padding: 8px 10px;
+      border: 1px solid #b79063;
+      border-radius: 8px;
+      background: #efe1c5;
+      color: #4a3525;
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    .board-help:empty { display: none; }
+    .campaign-bar[hidden] { display: none; }
+    .board-help p + p, .act-legend li + li { margin-top: 4px; }
+    .act-legend summary { cursor: pointer; font-weight: 700; }
+
     .loadout-dialog {
       width: min(560px, calc(100% - 24px));
       max-height: 85vh;
@@ -156,6 +171,7 @@
             马孔多的羊皮纸 <span class="text-sm sm:text-base font-normal text-[#8b4513]">· 百年孤独机关录</span>
           </h1>
         </div>
+
         <p id="act-subtitle" class="text-xs sm:text-sm text-[#5c4332] mt-1">
           第一幕：布恩迪亚庄园的烈日与火药 —— 借用家族宿命之力，抵达梅尔基亚德斯的羊皮纸密室
         </p>
@@ -202,12 +218,14 @@
         </div>
 
         <!-- 底部图例与移动端方向键 -->
+        <div id="board-actions" class="campaign-bar" aria-label="附近可操作机关" hidden></div>
+        <div id="tile-inspector" class="board-help"></div>
+        <details class="act-legend">
+          <summary>本幕机关图例</summary>
+          <ul id="act-legend"></ul>
+        </details>
         <div class="flex flex-col sm:flex-row items-center justify-between gap-2 bg-[#e6d6b8]/60 p-2.5 rounded-lg border border-[#8b5a2b]/40 text-xs text-[#4a3525]">
-          <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-            <span class="inline-flex items-center gap-1"><span class="inline-flex w-4 h-4 shrink-0" data-icon="compass"></span><b>移动</b>：方向键 / WASD / 点击相邻格</span>
-            <span class="inline-flex items-center gap-1"><span class="inline-flex w-4 h-4 shrink-0" data-icon="sunbeam"></span><b>烈日聚焦光束</b>：致命（需护盾）</span>
-            <span class="inline-flex items-center gap-1"><span class="inline-flex w-4 h-4 shrink-0" data-icon="river"></span><b>马孔多河</b>：阻挡步行，子弹与投掷可越过</span>
-          </div>
+          <span>方向键或点邻格移动。悬停或点远处格子可查看说明。</span>
           <!-- 移动端触控十字键 -->
           <div class="flex sm:hidden items-center gap-1.5 mt-1">
             <button data-dir="left" aria-label="向左移动" class="dpad-btn w-10 h-10 rounded-lg bg-[#d8c39e] border border-[#8b5a2b] font-bold active:bg-[#c59b27]">◀</button>

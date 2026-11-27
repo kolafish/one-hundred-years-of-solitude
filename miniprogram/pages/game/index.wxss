@@ -332,3 +332,23 @@ page {
   padding: 12rpx;
   text-align: left;
 }
+
+.board-help {
+  padding: 14rpx 18rpx;
+  color: #5c4332;
+  font-size: 25rpx;
+  line-height: 1.55;
+}
+
+.board-help view + view {
+  margin-top: 6rpx;
+}
+
+.help-name {
+  color: #2c1e16;
+  font-weight: 700;
+}
+
+.board-legend .board-help {
+  margin-top: 10rpx;
+}

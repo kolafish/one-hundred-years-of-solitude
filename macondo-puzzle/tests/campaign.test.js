@@ -417,3 +417,36 @@ test('Canvas emitter nozzles point in the four configured beam directions', () =
       `nozzle tip missing for (${dx}, ${dy})`);
   }
 });
+
+test('the legend and inspector describe nearby mechanisms and keyboard interaction is undoable', () => {
+  const run = campaign({ value: { schemaVersion: 1, unlockedLevels: [2] } });
+  const { game } = run;
+  assert(game.startLevel(2));
+  assert(run.view.legend.some(entry => entry.id === 'mist'));
+  assert(game.inspectTile(5, 4).descriptions.some(entry => entry.id === 'mirror'));
+  assert.equal(game.inspectTile(5, 4).distant, true);
+  assert.equal(game.interactAt(), false);
+  play(game, 'RRRU');
+  const previous = game.getState();
+  assert(run.view.interactions.some(action => action.label === '拨转铜镜' && action.ready));
+  assert.equal(game.interactAt(), true);
+  assert.equal(game.getState().mirrors[0].slash, !previous.mirrors[0].slash);
+  game.undoMove();
+  assert.deepEqual(game.getState(), previous);
+});
+
+test('a carried character gains exactly one charge when meeting the map character', () => {
+  const { game } = campaign({ value: {
+    schemaVersion: 1, unlockedLevels: [3], unlockedCharacters: ['REBECA']
+  } });
+  assert(game.startLevel(3, ['REBECA']));
+  assert.equal(game.getState().abilities.REBECA.charges, 1);
+  play(game, 'U');
+  assert.equal(game.getState().abilities.REBECA.charges, 2);
+  play(game, 'UD');
+  assert.equal(game.getState().abilities.REBECA.charges, 2);
+  play(game, 'URR');
+  game.toggleSkill('REBECA');
+  game.handleCanvasClick(5, 3);
+  assert.equal(game.getState().abilities.REBECA.charges, 1);
+});
