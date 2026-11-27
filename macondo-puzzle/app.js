@@ -9,7 +9,10 @@ const loadoutDialog = document.getElementById('loadout-dialog');
 const decisionDialog = document.getElementById('decision-dialog');
 const boardActions = document.getElementById('board-actions');
 const tileInspector = document.getElementById('tile-inspector');
+const tileTooltip = document.getElementById('tile-tooltip');
+const chronicleLog = document.getElementById('chronicle-log');
 let hoverTile = null;
+let tooltipDismissed = false;
 let inspectedTile = null;
 let inspecting = true;
 let inspectionKey = null;
@@ -56,8 +59,8 @@ function renderUI({ level, turn, canUndo, canWait, hazardLabel, banner, bannerIc
   campaign = acts;
   activeEnding = ending;
   inspecting = canInspect;
-  renderBoardHelp(interactions, legend);
   renderDecision(decision);
+  renderBoardHelp(interactions, legend);
   renderCampaign(storageFailed, relicCollected, relicCount);
   const hazard = document.getElementById('hazard-status');
   hazard.textContent = hazardLabel;
@@ -128,8 +131,7 @@ function renderUI({ level, turn, canUndo, canWait, hazardLabel, banner, bannerIc
   });
 
   // Render chronicle log
-  const logContainer = document.getElementById('chronicle-log');
-  logContainer.innerHTML = logs.map(entry => {
+  chronicleLog.innerHTML = logs.map(entry => {
     let colorClass = 'text-[#3d291a]';
     if (entry.type === 'character') colorClass = 'text-[#7c2d12] font-semibold';
     if (entry.type === 'highlight') colorClass = 'text-[#92400e] font-bold';
@@ -200,10 +202,56 @@ function legendEntry(entry) {
   return item;
 }
 
+function renderTileTooltip(descriptions, key) {
+  tileTooltip.hidden = !hoverTile || tooltipDismissed || Boolean(activeEnding && !activeEnding.settled)
+    || decisionDialog.open || loadoutDialog.open
+    || !descriptions.some(({ id }) => id !== 'floor' && id !== 'wall');
+  if (tileTooltip.hidden) return;
+
+  if (tileTooltip.dataset.description !== key) {
+    tileTooltip.replaceChildren(...descriptions.map(entry => descriptionNode('p', entry)));
+    tileTooltip.dataset.description = key;
+  }
+
+  const margin = 12;
+  const gap = 8;
+  const { clientWidth, clientHeight } = document.documentElement;
+  const { left, top, width, height } = canvas.getBoundingClientRect();
+  const tileWidth = width / board.cols;
+  const tileHeight = height / board.rows;
+  const tileLeft = left + hoverTile.x * tileWidth;
+  const tileTop = top + hoverTile.y * tileHeight;
+  const tooltipWidth = tileTooltip.offsetWidth;
+  const tooltipHeight = tileTooltip.offsetHeight;
+  const right = tileLeft + tileWidth + gap;
+  const leftSide = tileLeft - tooltipWidth - gap;
+  const above = tileTop - tooltipHeight - gap;
+  const below = tileTop + tileHeight + gap;
+  const rightFits = right + tooltipWidth <= clientWidth - margin;
+  const leftFits = leftSide >= margin;
+  const fitsRightOnBoard = right + tooltipWidth <= left + width;
+  const fitsLeftOnBoard = leftSide >= left;
+  let x = right;
+  let y = tileTop + (tileHeight - tooltipHeight) / 2;
+  let side = 'right';
+  if (leftFits && (!rightFits || (!fitsRightOnBoard && fitsLeftOnBoard))) {
+    side = 'left';
+    x = leftSide;
+  } else if (!rightFits) {
+    side = below + tooltipHeight <= clientHeight - margin || above < margin ? 'below' : 'above';
+    x = tileLeft + (tileWidth - tooltipWidth) / 2;
+    y = side === 'below' ? below : above;
+  }
+  tileTooltip.dataset.side = side;
+  tileTooltip.style.left = `${Math.max(margin, Math.min(x, clientWidth - tooltipWidth - margin))}px`;
+  tileTooltip.style.top = `${Math.max(margin, Math.min(y, clientHeight - tooltipHeight - margin))}px`;
+}
+
 function renderInspection() {
   const tile = hoverTile || inspectedTile;
   const descriptions = tile ? game.inspectTile(tile.x, tile.y)?.descriptions || [] : [];
   const key = descriptions.map(entry => entry.id).join('|');
+  renderTileTooltip(descriptions, key);
   if (key === inspectionKey) return;
   inspectionKey = key;
   if (descriptions.length) {
@@ -212,6 +260,13 @@ function renderInspection() {
     tileInspector.replaceChildren(document.getElementById('tile-inspector-placeholder').content.cloneNode(true));
   }
   tileInspector.scrollTop = 0;
+}
+
+function clearHover() {
+  if (!hoverTile) return;
+  hoverTile = null;
+  tooltipDismissed = false;
+  renderInspection();
 }
 
 function renderBoardHelp(interactions, legend) {
@@ -284,7 +339,10 @@ function openLoadout(id, selected) {
       ? draft.picked.filter(item => item !== character.id) : [...draft.picked, character.id]));
     return button;
   }));
-  if (!loadoutDialog.open) loadoutDialog.showModal();
+  if (!loadoutDialog.open) {
+    clearHover();
+    loadoutDialog.showModal();
+  }
 }
 
 function finishAttempt() {
@@ -301,11 +359,14 @@ function finishAttempt() {
 function initEvents() {
   window.addEventListener('resize', () => {
     resizeCanvas();
+    clearHover();
   });
+  window.addEventListener('scroll', clearHover, { passive: true });
 
   // 键盘控制
   window.addEventListener('keydown', e => {
     if (loadoutDialog.open || decisionDialog.open) return;
+    if (e.target === chronicleLog && ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) return;
     if (!document.getElementById('hint-modal').classList.contains('hidden')) {
       if (e.key === 'Escape') document.getElementById('hint-modal').classList.add('hidden');
       return;
@@ -322,20 +383,28 @@ function initEvents() {
     else if (key === 'z') { undoMove(); }
     else if (key === 'r') { resetLevel(); }
     else if (key === '.') { waitTurn(); }
-    else if (key === 'escape') { cancelSkillMode(); }
+    else if (key === 'escape') {
+      if (!tileTooltip.hidden) tooltipDismissed = true;
+      cancelSkillMode();
+    }
   });
 
   // 画布点击与悬停
   function canvasTile(e) {
     const rect = canvas.getBoundingClientRect();
-    return {
+    const tile = {
       x: Math.floor(((e.clientX - rect.left) / rect.width) * board.cols),
       y: Math.floor(((e.clientY - rect.top) / rect.height) * board.rows)
     };
+    return tile.x >= 0 && tile.y >= 0 && tile.x < board.cols && tile.y < board.rows ? tile : null;
   }
 
-  canvas.addEventListener('click', e => {
+  function clickBoard(e) {
     const tile = canvasTile(e);
+    if (!tile) {
+      clearHover();
+      return;
+    }
     if (inspecting && game.inspectTile(tile.x, tile.y)?.distant) {
       inspectedTile = tile;
       renderInspection();
@@ -344,19 +413,31 @@ function initEvents() {
     inspectedTile = null;
     renderInspection();
     handleCanvasClick(tile.x, tile.y);
-  });
+  }
 
-  canvas.addEventListener('pointermove', e => {
+  function hoverBoard(e) {
     if (e.pointerType === 'touch') return;
     const tile = canvasTile(e);
+    if (!tile) return clearHover();
     if (hoverTile?.x === tile.x && hoverTile?.y === tile.y) return;
     hoverTile = tile;
+    tooltipDismissed = false;
     renderInspection();
+  }
+
+  canvas.addEventListener('click', clickBoard);
+  canvas.addEventListener('pointermove', hoverBoard);
+  canvas.addEventListener('pointerleave', e => {
+    if (!tileTooltip.contains(e.relatedTarget)) clearHover();
   });
 
-  canvas.addEventListener('pointerleave', () => {
-    hoverTile = null;
-    renderInspection();
+  tileTooltip.addEventListener('pointerleave', e => {
+    if (e.relatedTarget === canvas) hoverBoard(e);
+    else clearHover();
+  });
+  tileTooltip.addEventListener('click', e => {
+    clearHover();
+    clickBoard(e);
   });
 
   // 移动端虚拟十字键
@@ -382,6 +463,7 @@ function initEvents() {
   document.getElementById('loadout-cancel').addEventListener('click', () => loadoutDialog.close());
 
   document.getElementById('btn-hint').addEventListener('click', () => {
+    clearHover();
     document.getElementById('hint-modal').classList.remove('hidden');
   });
   document.getElementById('btn-close-hint').addEventListener('click', () => {
