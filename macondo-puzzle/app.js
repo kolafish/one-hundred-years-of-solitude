@@ -1,9 +1,9 @@
-const { createGame, LEVELS } = MacondoPuzzle;
-const game = createGame(renderUI, LEVELS, {
+const { createGame } = MacondoPuzzle;
+const game = createGame(renderUI, MacondoPuzzle.LEVELS, {
   read: () => JSON.parse(localStorage.getItem(MacondoProgress.KEY)),
   write: progress => localStorage.setItem(MacondoProgress.KEY, JSON.stringify(progress))
 });
-const { tryMove, toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, setCanvas, drawBoard } = game;
+const { tryMove, toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, waitTurn, setCanvas, drawBoard } = game;
 const canvas = document.getElementById('game-canvas');
 const loadoutDialog = document.getElementById('loadout-dialog');
 let hoverTile = null;
@@ -33,7 +33,7 @@ function hydrateStaticIcons() {
   });
 }
 
-function renderUI({ level, turn, canUndo, banner, bannerIconId, cards, logs, ending, campaign: acts, storageFailed, relicCollected }) {
+function renderUI({ level, turn, canUndo, canWait, tideLabel, banner, bannerIconId, cards, logs, ending, campaign: acts, storageFailed, relicCollected }) {
   if (board?.id !== level.id) {
     board = level;
     hoverTile = null;
@@ -48,6 +48,12 @@ function renderUI({ level, turn, canUndo, banner, bannerIconId, cards, logs, end
   campaign = acts;
   activeEnding = ending;
   renderCampaign(storageFailed, relicCollected);
+  const hazard = document.getElementById('hazard-status');
+  hazard.textContent = tideLabel;
+  hazard.hidden = !tideLabel;
+  const wait = document.getElementById('btn-wait');
+  wait.hidden = !canWait;
+  wait.disabled = Boolean(ending);
   document.getElementById('turn-count').textContent = turn;
   const actionBanner = document.getElementById('action-banner');
   const bannerIconEl = document.getElementById('action-banner-icon');
@@ -205,6 +211,7 @@ function initEvents() {
     else if (key === 'arrowright' || key === 'd') { e.preventDefault(); tryMove(1, 0); }
     else if (key === 'z') { undoMove(); }
     else if (key === 'r') { resetLevel(); }
+    else if (key === '.') { waitTurn(); }
     else if (key === 'escape') { cancelSkillMode(); }
   });
 
@@ -245,6 +252,7 @@ function initEvents() {
   // 顶部与弹窗按钮
   document.getElementById('btn-undo').addEventListener('click', undoMove);
   document.getElementById('btn-reset').addEventListener('click', resetLevel);
+  document.getElementById('btn-wait').addEventListener('click', waitTurn);
   document.getElementById('btn-end-undo').addEventListener('click', undoMove);
   document.getElementById('btn-end-restart').addEventListener('click', finishAttempt);
   document.getElementById('loadout-start').addEventListener('click', () => {

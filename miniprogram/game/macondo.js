@@ -68,6 +68,13 @@ const MacondoPuzzle = (() => {
       iconId: 'char_pilar', color: '#7b4b3d',
       desc: '翻转机关状态，点棋盘即可施放。',
       quote: '庇拉尔翻过纸牌，机关换了一个方向。'
+    },
+    REMEDIOS: {
+      id: 'REMEDIOS', name: '美人蕾梅黛丝', shortName: '蕾梅黛丝',
+      abilityName: '床单飞升', type: 'ACTIVE', charges: 1,
+      iconId: 'char_remedios', color: '#8b7044',
+      desc: '选择十字方向两格外的落点，越过河水、墙体和沿途光束。',
+      quote: '床单在大雨的尽头张开，托着她越过了河岸。'
     }
   };
 
@@ -158,6 +165,7 @@ const MacondoPuzzle = (() => {
         })),
         curtains: [],
         reversed: false,
+        tideHigh: false,
         memoRead: loadout.includes('URSULA'),
         status: 'PLAYING', // 'PLAYING' | 'WON' | 'DEAD'
         player: { ...level.start },
@@ -199,12 +207,12 @@ const MacondoPuzzle = (() => {
       if (historyStack.length > 50) historyStack.shift();
     }
 
-    function takeTurn(change) {
+    function takeTurn(change, advancesTime = true) {
       pushHistory();
-      state.turn += 1;
+      if (advancesTime) state.turn += 1;
       const previous = state.player;
       change();
-      resolveTurn(previous.x !== state.player.x || previous.y !== state.player.y);
+      resolveTurn(previous.x !== state.player.x || previous.y !== state.player.y, advancesTime);
     }
 
     // ==========================================
@@ -330,7 +338,7 @@ const MacondoPuzzle = (() => {
     }
 
     // 回合结束后的环境与接触结算
-    function resolveTurn(enteredTile) {
+    function resolveTurn(enteredTile, advancesTime) {
       const { x, y } = state.player;
       const item = at(state.items, x, y);
       if (item) {
@@ -377,9 +385,17 @@ const MacondoPuzzle = (() => {
       }
 
       updateGates();
-      advanceGuards();
+      if (advancesTime) advanceGuards();
+      updateTide();
       state.curtains = state.curtains.filter(curtain => curtain.expires > state.turn);
       computeLasers(state);
+      if (state.tideHigh && state.terrain[y][x] === TILE.SHALLOWS) {
+        state.status = 'DEAD';
+        state.deathReason = '涨潮淹没了脚下的浅滩。可以撤销一步，回到岸边等待退潮。';
+        addLog(state.deathReason, 'danger');
+        renderUI();
+        return;
+      }
       const inLaser = Boolean(at(state.laserTiles, x, y));
       const seenByGuard = state.guards.some(guard => guardSees(guard, x, y));
       if (inLaser || seenByGuard) {
@@ -392,6 +408,7 @@ const MacondoPuzzle = (() => {
             : '守卫发现了你。上校的宿命护盾挡下攻击并打断警报。', 'highlight');
         } else {
           state.status = 'DEAD';
+          if (seenByGuard && !inLaser) state.deathReason = '守卫拉响了警报。可以撤销一步，等巡逻转向。';
           addLog(inLaser ? '烈日聚焦光束无情地吞噬了你的身影，一切化作马孔多的尘埃。' : '守卫拉响了警报。', 'danger');
           renderUI();
           return;
@@ -409,6 +426,36 @@ const MacondoPuzzle = (() => {
       }
 
       renderUI();
+    }
+
+    function updateTide() {
+      if (!level.tide) return;
+      const wasHigh = state.tideHigh;
+      state.tideHigh = (state.turn % 2 === 1) !== state.reversed;
+      if (wasHigh || !state.tideHigh) return;
+
+      const drifting = [];
+      for (const object of [...state.barrels, ...state.boxes]) {
+        const current = at(level.currents || [], object.x, object.y);
+        if (!current) continue;
+        const x = object.x + current.dx;
+        const y = object.y + current.dy;
+        if (!inBounds(x, y) || isSolid(x, y) || at(objects(), x, y) || at(drifting, x, y)
+          || (state.player.x === x && state.player.y === y)) continue;
+        drifting.push({ object, x, y });
+      }
+      for (const { object, x, y } of drifting) Object.assign(object, { x, y });
+      if (drifting.length) addLog('涨潮把河边的箱桶推了一个格子。', 'highlight');
+    }
+
+    function waitTurn() {
+      if (state.status !== 'PLAYING' || !canWait()) return;
+      clearSkillMode();
+      takeTurn(() => {});
+    }
+
+    function canWait() {
+      return Boolean(level.tide || level.guards?.length || level.hurricane);
     }
 
     function updateGates() {
@@ -527,7 +574,7 @@ const MacondoPuzzle = (() => {
           state.abilities[activeAbility].charges -= 1;
           effect();
           clearSkillMode();
-        });
+        }, !(level.tide && activeAbility === 'PILAR'));
         return;
       }
 
@@ -634,7 +681,7 @@ const MacondoPuzzle = (() => {
         if (object && isWalkable(x + dx, y + dy, true)) {
           return () => { object.x += dx; object.y += dy; };
         }
-        if (!object && state.terrain[y][x] === TILE.WATER) return () => repairBridge(x, y);
+        if (!object && [TILE.WATER, TILE.SHALLOWS].includes(state.terrain[y][x])) return () => repairBridge(x, y);
       }
       if (skill === 'MELQUIADES' && object && distance <= 4 && isOpenGround(x, y)
         && hasLineOfSight(state.player.x, state.player.y, x, y)) {
@@ -649,6 +696,12 @@ const MacondoPuzzle = (() => {
         return () => {
           state.curtains.push({ x, y, expires: state.turn + 3 });
           addLog('黑纱展开，接下来三回合会遮住光束和守卫视线。', 'highlight');
+        };
+      }
+      if (skill === 'REMEDIOS' && distance === 2 && (dx === 0 || dy === 0) && isWalkable(x, y)) {
+        return () => {
+          state.player = { x, y };
+          addLog('她升起两格，在前方重新落地。', 'highlight');
         };
       }
       if (skill === 'PILAR' && distance === 0) {
@@ -758,6 +811,19 @@ const MacondoPuzzle = (() => {
             drawGoalTile(px, py, tileSize, t);
           } else if (tile === TILE.LASER_EMITTER) {
             drawEmitterTile(px, py, tileSize, t);
+          } else if (tile === TILE.SHALLOWS) {
+            drawWaterTile(px, py, tileSize, t, x, y);
+            if (!state.tideHigh) {
+              ctx.fillStyle = 'rgba(239, 227, 202, 0.56)';
+              ctx.fillRect(px + 2, py + 2, tileSize - 4, tileSize - 4);
+              ctx.strokeStyle = '#fff1c7';
+              ctx.setLineDash([3, 3]);
+              ctx.lineDashOffset = -(t / 160) % 6;
+              ctx.strokeRect(px + 4, py + 4, tileSize - 8, tileSize - 8);
+              ctx.setLineDash([]);
+              ctx.lineDashOffset = 0;
+            }
+            drawBoardMark(px, py, state.tideHigh ? '潮' : '浅', state.tideHigh ? '#fff1c7' : '#2c1e16');
           } else if (tile === TILE.HOT || tile === TILE.MIST) {
             ctx.fillStyle = tile === TILE.HOT ? 'rgba(158, 42, 43, 0.45)' : 'rgba(115, 102, 124, 0.43)';
             ctx.fillRect(px + 2, py + 2, tileSize - 4, tileSize - 4);
@@ -776,6 +842,12 @@ const MacondoPuzzle = (() => {
         const sign = state.reversed ? -1 : 1;
         const symbol = lane.dx ? (lane.dx * sign > 0 ? '→' : '←') : (lane.dy * sign > 0 ? '↓' : '↑');
         drawBoardMark(lane.x * tileSize, lane.y * tileSize, symbol, state.reversed ? '#325d78' : '#9e2a2b');
+      }
+      for (const current of level.currents || []) {
+        if (!at(objects(), current.x, current.y)) {
+          const arrow = current.dx ? (current.dx > 0 ? '→' : '←') : (current.dy > 0 ? '↓' : '↑');
+          drawBoardMark(current.x * tileSize, current.y * tileSize, arrow, '#c59b27');
+        }
       }
       for (const guard of state.guards) drawGuard(guard);
 
@@ -1294,7 +1366,7 @@ const MacondoPuzzle = (() => {
           iconId: 'wither',
           iconUri: Icons.getIconDataUri('wither'),
           title: '马孔多的一阵飓风抹去了足迹',
-          description: '在没有上校宿命护盾的庇佑下，直面烈日聚焦光束意味着粉身碎骨。你可以撤销上一步，或重新开启轮回。'
+          description: state.deathReason || '烈日聚焦光束击中了你。可以撤销上一步，或者重试这一幕。'
         };
       }
 
@@ -1309,6 +1381,8 @@ const MacondoPuzzle = (() => {
         relicCollected: state.relicCollected,
         turn: state.turn,
         canUndo: historyStack.length > 0,
+        canWait: canWait(),
+        tideLabel: level.tide ? (state.tideHigh ? '涨潮中 · 下一回合退潮' : '退潮中 · 下一回合涨潮') : '',
         banner,
         bannerIconId,
         bannerIconUri: bannerIconId ? Icons.getIconDataUri(bannerIconId) : '',
@@ -1318,7 +1392,7 @@ const MacondoPuzzle = (() => {
       });
     }
 
-    return { startLevel, preparation, commitVictory, tryMove, toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, setCanvas, drawBoard, getState: () => cloneState(state) };
+    return { startLevel, preparation, commitVictory, tryMove, waitTurn, toggleSkill, cancelSkillMode, handleCanvasClick, undoMove, resetLevel, setCanvas, drawBoard, getState: () => cloneState(state) };
   }
 
   return { LEVELS, createGame };

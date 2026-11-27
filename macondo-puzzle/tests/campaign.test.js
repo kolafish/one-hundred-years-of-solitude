@@ -154,3 +154,46 @@ test('the workshop supports both archive routes, forging, and deterministic patr
   game.commitVictory();
   assert.equal(saved.value.worldFlags.ARCHIVE_INTACT, true);
 });
+
+test('rain supports both bridge variants, deterministic drift, tide reversal and undo', () => {
+  const saved = { value: {
+    schemaVersion: 1,
+    unlockedLevels: [4],
+    unlockedCharacters: ['AURELIANO', 'PILAR'],
+    worldFlags: { GOLD_FISH_FORGED: true }
+  } };
+  const { game } = campaign(saved);
+  game.startLevel(4, ['AURELIANO', 'PILAR']);
+  assert.equal(game.getState().abilities.AURELIANO.charges, 2);
+  assert.equal(game.getState().terrain[4][5], 9);
+  game.toggleSkill('PILAR');
+  game.handleCanvasClick(2, 4);
+  assert.equal(game.getState().turn, 0);
+  assert.equal(game.getState().tideHigh, true);
+  assert.equal(game.getState().boxes[0].x, 5);
+  game.undoMove();
+  assert.equal(game.getState().tideHigh, false);
+  assert.equal(game.getState().boxes[0].x, 4);
+  play(game, 'RR');
+  const shore = game.getState();
+  play(game, 'R');
+  assert.equal(game.getState().status, 'DEAD');
+  assert.equal(game.getState().abilities.AURELIANO.charges, 2);
+  game.undoMove();
+  assert.deepEqual(game.getState(), shore);
+  game.waitTurn();
+  assert.equal(game.getState().boxes[0].x, 6);
+  assert.equal(game.getState().barrels[0].x, 6);
+  play(game, 'RRRRRUURDD');
+  assert.equal(game.getState().status, 'WON');
+  assert.equal(game.getState().relicCollected, true);
+  game.commitVictory();
+
+  saved.value.worldFlags.BRIDGE_REPAIRED = true;
+  const reopened = campaign(saved).game;
+  reopened.startLevel(4);
+  assert.equal(reopened.getState().terrain[4][5], 3);
+  play(reopened, 'RRRRRRRR');
+  assert.equal(reopened.getState().status, 'WON');
+  assert.equal(reopened.getState().turn, 8);
+});

@@ -130,6 +130,10 @@ Page({
     this.game.tryMove(Number(dx), Number(dy));
   },
 
+  waitTurn() {
+    this.game.waitTurn();
+  },
+
   useSkill(event) {
     this.game.toggleSkill(event.currentTarget.dataset.skill);
   },
