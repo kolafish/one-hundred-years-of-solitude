@@ -141,6 +141,43 @@
       overflow-anchor: none;
     }
     .board-help p + p { margin-top: 4px; }
+    .tile-tooltip {
+      position: fixed;
+      z-index: 20;
+      width: max-content;
+      max-width: min(17rem, calc(100% - 24px));
+      max-height: calc(100dvh - 24px);
+      overflow: hidden;
+      pointer-events: none;
+      background: #fcf0d8;
+      box-shadow: 0 4px 12px rgb(44 30 22 / 20%), 0 1px 3px rgb(44 30 22 / 15%);
+    }
+
+    .chronicle-panel {
+      display: flex;
+      flex-direction: column;
+      height: 16rem;
+    }
+
+    @media (min-width: 640px) {
+      .chronicle-panel { height: 18rem; }
+    }
+
+    @media (min-width: 1024px) {
+      .chronicle-panel {
+        flex: 1;
+        height: auto;
+        min-height: 15rem;
+      }
+
+      #chronicle-log { contain: size; }
+    }
+
+    #chronicle-log:focus-visible {
+      outline: 2px solid #8b5a2b;
+      outline-offset: 2px;
+    }
+
     .inspector-placeholder { color: #6e5138; }
     .inspector-touch { display: none; }
     @media (hover: none) {
@@ -247,7 +284,7 @@
     <p id="hazard-status" class="campaign-status" aria-live="polite" hidden></p>
 
     <!-- 核心区域：左侧网格画布 + 右侧状态与能力面板 -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
       <!-- 左侧：画布与操作提示 -->
       <div class="lg:col-span-7 min-w-0 flex flex-col gap-2">
@@ -264,6 +301,7 @@
         <!-- 底部图例与移动端方向键 -->
         <div id="board-actions" class="campaign-bar" aria-label="附近可操作机关" hidden></div>
         <div id="tile-inspector" class="board-help"></div>
+        <div id="tile-tooltip" class="board-help tile-tooltip" aria-hidden="true" hidden></div>
         <template id="tile-inspector-placeholder">
           <p class="inspector-placeholder"><span class="inspector-mouse">将鼠标移到格子上</span><span class="inspector-touch">点远处格子</span>查看说明。</p>
         </template>
@@ -292,7 +330,7 @@
             <h2 class="text-sm sm:text-base font-bold text-[#2c1e16] flex items-center gap-1.5">
               <span class="inline-flex w-5 h-5 shrink-0" data-icon="crest"></span> 家族馈赠（能力与道具）
             </h2>
-            <span class="text-xs text-[#6e472b]">靠近人物即可继承执念</span>
+            <span class="text-xs text-[#6e472b]">踩上人物格即可继承执念</span>
           </div>
 
           <div id="inventory-list" class="flex flex-col gap-2">
@@ -301,14 +339,14 @@
         </div>
 
         <!-- 羊皮纸编年史（叙事日志） -->
-        <div class="bg-[#e6d6b8]/50 rounded-xl p-3 border border-[#8b5a2b]/50 flex flex-col h-52 sm:h-60">
+        <div class="chronicle-panel bg-[#e6d6b8]/50 rounded-xl p-3 border border-[#8b5a2b]/50">
           <div class="flex items-center justify-between mb-1.5">
-            <h2 class="text-sm sm:text-base font-bold text-[#2c1e16] flex items-center gap-1.5">
+            <h2 id="chronicle-title" class="text-sm sm:text-base font-bold text-[#2c1e16] flex items-center gap-1.5">
               <span class="inline-flex w-5 h-5 shrink-0" data-icon="quill"></span> 马孔多编年史
             </h2>
             <span class="text-[11px] text-[#8b4513] italic">“家族的第一个人被捆在树上……”</span>
           </div>
-          <div id="chronicle-log" class="flex-1 overflow-y-auto pr-1 space-y-2 text-xs sm:text-sm leading-relaxed">
+          <div id="chronicle-log" class="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2 text-xs sm:text-sm leading-relaxed" role="region" aria-labelledby="chronicle-title" tabindex="0">
             <!-- 日志条目 -->
           </div>
         </div>
