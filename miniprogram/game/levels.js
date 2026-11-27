@@ -9,6 +9,7 @@ const MacondoLevels = (() => {
     GOAL: 5,         // 梅尔基亚德斯的羊皮纸密室
     HOT: 7,
     MIST: 8,
+    SHALLOWS: 9,
     LASER_EMITTER: 6 // 烈日放大镜发射器（向下发射光束）
   };
 
@@ -25,7 +26,7 @@ const MacondoLevels = (() => {
 
   function map(rows) {
     const legend = { '#': TILE.WALL, '.': TILE.FLOOR, '~': TILE.WATER, '=': TILE.BRIDGE,
-      '%': TILE.CRACKED_WALL, 'G': TILE.GOAL, 'E': TILE.LASER_EMITTER, 'H': TILE.HOT, '?': TILE.MIST };
+      '%': TILE.CRACKED_WALL, 'G': TILE.GOAL, 'E': TILE.LASER_EMITTER, 'H': TILE.HOT, '?': TILE.MIST, 'S': TILE.SHALLOWS };
     return rows.map(row => Array.from(row, symbol => {
       if (!(symbol in legend)) throw new Error('Unknown map tile: ' + symbol);
       return legend[symbol];
@@ -138,6 +139,48 @@ const MacondoLevels = (() => {
       '也能引爆西侧火药桶打开裂纹墙，但会毁掉档案。',
       '集齐西南的两枚金屑，在上校旁打造小金鱼。黑纱能遮住守卫视线三回合。',
       '观察守卫朝向和红色警戒区。从南侧绕行可找到残页。'
+    ]
+  }, {
+    id: 4,
+    title: '四年十一个月零两天的大雨',
+    subtitle: '第四幕 · 等潮水退去，越过被淹没的马孔多。',
+    cols: 12,
+    rows: 9,
+    slots: 2,
+    parTurns: 9,
+    unlocks: ['REMEDIOS'],
+    terrain: map([
+      '############',
+      '#....#.....#',
+      '#....~.....#',
+      '#....#.....#',
+      '#....S....G#',
+      '#....~.....#',
+      '#....#.....#',
+      '#....=.....#',
+      '############'
+    ]),
+    start: { x: 2, y: 4 },
+    npcs: [{ id: 'REMEDIOS', x: 8, y: 4 }],
+    barrels: [{ x: 4, y: 2 }],
+    boxes: [{ x: 4, y: 5 }],
+    tide: true,
+    currents: [
+      { x: 4, y: 2, dx: 1, dy: 0 }, { x: 5, y: 2, dx: 1, dy: 0 },
+      { x: 4, y: 5, dx: 1, dy: 0 }, { x: 5, y: 5, dx: 1, dy: 0 }
+    ],
+    items: [{ kind: 'relic', x: 10, y: 2 }],
+    changes: [{ flag: 'BRIDGE_REPAIRED', x: 5, y: 4, tile: TILE.BRIDGE }],
+    causalHints: [
+      { flag: 'BRIDGE_REPAIRED', text: '第二幕修好的木桥会留在中央浅滩。' },
+      { flag: 'GOLD_FISH_FORGED', text: '第三幕锻造小金鱼后，携带上校会增加一次护盾。' }
+    ],
+    opening: '雨下了四年十一个月零两天。退潮时，旧路只会露出一个回合。',
+    hints: [
+      '奇数回合涨潮，偶数回合退潮。留在岸上等一回合，再踩上退潮的浅滩。',
+      '第二幕修好的桥可以直接过。南端也有一座固定木桥。',
+      '每次涨潮都把有箭头的格子上的箱桶推一格。庇拉尔可立即翻转潮相，乌尔苏拉可搭桥。',
+      '靠近美人蕾梅黛丝可以继承床单飞升。残页在东北岸。'
     ]
   }];
 

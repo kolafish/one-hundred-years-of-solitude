@@ -7,6 +7,7 @@
   </view>
   <view class="board-caption" wx:if="{{storageFailed}}">进度暂时只保留在此页面。</view>
   <view class="board-caption" wx:elif="{{relicCollected}}">本局已找到残页。通关结算后收入编年史。</view>
+  <view class="board-caption" wx:if="{{tideLabel}}">{{tideLabel}}</view>
   <view class="toolbar">
     <text class="turn">回合 {{turn}}</text>
     <button class="control" hover-class="pressed" bindtap="undo" disabled="{{!canUndo}}">
@@ -21,6 +22,7 @@
       <image class="ui-icon-sm" src="{{uiIcons.hint}}" mode="aspectFit" />
       <text>{{showHints ? '收起提示' : '提示'}}</text>
     </button>
+    <button wx:if="{{canWait}}" class="control" bindtap="waitTurn" disabled="{{!!ending}}">等待一回合</button>
   </view>
 
   <view class="board-frame">
