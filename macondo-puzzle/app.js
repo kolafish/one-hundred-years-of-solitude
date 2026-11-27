@@ -33,7 +33,7 @@ function hydrateStaticIcons() {
   });
 }
 
-function renderUI({ level, turn, canUndo, canWait, tideLabel, banner, bannerIconId, cards, logs, ending, campaign: acts, storageFailed, relicCollected }) {
+function renderUI({ level, turn, canUndo, canWait, hazardLabel, banner, bannerIconId, cards, logs, ending, campaign: acts, storageFailed, relicCollected, relicCount }) {
   if (board?.id !== level.id) {
     board = level;
     hoverTile = null;
@@ -47,10 +47,10 @@ function renderUI({ level, turn, canUndo, canWait, tideLabel, banner, bannerIcon
   }
   campaign = acts;
   activeEnding = ending;
-  renderCampaign(storageFailed, relicCollected);
+  renderCampaign(storageFailed, relicCollected, relicCount);
   const hazard = document.getElementById('hazard-status');
-  hazard.textContent = tideLabel;
-  hazard.hidden = !tideLabel;
+  hazard.textContent = hazardLabel;
+  hazard.hidden = !hazardLabel;
   const wait = document.getElementById('btn-wait');
   wait.hidden = !canWait;
   wait.disabled = Boolean(ending);
@@ -74,7 +74,7 @@ function renderUI({ level, turn, canUndo, canWait, tideLabel, banner, bannerIcon
   const invContainer = document.getElementById('inventory-list');
   invContainer.innerHTML = '';
 
-  cards.forEach(({ id, name, abilityName, iconId, desc, unlocked, charges, blocked, isActive, isPassive }) => {
+  cards.forEach(({ id, name, abilityName, iconId, desc, unlocked, charges, blocked, isActive, isPassive, passiveLabel }) => {
 
     const card = document.createElement('div');
     card.className = `parchment-card rounded-lg p-2.5 flex items-center justify-between gap-2 ${
@@ -86,7 +86,7 @@ function renderUI({ level, turn, canUndo, canWait, tideLabel, banner, bannerIcon
       badgeHtml = `<span class="px-2 py-1 rounded text-[11px] bg-[#cbb894] text-[#5c4332]">未相遇</span>`;
     } else if (charges > 0) {
       if (isPassive) {
-        badgeHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-[#d97706]/20 text-[#92400e] border border-[#d97706]">${MacondoIcons.getIconSvg('shield', 'w-4 h-4 shrink-0')}<span>庇护生效中</span></span>`;
+        badgeHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-[#d97706]/20 text-[#92400e] border border-[#d97706]">${MacondoIcons.getIconSvg('shield', 'w-4 h-4 shrink-0')}<span>${passiveLabel}</span></span>`;
       } else {
         badgeHtml = `<button data-skill="${id}" ${blocked ? 'disabled' : ''} aria-label="${isActive ? '取消' : '施放'}${abilityName}" class="skill-btn campaign-button">
           ${blocked ? '迷雾封印' : isActive ? '取消施放' : `施放能力 (${charges})`}
@@ -136,23 +136,25 @@ function renderUI({ level, turn, canUndo, canWait, tideLabel, banner, bannerIcon
     document.getElementById('end-icon').innerHTML = MacondoIcons.getIconSvg(ending.iconId, 'w-14 h-14');
     document.getElementById('end-title').textContent = ending.title;
     document.getElementById('end-desc').textContent = ending.description;
-    document.getElementById('end-action-label').textContent = ending.won ? '结算并继续' : '再次踏入马孔多';
+    document.getElementById('end-action-label').textContent = ending.won ? (board.id === 5 ? '结算并返回编年史' : '结算并继续') : '再次踏入马孔多';
   }
 }
 
-function renderCampaign(storageFailed, relicCollected) {
+function renderCampaign(storageFailed, relicCollected, relicCount) {
   const nav = document.getElementById('campaign-nav');
   nav.replaceChildren(...campaign.map(act => {
     const button = document.createElement('button');
     button.className = 'campaign-button';
     button.disabled = !act.unlocked;
     button.textContent = `${act.id}. ${act.title}${act.record?.relicCollected ? ' · 残页' : ''}${act.record ? ` · ${act.record.rank}` : ''}`;
+    if (act.record) button.title = `最佳 ${act.record.bestTurns} 回合`;
     if (act.id === board.id) button.setAttribute('aria-current', 'step');
     button.addEventListener('click', () => openLoadout(act.id));
     return button;
   }));
   const status = document.getElementById('campaign-status');
-  status.textContent = storageFailed ? '进度暂时只保留在此页面。' : relicCollected ? '本局已找到残页。通关结算后收入编年史。' : '';
+  const localStatus = storageFailed ? '进度暂时只保留在此页面。' : relicCollected ? '本局已找到残页。通关结算后收入编年史。' : '';
+  status.textContent = `残页 ${relicCount} / 4${localStatus ? ' · ' + localStatus : ''}`;
   status.hidden = !status.textContent;
 }
 
@@ -173,7 +175,7 @@ function openLoadout(id, selected) {
     button.className = 'campaign-button';
     button.disabled = !character.unlocked || (!picked && draft.picked.length >= draft.slots);
     button.setAttribute('aria-pressed', String(picked));
-    button.innerHTML = `${MacondoIcons.getIconSvg(character.iconId, 'w-7 h-7')}<span>${character.name} · ${character.abilityName}<small>${character.unlocked ? character.desc : '尚未解锁'}</small></span>`;
+    button.innerHTML = `${MacondoIcons.getIconSvg(character.iconId, 'w-7 h-7')}<span>${character.name} · ${character.abilityName}<small>${character.unlocked ? character.desc : '尚未解锁'}</small>${character.unlocked ? `<small>${character.epigraph}</small>` : ''}</span>`;
     button.addEventListener('click', () => openLoadout(id, picked
       ? draft.picked.filter(item => item !== character.id) : [...draft.picked, character.id]));
     return button;

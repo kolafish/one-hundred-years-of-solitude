@@ -11,7 +11,8 @@ const MacondoProgress = (() => {
       completedLevels[id] = {
         bestTurns: record.bestTurns,
         rank: ['S', 'A', 'B'].includes(record.rank) ? record.rank : 'B',
-        relicCollected: record.relicCollected === true
+        relicCollected: record.relicCollected === true,
+        ...(['TRUTH', 'ESCAPE'].includes(record.ending) ? { ending: record.ending } : {})
       };
     }
     const list = (candidate, check) => Array.isArray(candidate) ? [...new Set(candidate.filter(check))] : [];
@@ -30,7 +31,10 @@ const MacondoProgress = (() => {
     for (const [id, record] of Object.entries(other.completedLevels)) {
       const previous = completedLevels[id];
       const best = previous && previous.bestTurns <= record.bestTurns ? previous : record;
-      completedLevels[id] = { ...best, relicCollected: Boolean(previous?.relicCollected || record.relicCollected) };
+      const ending = [previous?.ending, record.ending].includes('TRUTH') ? 'TRUTH' : record.ending || previous?.ending;
+      completedLevels[id] = {
+        ...best, relicCollected: Boolean(previous?.relicCollected || record.relicCollected), ...(ending ? { ending } : {})
+      };
     }
     return {
       ...current,

@@ -5,9 +5,10 @@
       {{item.id}}. {{item.title}}{{item.record.relicCollected ? ' · 残页' : ''}}{{item.record ? ' · ' + item.record.rank : ''}}
     </button>
   </view>
+  <view class="board-caption">残页 {{relicCount}} / 4</view>
   <view class="board-caption" wx:if="{{storageFailed}}">进度暂时只保留在此页面。</view>
   <view class="board-caption" wx:elif="{{relicCollected}}">本局已找到残页。通关结算后收入编年史。</view>
-  <view class="board-caption" wx:if="{{tideLabel}}">{{tideLabel}}</view>
+  <view class="board-caption" wx:if="{{hazardLabel}}">{{hazardLabel}}</view>
   <view class="toolbar">
     <text class="turn">回合 {{turn}}</text>
     <button class="control" hover-class="pressed" bindtap="undo" disabled="{{!canUndo}}">
@@ -55,7 +56,7 @@
     <view class="ending-description">{{ending.description}}</view>
     <view class="ending-actions">
       <button class="control" hover-class="pressed" bindtap="undo">撤销一步</button>
-      <button wx:if="{{ending.won}}" class="control primary" hover-class="pressed" bindtap="settle">结算并继续</button>
+      <button wx:if="{{ending.won}}" class="control primary" hover-class="pressed" bindtap="settle">{{level.id === 5 ? '结算并返回编年史' : '结算并继续'}}</button>
       <button wx:else class="control primary" hover-class="pressed" bindtap="reset">再来一次</button>
     </view>
   </view>
@@ -90,7 +91,7 @@
       <text class="badge" wx:elif="{{!item.charges}}">已用尽</text>
       <view class="badge shield" wx:elif="{{item.isPassive}}">
         <image class="ui-icon-xs" src="{{uiIcons.shield}}" mode="aspectFit" />
-        <text>护盾生效</text>
+        <text>{{item.passiveLabel}}</text>
       </view>
       <button wx:else class="control primary skill-button" aria-label="{{item.isActive ? '取消' : '施放'}}{{item.abilityName}}" hover-class="pressed" data-skill="{{item.id}}" disabled="{{!!ending || item.blocked}}" bindtap="useSkill">{{item.blocked ? '迷雾封印' : item.isActive ? '取消' : '施放 ' + item.charges}}</button>
     </view>
@@ -117,7 +118,11 @@
       <scroll-view scroll-y class="loadout-choices">
         <button wx:for="{{preparation.choices}}" wx:key="id" class="control loadout-choice {{item.selected ? 'act-current' : ''}}" data-id="{{item.id}}" disabled="{{item.disabled}}" bindtap="toggleCompanion">
           <image class="skill-icon-img" src="{{item.iconUri}}" mode="aspectFit" />
-          <view><text>{{item.name}} · {{item.abilityName}}</text><view class="skill-description">{{item.unlocked ? item.desc : '尚未解锁'}}</view></view>
+          <view>
+            <text>{{item.name}} · {{item.abilityName}}</text>
+            <view class="skill-description">{{item.unlocked ? item.desc : '尚未解锁'}}</view>
+            <view wx:if="{{item.unlocked}}" class="skill-description">{{item.epigraph}}</view>
+          </view>
         </button>
       </scroll-view>
       <view class="ending-actions">

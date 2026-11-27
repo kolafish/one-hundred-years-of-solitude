@@ -10,6 +10,7 @@ const MacondoLevels = (() => {
     HOT: 7,
     MIST: 8,
     SHALLOWS: 9,
+    RUBBLE: 10,
     LASER_EMITTER: 6 // 烈日放大镜发射器（向下发射光束）
   };
 
@@ -165,6 +166,7 @@ const MacondoLevels = (() => {
     barrels: [{ x: 4, y: 2 }],
     boxes: [{ x: 4, y: 5 }],
     tide: true,
+    oneWay: [{ x: 3, y: 7, dx: 1, dy: 0 }],
     currents: [
       { x: 4, y: 2, dx: 1, dy: 0 }, { x: 5, y: 2, dx: 1, dy: 0 },
       { x: 4, y: 5, dx: 1, dy: 0 }, { x: 5, y: 5, dx: 1, dy: 0 }
@@ -179,8 +181,47 @@ const MacondoLevels = (() => {
     hints: [
       '奇数回合涨潮，偶数回合退潮。留在岸上等一回合，再踩上退潮的浅滩。',
       '第二幕修好的桥可以直接过。南端也有一座固定木桥。',
-      '每次涨潮都把有箭头的格子上的箱桶推一格。庇拉尔可立即翻转潮相，乌尔苏拉可搭桥。',
+      '涨潮会移动河岸箭头格上的箱桶。庇拉尔可翻转潮相和南岸单向门，乌尔苏拉可搭桥。',
       '靠近美人蕾梅黛丝可以继承床单飞升。残页在东北岸。'
+    ]
+  }, {
+    id: 5,
+    title: '飓风中的羊皮纸密室',
+    subtitle: '第五幕 · 在飓风合围前破译最后一道封印。',
+    cols: 13,
+    rows: 9,
+    slots: 3,
+    parTurns: 21,
+    unlocks: ['BABYLON'],
+    terrain: map([
+      '#############',
+      '#....E..#...#',
+      '#.......#...#',
+      '#.......#...#',
+      '#..........##',
+      '#.......#.%G#',
+      '#.......#..##',
+      '#.......#...#',
+      '#############'
+    ]),
+    start: { x: 1, y: 5 },
+    npcs: [{ id: 'BABYLON', x: 3, y: 6 }, { id: 'REBECA', x: 9, y: 6 }],
+    barrels: [{ x: 10, y: 4 }],
+    mirrors: [{ x: 5, y: 4, slash: true }],
+    seals: [{ x: 8, y: 4 }],
+    items: [{ kind: 'crystal', x: 9, y: 4 }],
+    hurricane: { warningTurn: 15, collapseTurn: 18, ringInterval: 5 },
+    changes: [{ flag: 'ARCHIVE_INTACT', x: 8, y: 6, tile: TILE.FLOOR }],
+    causalHints: [
+      { flag: 'ARCHIVE_INTACT', text: '第三幕完好的档案标出了西侧秘道。' },
+      { flag: 'GOLD_FISH_FORGED', text: '锻造小金鱼后，携带上校会增加一次护盾。' }
+    ],
+    opening: '飓风从镇外卷来。巴比伦在门前听见了羊皮纸的回声。',
+    hints: [
+      '靠近南面的巴比伦。站在封印左边，点封印译码。',
+      '回到铜镜正下方，点铜镜把光引过封印。光束会先击碎冰晶，再引爆桶打通密室。',
+      '再次拨转铜镜，沿无光的门廊进入密室。保全过档案的话，也可以从南侧秘道找丽贝卡。',
+      '第 15 回合起出现风圈警示，第 18 回合起外围坍塌。可以用撤销回到安全回合。'
     ]
   }];
 

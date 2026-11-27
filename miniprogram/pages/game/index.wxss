@@ -315,7 +315,8 @@ page {
   width: 100%;
   max-width: 540px;
   border-radius: 24rpx 24rpx 0 0;
-  padding: 24rpx 24rpx calc(24rpx + env(safe-area-inset-bottom));
+  padding: 24rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
   background: #faf1e0;
 }
 
