@@ -1,5 +1,6 @@
-const { createGame } = require("../../game/macondo.js");
+const { createGame, LEVELS } = require("../../game/macondo.js");
 const MacondoIcons = require("../../game/icons.js");
+const { KEY } = require("../../game/progress.js");
 
 Page({
   data: {
@@ -12,6 +13,8 @@ Page({
     logs: [],
     showHints: false,
     canvasError: false,
+    campaign: [],
+    preparation: null,
     uiIcons: {
       undo: MacondoIcons.getIconDataUri("undo"),
       reset: MacondoIcons.getIconDataUri("reset"),
@@ -41,6 +44,9 @@ Page({
       }, () => {
         if (this.boardReady) this.prepareBoard();
       });
+    }, LEVELS, {
+      read: () => wx.getStorageSync(KEY),
+      write: progress => wx.setStorageSync(KEY, progress)
     });
     this.game.resetLevel();
   },
@@ -138,6 +144,43 @@ Page({
 
   toggleHints() {
     this.setData({ showHints: !this.data.showHints });
+  },
+
+  selectAct(event) {
+    this.openPreparation(Number(event.currentTarget.dataset.id));
+  },
+
+  openPreparation(id, selected) {
+    const draft = this.game.preparation(id, selected);
+    if (!draft) return;
+    const hints = this.data.campaign.find(act => act.id === id).causalHints;
+    const choices = draft.choices.map(character => ({
+      ...character,
+      selected: draft.picked.includes(character.id),
+      disabled: !character.unlocked || (!draft.picked.includes(character.id) && draft.picked.length >= draft.slots)
+    }));
+    this.setData({ preparation: { ...draft, choices, hints } });
+  },
+
+  toggleCompanion(event) {
+    const { id, picked } = this.data.preparation;
+    const character = event.currentTarget.dataset.id;
+    this.openPreparation(id, picked.includes(character) ? picked.filter(item => item !== character) : [...picked, character]);
+  },
+
+  closePreparation() {
+    this.setData({ preparation: null });
+  },
+
+  beginAct() {
+    const { id, picked } = this.data.preparation;
+    if (this.game.startLevel(id, picked)) this.setData({ preparation: null, showHints: false });
+  },
+
+  settle() {
+    if (!this.game.commitVictory()) return;
+    const next = this.data.campaign.find(act => act.id > this.data.level.id && act.unlocked);
+    this.openPreparation(next ? next.id : this.data.level.id);
   },
 
   onShareAppMessage() {

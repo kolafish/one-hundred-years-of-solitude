@@ -276,3 +276,58 @@ page {
   color: #5c4332;
   font-variant-numeric: tabular-nums;
 }
+
+.act-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-bottom: 18rpx;
+}
+
+.act-subtitle {
+  margin-bottom: 16rpx;
+  color: #63432f;
+  font-size: 28rpx;
+  line-height: 1.5;
+}
+
+.act-button {
+  font-size: 25rpx;
+}
+
+.act-current {
+  border-color: #9e2a2b;
+  background: #f7eacb;
+}
+
+.loadout-overlay {
+  position: fixed;
+  z-index: 3;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(30, 20, 13, 0.65);
+}
+
+.loadout-sheet {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 540px;
+  border-radius: 24rpx 24rpx 0 0;
+  padding: 24rpx 24rpx calc(24rpx + env(safe-area-inset-bottom));
+  background: #faf1e0;
+}
+
+.loadout-choices {
+  height: 36vh;
+}
+
+.loadout-choice {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 12rpx;
+  margin-bottom: 8rpx;
+  padding: 12rpx;
+  text-align: left;
+}
