@@ -57,7 +57,7 @@ Page({
 
       this.stopDrawing();
       const canvas = board.node;
-      const pixelRatio = (wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).pixelRatio;
+      const pixelRatio = wx.getWindowInfo ? wx.getWindowInfo().pixelRatio : 1;
       canvas.width = Math.round(board.width * pixelRatio);
       canvas.height = Math.round(board.height * pixelRatio);
       const context = canvas.getContext("2d");

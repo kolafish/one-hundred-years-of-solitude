@@ -76,8 +76,15 @@
 
     <view class="result-actions">
       <button class="ghost compact" open-type="share">分享</button>
-      <button class="ghost compact" bindtap="copyStats">复制统计</button>
+      <button class="ghost compact" bindtap="toggleStatsExport">{{statsExport ? '收起文本' : '统计文本'}}</button>
       <button class="ghost compact" bindtap="clearStats">清空</button>
+    </view>
+
+    <view wx:if="{{statsExport}}" class="export-panel">
+      <view class="export-instruction">长按统计文本即可选择并复制。</view>
+      <scroll-view class="export-scroll" scroll-y>
+        <text class="export-text" user-select>{{statsExport}}</text>
+      </scroll-view>
     </view>
     <button class="primary wide restart-primary" bindtap="restartSession">再来一次</button>
   </view>

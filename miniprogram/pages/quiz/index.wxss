@@ -322,6 +322,33 @@
   line-height: 1;
 }
 
+.export-panel {
+  margin-bottom: 24rpx;
+  border: 1rpx solid #d9bd87;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  background: #fff9e5;
+}
+
+.export-instruction {
+  margin-bottom: 12rpx;
+  color: #665936;
+  font-size: 25rpx;
+}
+
+.export-scroll {
+  height: 260rpx;
+}
+
+.export-text {
+  display: block;
+  font-family: monospace;
+  font-size: 24rpx;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
 .wide {
   width: 100%;
 }

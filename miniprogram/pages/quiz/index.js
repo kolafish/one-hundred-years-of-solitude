@@ -27,7 +27,8 @@ Page({
     answers: [],
     isAdvancing: false,
     stats: statsStore.getStats(),
-    resultRows: []
+    resultRows: [],
+    statsExport: ""
   },
 
   onLoad() {
@@ -59,7 +60,8 @@ Page({
       answers: [],
       isAdvancing: false,
       stats: statsStore.getStats(),
-      resultRows: []
+      resultRows: [],
+      statsExport: ""
     });
   },
 
@@ -135,16 +137,13 @@ Page({
     this.advanceTimer = null;
   },
 
-  copyStats() {
-    wx.setClipboardData({
-      data: statsStore.exportStats(),
-      success: () => wx.showToast({ title: "已复制统计", icon: "success" })
-    });
+  toggleStatsExport() {
+    this.setData({ statsExport: this.data.statsExport ? "" : statsStore.exportStats() });
   },
 
   clearStats() {
     const stats = statsStore.clearStats();
-    this.setData({ stats, resultRows: buildResultRows(this.data.answers, stats) });
+    this.setData({ stats, resultRows: buildResultRows(this.data.answers, stats), statsExport: "" });
     wx.showToast({ title: "已清空", icon: "none" });
   },
 
