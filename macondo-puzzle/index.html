@@ -324,7 +324,8 @@
         <span class="inline-flex w-6 h-6 shrink-0" data-icon="scroll"></span> 梅尔基亚德斯的羊皮纸启示
       </h3>
       <ol id="act-hints" class="list-decimal list-inside space-y-2 text-xs sm:text-sm text-[#3d291a] leading-relaxed"></ol>
-      <div class="mt-5 flex justify-end">
+      <div class="loadout-actions mt-5">
+        <button id="btn-next-hint" class="campaign-button">展开用什么</button>
         <button id="btn-close-hint" class="min-h-10 px-4 py-2 rounded-lg bg-[#8b4513] hover:bg-[#6e350d] text-[#f4ebd9] text-sm font-semibold transition">
           合上羊皮纸
         </button>
@@ -340,6 +341,7 @@
       <p id="end-desc" class="text-xs sm:text-sm text-[#4a3525] leading-relaxed italic">
         叙述文本
       </p>
+      <ul id="end-details" class="space-y-2 text-sm text-[#4a3525]"></ul>
       <div class="pt-2 flex justify-center gap-3">
         <button id="btn-end-undo" class="min-h-10 px-4 py-2 rounded-lg bg-[#e6d6b8] hover:bg-[#d8c39e] border border-[#8b5a2b] text-sm font-semibold transition flex items-center gap-1.5">
           <span class="inline-flex w-4 h-4 shrink-0" data-icon="undo"></span>
@@ -353,9 +355,19 @@
     </div>
   </div>
 
+  <dialog id="decision-dialog" class="loadout-dialog parchment-panel" aria-labelledby="decision-title" aria-describedby="decision-detail">
+    <h2 id="decision-title" class="text-lg font-bold"></h2>
+    <p id="decision-detail" class="my-3 text-sm"></p>
+    <div class="loadout-actions">
+      <button id="btn-decision-cancel" class="campaign-button" autofocus>保留档案</button>
+      <button id="btn-decision-accept" class="campaign-button">确认引爆</button>
+    </div>
+  </dialog>
+
   <dialog id="loadout-dialog" class="loadout-dialog parchment-panel" aria-labelledby="loadout-title">
     <h2 id="loadout-title" class="text-lg font-bold"></h2>
     <p id="loadout-slots" class="campaign-status"></p>
+    <p id="loadout-recommendation" class="campaign-status"></p>
     <ul id="loadout-effects" class="campaign-status"></ul>
     <div id="loadout-options" class="loadout-options" aria-label="布恩迪亚家族图鉴"></div>
     <div class="loadout-actions">

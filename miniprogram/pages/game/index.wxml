@@ -77,6 +77,9 @@
       <text>{{ending.title}}</text>
     </view>
     <view class="ending-description">{{ending.description}}</view>
+    <view wx:for="{{ending.causal}}" wx:key="*this" class="ending-description">{{item}}</view>
+    <view wx:if="{{ending.relic}}" class="ending-description">{{ending.relic}}</view>
+    <view wx:for="{{ending.missingRelics}}" wx:key="*this" class="ending-description">未找到残页 · {{item}}</view>
     <view class="ending-actions">
       <button class="control" hover-class="pressed" bindtap="undo">撤销一步</button>
       <button wx:if="{{ending.won}}" class="control primary" hover-class="pressed" bindtap="settle">{{level.id === 5 ? '结算并返回编年史' : '结算并继续'}}</button>
@@ -96,7 +99,10 @@
       <image class="ui-icon-sm" src="{{uiIcons.scroll}}" mode="aspectFit" />
       <text>羊皮纸启示</text>
     </view>
-    <text wx:for="{{level.hints}}" wx:key="*this">{{index + 1}}. {{item}}</text>
+    <block wx:for="{{level.hints}}" wx:key="label">
+      <text wx:if="{{index < hintCount}}">{{item.label}} · {{item.text}}</text>
+    </block>
+    <button wx:if="{{hintCount < level.hints.length}}" class="control hint-next" bindtap="revealHint">展开{{level.hints[hintCount].label}}</button>
   </view>
 
   <view class="panel">
@@ -137,6 +143,7 @@
     <view class="loadout-sheet">
       <view class="section-title">{{preparation.title}}</view>
       <view class="board-caption">先祖同行 {{preparation.picked.length}} / {{preparation.slots}}</view>
+      <view wx:if="{{preparation.recommendation}}" class="board-caption">推荐同行 · {{preparation.recommendation}}</view>
       <view wx:for="{{preparation.hints}}" wx:key="flag" class="board-caption">{{item.active ? '已生效' : '待达成'}} · {{item.text}}</view>
       <scroll-view scroll-y class="loadout-choices">
         <button wx:for="{{preparation.choices}}" wx:key="id" class="control loadout-choice {{item.selected ? 'act-current' : ''}}" data-id="{{item.id}}" disabled="{{item.disabled}}" bindtap="toggleCompanion">
@@ -151,6 +158,17 @@
       <view class="ending-actions">
         <button class="control primary" bindtap="beginAct">开始这一幕</button>
         <button class="control" bindtap="closePreparation">返回棋盘</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{decision}}" class="loadout-overlay">
+    <view class="loadout-sheet">
+      <view class="section-title">{{decision.title}}</view>
+      <view class="ending-description">{{decision.detail}}</view>
+      <view class="ending-actions">
+        <button class="control" bindtap="cancelDecision">保留档案</button>
+        <button class="control primary" bindtap="confirmDecision">确认引爆</button>
       </view>
     </view>
   </view>

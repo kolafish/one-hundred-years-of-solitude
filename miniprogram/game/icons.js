@@ -156,6 +156,17 @@ const MacondoIcons = (() => {
       <rect x="12" y="14" width="40" height="36" rx="6" fill="#2f5b76" stroke="#2c1e16" stroke-width="2.2"/>
       <path d="M18 25 Q25 21 32 25 T46 25 M18 33 Q25 29 32 33 T46 33 M18 41 Q25 37 32 41 T46 41" fill="none" stroke="#d6eef8" stroke-width="2.2" stroke-linecap="round"/>
     `,
+    patrol: `
+      <path d="M13 8 H51 L48 35 Q45 49 32 56 Q19 49 16 35 Z" fill="#e7d4af" stroke="#5c4332" stroke-width="2.4"/>
+      <path d="M20 32 Q19 14 32 13 Q45 14 44 32 Z" fill="#c59852" stroke="#2c1e16" stroke-width="2.5"/>
+      <path d="M18 33 H46 M24 33 L27 42 L32 48 L37 42 L40 33" fill="none" stroke="#2c1e16" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M29 22 H35 M26 38 H38" stroke="#9e2a2b" stroke-width="2.4" stroke-linecap="round"/>
+    `,
+    hurricane: `
+      <circle cx="32" cy="32" r="24" fill="#d9ced9" stroke="#574360" stroke-width="2.4"/>
+      <path d="M11 31 C14 13 47 12 51 25 C55 40 31 49 21 40 C12 32 25 22 36 26 C45 30 38 38 31 35" fill="none" stroke="#65526d" stroke-width="4" stroke-linecap="round"/>
+      <path d="M18 51 L28 47 M42 14 L49 10" stroke="#9e2a2b" stroke-width="2.1" stroke-linecap="round"/>
+    `,
     shield: `
       <path d="M32 12 L49 18 V33 C49 43, 41 50, 32 54 C23 50, 15 43, 15 33 V18 Z" fill="#e5b53a" stroke="#2c1e16" stroke-width="2.4" stroke-linejoin="round"/>
       <path d="M23 33 C27 26, 37 26, 42 33 C37 40, 27 40, 23 33 Z" fill="#fdf6e7" stroke="#2c1e16" stroke-width="1.8"/>

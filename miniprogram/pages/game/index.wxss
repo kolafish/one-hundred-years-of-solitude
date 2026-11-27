@@ -192,6 +192,10 @@ page {
   margin-top: 16rpx;
 }
 
+.hint-next {
+  margin-top: 12rpx;
+}
+
 .skill {
   display: flex;
   align-items: center;
